@@ -9,9 +9,10 @@ import jakarta.validation.constraints.Size;
 import lombok.Data;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 
 @Entity
-@Table(name = "usuarios")
+@Table(name = "usuario")
 @Data
 public class Usuario implements UserDetails {
 
@@ -36,6 +37,14 @@ public class Usuario implements UserDetails {
 
     @NotBlank(message = "El nombre completo es obligatorio")
     private String nombre;
+
+    @ManyToMany
+    @JoinTable(
+            name = "Usuario_Perfil",
+            joinColumns = @JoinColumn(name = "usuario_id"),
+            inverseJoinColumns = @JoinColumn(name = "perfil_id")
+    )
+    private List<Perfil> perfiles;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

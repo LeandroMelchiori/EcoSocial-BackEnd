@@ -1,5 +1,6 @@
 package com.alura.foro.hub.api.repository;
 
+import com.alura.foro.hub.api.domain.Curso;
 import com.alura.foro.hub.api.domain.Topico;
 import com.alura.foro.hub.api.domain.EstadoTopico;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -9,6 +10,8 @@ import java.util.List;
 
 @Repository
 public interface TopicoRepository extends JpaRepository<Topico, Long> {
+
+    List<Topico> findByCurso(Curso curso);
 
     // Buscar tópicos por autor
     List<Topico> findByAutorUsername(String username);

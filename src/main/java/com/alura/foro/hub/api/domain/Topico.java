@@ -9,7 +9,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
-@Table(name = "topicos")
+@Table(name = "topico")
 @Data
 public class Topico {
     @Id
@@ -43,6 +43,9 @@ public class Topico {
     @Enumerated(EnumType.STRING)
     private EstadoTopico estado = EstadoTopico.ABIERTO;
 
+    @ManyToOne
+    @JoinColumn(name = "curso")
+    private Curso curso;
 
     public Long getId() {
         return id;
