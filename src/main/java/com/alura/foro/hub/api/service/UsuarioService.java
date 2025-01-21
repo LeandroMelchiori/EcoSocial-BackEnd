@@ -2,9 +2,11 @@ package com.alura.foro.hub.api.service;
 
 import com.alura.foro.hub.api.domain.Usuario;
 import com.alura.foro.hub.api.repository.UsuarioRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,6 +21,9 @@ public class UsuarioService implements UserDetailsService {
     public UsuarioService(UsuarioRepository usuarioRepository) {
         this.usuarioRepository = usuarioRepository;
     }
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     public List<Usuario> listarUsuarios() {
         return usuarioRepository.findAll();

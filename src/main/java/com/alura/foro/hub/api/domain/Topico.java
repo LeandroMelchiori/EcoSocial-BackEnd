@@ -35,11 +35,6 @@ public class Topico {
     @OneToMany(mappedBy = "topico", cascade = CascadeType.ALL)
     private List<Respuesta> respuestas;
 
-    @NotNull(message = "La categoría es obligatoria")
-    @ManyToOne
-    @JoinColumn(name = "categoria_id")
-    private Categoria categoria;
-
     @Enumerated(EnumType.STRING)
     private EstadoTopico estado = EstadoTopico.ABIERTO;
 
@@ -95,19 +90,19 @@ public class Topico {
         this.respuestas = respuestas;
     }
 
-    public Categoria getCategoria() {
-        return categoria;
-    }
-
-    public void setCategoria(Categoria categoria) {
-        this.categoria = categoria;
-    }
-
     public EstadoTopico getEstado() {
         return estado;
     }
 
     public void setEstado(EstadoTopico estado) {
         this.estado = estado;
+    }
+
+    public Curso getCurso() {
+        return curso;
+    }
+
+    public void setCurso(Curso curso) {
+        this.curso = curso;
     }
 }

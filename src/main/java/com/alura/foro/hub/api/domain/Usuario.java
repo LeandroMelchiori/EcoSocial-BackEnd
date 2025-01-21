@@ -21,12 +21,12 @@ public class Usuario implements UserDetails {
     private Long id;
 
     @NotBlank(message = "El nombre de usuario es obligatorio")
-    @Size(min = 4, max = 20, message = "El nombre de usuario debe tener entre 4 y 20 caracteres")
-    @Column(nullable = false, unique = true)
+    @Size(min = 4, max = 30, message = "El nombre de usuario debe tener entre 4 y 20 caracteres")
+    @Column(nullable = false, unique = true, name = "username")
     private String username;
 
     @NotBlank(message = "La contraseña es obligatoria")
-    @Size(min = 8, message = "La contraseña debe tener al menos 8 caracteres")
+    @Size(min = 4, message = "La contraseña debe tener al menos 4 caracteres")
     @Column(nullable = false)
     private String password;
 
