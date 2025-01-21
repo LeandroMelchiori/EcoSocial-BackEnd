@@ -45,10 +45,9 @@ public class TokenService {
         if (token == null) {
             throw new RuntimeException();
         }
-        DecodedJWT verifier = null;
         try {
             Algorithm algorithm = HMAC256(apiSecret);
-            verifier = JWT.require(algorithm)
+            DecodedJWT verifier = JWT.require(algorithm)
                     // specify any specific claim validations
                     .withIssuer("foro hub")
                     // reusable verifier instance
@@ -57,11 +56,8 @@ public class TokenService {
            return verifier.getSubject();
         } catch (JWTVerificationException exception) {
             // Invalid signature/claims
+            throw new RuntimeException("Error al verificar el token", exception);
         }
-        if (verifier.getSubject() == null) {
-            throw new RuntimeException("Verifier invalido");
-        }
-        return verifier.getSubject();
     }
 
     private Instant generateExpirationTime() {
