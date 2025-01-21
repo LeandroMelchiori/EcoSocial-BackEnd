@@ -30,7 +30,7 @@ Asegúrate de tener instalados:
     spring.datasource.password=tu_contraseña
     ```
 
-4. Accede al SpringDoc de la API en: [AQUI]([http://localhost:8080/](http://localhost:8080/swagger-ui/index.html))
+4. Accede al SpringDoc de la API en: [http://localhost:8080/](http://localhost:8080/swagger-ui/index.html]([http://localhost:8080/](http://localhost:8080/swagger-ui/index.html))
 
 ## 🛠️ Endpoints de la API
 
@@ -40,10 +40,3 @@ Algunos endpoints básicos incluyen:
 - `POST /topicos` - Crear un nuevo tópico.
 - `PUT /topicos/{id}` - Actualizar un tópico.
 - `DELETE /topicos/{id}` - Eliminar un tópico.
-
-## 🧪 Pruebas
-
-Para ejecutar las pruebas, utiliza:
-
-```bash
-./mvnw test
