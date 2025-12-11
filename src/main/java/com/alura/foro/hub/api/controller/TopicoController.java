@@ -1,13 +1,17 @@
 package com.alura.foro.hub.api.controller;
 
-import com.alura.foro.hub.api.domain.*;
+import com.alura.foro.hub.api.domain.DatosActualizarTopico;
+import com.alura.foro.hub.api.domain.DatosDetalleTopico;
+import com.alura.foro.hub.api.domain.DatosListadoTopico;
+import com.alura.foro.hub.api.domain.DatosRegistroTopico;
 import com.alura.foro.hub.api.service.TopicoService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.net.URI;
 import java.util.List;
-import java.util.Optional;
 
 @SecurityRequirement(name = "bearer-key")
 @RestController
@@ -20,33 +24,40 @@ public class TopicoController {
         this.topicoService = topicoService;
     }
 
+    // LISTAR TODOS
     @GetMapping
     public ResponseEntity<List<DatosListadoTopico>> listar() {
-        return ResponseEntity.ok(topicoService.listarTopicos());
+        var lista = topicoService.listar();
+        return ResponseEntity.ok(lista);
     }
 
+    // DETALLE POR ID
     @GetMapping("/{id}")
-    public ResponseEntity<DatosDetalleTopico> obtenerPorId(@PathVariable Long id) {
-        Optional<DatosDetalleTopico> topico = topicoService.obtenerPorId(id);
-        return topico.map(ResponseEntity::ok)
-                .orElseGet(() -> ResponseEntity.notFound().build());
+    public ResponseEntity<DatosDetalleTopico> detalle(@PathVariable Long id) {
+        var dto = topicoService.buscarPorId(id);
+        return ResponseEntity.ok(dto);
     }
 
+    // CREAR
     @PostMapping
-    public ResponseEntity<Topico> crear(@RequestBody DatosRegistroTopico datos) {
-        Topico nuevoTopico = topicoService.crearTopico(datos);
-        return ResponseEntity.ok(nuevoTopico);
+    public ResponseEntity<DatosDetalleTopico> crear(@RequestBody @Valid DatosRegistroTopico datos) {
+        var dto = topicoService.crear(datos);
+        URI url = URI.create("/topicos/" + dto.id());
+        return ResponseEntity.created(url).body(dto);
     }
 
+    // ACTUALIZAR
     @PutMapping("/{id}")
-    public ResponseEntity<Topico> actualizar(@PathVariable Long id, @RequestBody DatosActualizarTopico datos) {
-        return ResponseEntity.ok(topicoService.actualizarTopico(id, datos));
+    public ResponseEntity<DatosDetalleTopico> actualizar(@PathVariable Long id,
+                                                         @RequestBody @Valid DatosActualizarTopico datos) {
+        var dto = topicoService.actualizar(id, datos);
+        return ResponseEntity.ok(dto);
     }
 
+    // ELIMINAR
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> eliminar(@PathVariable Long id) {
-        topicoService.eliminarTopico(id);
+        topicoService.eliminar(id);
         return ResponseEntity.noContent().build();
     }
 }
-

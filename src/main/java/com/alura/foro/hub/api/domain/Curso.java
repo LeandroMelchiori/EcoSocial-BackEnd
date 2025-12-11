@@ -16,7 +16,6 @@ public class Curso {
     @Column(nullable = false, length = 255)
     private String categoria;
 
-
     public Long getId() {
         return id;
     }

@@ -9,5 +9,17 @@ public record DatosDetalleTopico(
         LocalDateTime fechaCreacion,
         String autorNombre,
         String cursoNombre,
-        EstadoTopico estado
-) {}
+        StatusTopico estado
+) {
+    public DatosDetalleTopico(Topico topico) {
+        this(
+                topico.getId(),
+                topico.getTitulo(),
+                topico.getMensaje(),
+                topico.getFechaCreacion(),
+                topico.getAutor().getNombre(),
+                topico.getCurso().getNombre(),
+                topico.getStatus()
+        );
+    }
+}

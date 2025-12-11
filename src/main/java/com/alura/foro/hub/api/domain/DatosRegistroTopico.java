@@ -5,5 +5,7 @@ public record DatosRegistroTopico(
         String mensaje,
         Long autorId,
         Long cursoId,
-        EstadoTopico estado
-) {}
+        StatusTopico estado
+) {
+
+}

@@ -28,7 +28,7 @@ public class Respuesta {
 
     @NotNull(message = "El autor es obligatorio")
     @ManyToOne
-    @JoinColumn(name = "usuario_id")
+    @JoinColumn(name = "autor_id")
     private Usuario autor;
 
     @NotNull(message = "El campo solución es obligatorio")
