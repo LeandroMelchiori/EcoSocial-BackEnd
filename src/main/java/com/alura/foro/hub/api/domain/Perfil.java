@@ -1,10 +1,15 @@
 package com.alura.foro.hub.api.domain;
 
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
+import org.springframework.security.core.GrantedAuthority;
 
 @Entity
+@Getter
+@Setter
 @Table(name = "perfil")
-public class Perfil {
+public class Perfil implements GrantedAuthority {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -13,20 +18,9 @@ public class Perfil {
     @Column(nullable = false, length = 100)
     private String nombre;
 
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getNombre() {
+    @Override
+    public String getAuthority() {
         return nombre;
     }
-
-    public void setNombre(String nombre) {
-        this.nombre = nombre;
-    }
+    // getters y setters
 }
