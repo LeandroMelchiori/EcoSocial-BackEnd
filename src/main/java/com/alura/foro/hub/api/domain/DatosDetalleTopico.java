@@ -2,6 +2,7 @@ package com.alura.foro.hub.api.domain;
 
 import java.time.LocalDateTime;
 
+// descripcion:
 public record DatosDetalleTopico(
         Long id,
         String titulo,
@@ -9,7 +10,7 @@ public record DatosDetalleTopico(
         LocalDateTime fechaCreacion,
         String autorNombre,
         String cursoNombre,
-        StatusTopico estado
+        StatusTopico status
 ) {
     public DatosDetalleTopico(Topico topico) {
         this(

@@ -1,11 +1,9 @@
 package com.alura.foro.hub.api.controller;
 
-import com.alura.foro.hub.api.domain.DatosActualizarTopico;
-import com.alura.foro.hub.api.domain.DatosDetalleTopico;
-import com.alura.foro.hub.api.domain.DatosListadoTopico;
-import com.alura.foro.hub.api.domain.DatosRegistroTopico;
+import com.alura.foro.hub.api.domain.*;
 import com.alura.foro.hub.api.service.TopicoService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -40,10 +38,13 @@ public class TopicoController {
 
     // CREAR
     @PostMapping
-    public ResponseEntity<DatosDetalleTopico> crear(@RequestBody @Valid DatosRegistroTopico datos) {
-        var dto = topicoService.crear(datos);
-        URI url = URI.create("/topicos/" + dto.id());
-        return ResponseEntity.created(url).body(dto);
+    public ResponseEntity crear(@RequestBody DatosRegistroTopico datos, HttpServletRequest request) {
+
+        Long userId = (Long) request.getAttribute("userId");
+
+        Topico topico = topicoService.crearTopico(datos, userId);
+
+        return ResponseEntity.ok(new DatosDetalleTopico(topico));
     }
 
     // ACTUALIZAR

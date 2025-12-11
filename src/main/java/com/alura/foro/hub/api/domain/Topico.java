@@ -38,10 +38,10 @@ public class Topico {
     public Topico(DatosRegistroTopico datos, Usuario autor, Curso curso) {
         this.titulo = datos.titulo();
         this.mensaje = datos.mensaje();
+        this.fechaCreacion = LocalDateTime.now();
         this.autor = autor;
         this.curso = curso;
-        this.status = datos.estado() != null ? datos.estado() : StatusTopico.ACTIVO;
-        this.fechaCreacion = LocalDateTime.now();
+        this.status = StatusTopico.ACTIVO; // o el que quieras por defecto
     }
 
     // Método para actualización (PUT)

@@ -8,6 +8,7 @@ import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -29,27 +30,19 @@ public class TopicoService {
     //      CREAR TÓPICO
     // =========================
     @Transactional
-    public DatosDetalleTopico crear(DatosRegistroTopico datos) {
+    public Topico crearTopico(DatosRegistroTopico datos, Long userId) {
 
-        var autor = usuarioRepository.findById(datos.autorId())
-                .orElseThrow(() -> new EntityNotFoundException("El autor no existe: " + datos.autorId()));
+        Usuario autor = usuarioRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("Autor no encontrado"));
 
-        var curso = cursoRepository.findById(datos.cursoId())
-                .orElseThrow(() -> new EntityNotFoundException("El curso no existe: " + datos.cursoId()));
+        Curso curso = cursoRepository.findById(datos.cursoId())
+                .orElseThrow(() -> new RuntimeException("Curso no encontrado"));
 
         Topico topico = new Topico(datos, autor, curso);
-        topicoRepository.save(topico);
 
-        return new DatosDetalleTopico(
-                topico.getId(),
-                topico.getTitulo(),
-                topico.getMensaje(),
-                topico.getFechaCreacion(),
-                topico.getAutor().getNombre(),
-                topico.getCurso().getNombre(),
-                topico.getStatus()
-        );
+        return topicoRepository.save(topico);
     }
+
 
     // =========================
     //      LISTAR TÓPICOS
