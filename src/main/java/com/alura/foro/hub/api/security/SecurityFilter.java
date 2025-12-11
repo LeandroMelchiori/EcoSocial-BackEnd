@@ -27,10 +27,11 @@ public class SecurityFilter extends OncePerRequestFilter {
 
         //Obtener el authHeader del header
         var authHeader = request.getHeader("Authorization");
+        System.out.println("Authorization header: " + authHeader);
         if (authHeader != null) {
             var token = authHeader.replace("Bearer ", "");
-//            System.out.println(tokenService.getSubject(token)); // este usuario tiene sesion?
-            var subject = tokenService.getSubject(token); // extract username
+            System.out.println("Token extraído: " + token);
+            var subject = tokenService.getSubject(token);
             if (subject != null) {
                 //Token valido
                 var user = usersRepository.findByUsername(subject); // subject = nombre de usuario

@@ -9,10 +9,8 @@ import com.auth0.jwt.interfaces.DecodedJWT;
 import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-
 import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
+import java.time.temporal.ChronoUnit;
 
 import static com.auth0.jwt.algorithms.Algorithm.HMAC256;
 
@@ -47,13 +45,12 @@ public class TokenService {
         }
         try {
             Algorithm algorithm = HMAC256(apiSecret);
-            DecodedJWT verifier = JWT.require(algorithm)
-                    // specify any specific claim validations
+            DecodedJWT decodedJWT = JWT
+                    .require(algorithm)
                     .withIssuer("foro hub")
-                    // reusable verifier instance
                     .build()
                     .verify(token);
-           return verifier.getSubject();
+            return decodedJWT.getSubject();
         } catch (JWTVerificationException exception) {
             // Invalid signature/claims
             throw new RuntimeException("Error al verificar el token", exception);
@@ -61,6 +58,8 @@ public class TokenService {
     }
 
     private Instant generateExpirationTime() {
-        return LocalDateTime.now().plusHours(2).toInstant(ZoneOffset.UTC);
+        return Instant.now().plus(2, ChronoUnit.HOURS);
     }
+
+
 }
