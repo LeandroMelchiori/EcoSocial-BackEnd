@@ -6,9 +6,9 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
-import java.net.URI;
 import java.util.List;
 
 @SecurityRequirement(name = "bearer-key")
@@ -29,10 +29,10 @@ public class TopicoController {
         return ResponseEntity.ok(lista);
     }
 
-    // DETALLE POR ID
+    // 🔍 DETALLE POR ID
     @GetMapping("/{id}")
     public ResponseEntity<DatosDetalleTopico> detalle(@PathVariable Long id) {
-        var dto = topicoService.buscarPorId(id);
+        var dto = topicoService.obtenerDetalle(id);
         return ResponseEntity.ok(dto);
     }
 
@@ -47,18 +47,28 @@ public class TopicoController {
         return ResponseEntity.ok(new DatosDetalleTopico(topico));
     }
 
-    // ACTUALIZAR
+    // ✏️ ACTUALIZAR
     @PutMapping("/{id}")
-    public ResponseEntity<DatosDetalleTopico> actualizar(@PathVariable Long id,
-                                                         @RequestBody @Valid DatosActualizarTopico datos) {
-        var dto = topicoService.actualizar(id, datos);
+    public ResponseEntity<DatosDetalleTopico> actualizar(
+            @PathVariable Long id,
+            @RequestBody @Valid DatosActualizarTopico datos
+    ) {
+        var auth = SecurityContextHolder.getContext().getAuthentication();
+        var usuario = (Usuario) auth.getPrincipal();
+        Long usuarioId = usuario.getId();
+
+        var dto = topicoService.actualizarTopico(id, datos, usuarioId);
         return ResponseEntity.ok(dto);
     }
 
-    // ELIMINAR
+    // 🗑️ ELIMINAR
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> eliminar(@PathVariable Long id) {
-        topicoService.eliminar(id);
+        var auth = SecurityContextHolder.getContext().getAuthentication();
+        var usuario = (Usuario) auth.getPrincipal();
+        Long usuarioId = usuario.getId();
+
+        topicoService.eliminarTopico(id, usuarioId);
         return ResponseEntity.noContent().build();
     }
 }

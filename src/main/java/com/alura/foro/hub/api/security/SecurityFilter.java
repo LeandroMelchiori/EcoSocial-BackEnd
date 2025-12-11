@@ -8,6 +8,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -20,27 +21,39 @@ public class SecurityFilter extends OncePerRequestFilter {
     private TokenService tokenService;
 
     @Autowired
-    private UsuarioRepository usersRepository;
+    private UsuarioRepository usuarioRepository;
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+    protected void doFilterInternal(HttpServletRequest request,
+                                    HttpServletResponse response,
+                                    FilterChain filterChain) throws ServletException, IOException {
 
-        //Obtener el authHeader del header
-        var authHeader = request.getHeader("Authorization");
-        System.out.println("Authorization header: " + authHeader);
-        if (authHeader != null) {
-            var token = authHeader.replace("Bearer ", "");
-            System.out.println("Token extraído: " + token);
-            var subject = tokenService.getSubject(token);
-            Long userId = tokenService.getUserId(token);
-            request.setAttribute("userId", userId);
-            if (subject != null) {
-                //Token valido
-                var user = usersRepository.findByUsername(subject); // subject = nombre de usuario
-                var authentication = new UsernamePasswordAuthenticationToken(user, null, user.get().getAuthorities()); // forzamos un inicio de sesion
-                SecurityContextHolder.getContext().setAuthentication(authentication); // seteamos la autenticacion
-            }
+        var token = recuperarToken(request);
+
+        if (token != null) {
+            var subject = tokenService.getSubject(token); // username del usuario
+
+            var usuario = usuarioRepository.findByUsername(subject)
+                    .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado"));
+
+            // ACA guardamos el USUARIO, NO el Optional
+            var authentication = new UsernamePasswordAuthenticationToken(
+                    usuario,
+                    null,
+                    usuario.getAuthorities()
+            );
+
+            SecurityContextHolder.getContext().setAuthentication(authentication);
         }
+
         filterChain.doFilter(request, response);
+    }
+
+    private String recuperarToken(HttpServletRequest request) {
+        var authHeader = request.getHeader("Authorization");
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            return null;
+        }
+        return authHeader.replace("Bearer ", "");
     }
 }
