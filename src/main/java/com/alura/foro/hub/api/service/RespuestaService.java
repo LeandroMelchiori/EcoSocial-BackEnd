@@ -6,8 +6,10 @@ import com.alura.foro.hub.api.repository.*;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 @Service
 public class RespuestaService {
@@ -80,4 +82,24 @@ public class RespuestaService {
                 r.getSolucion()
         );
     }
+
+    @Transactional
+    public DatosListadoRespuesta actualizar(Long respuestaId,
+                                            DatosActualizarRespuesta datos,
+                                            Long usuarioId) {
+
+        Respuesta respuesta = respuestaRepository.findById(respuestaId)
+                .orElseThrow(() -> new EntityNotFoundException("Respuesta no encontrada"));
+
+        // 🔒 Solo el autor puede editar
+        if (!respuesta.getAutor().getId().equals(usuarioId)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN,
+                    "Solo el autor puede editar la respuesta");
+        }
+
+        respuesta.setMensaje(datos.mensaje());
+
+        return toDTO(respuesta);
+    }
+
 }
