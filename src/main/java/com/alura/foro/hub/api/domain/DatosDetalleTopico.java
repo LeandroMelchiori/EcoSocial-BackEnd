@@ -1,6 +1,7 @@
 package com.alura.foro.hub.api.domain;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 // descripcion:
 public record DatosDetalleTopico(
@@ -10,7 +11,8 @@ public record DatosDetalleTopico(
         LocalDateTime fechaCreacion,
         String autorNombre,
         String cursoNombre,
-        StatusTopico status
+        StatusTopico status,
+        List<DatosListadoRespuesta> respuestas
 ) {
     public DatosDetalleTopico(Topico topico) {
         this(
@@ -20,7 +22,8 @@ public record DatosDetalleTopico(
                 topico.getFechaCreacion(),
                 topico.getAutor().getNombre(),
                 topico.getCurso().getNombre(),
-                topico.getStatus()
+                topico.getStatus(),
+                List.of()
         );
     }
 }

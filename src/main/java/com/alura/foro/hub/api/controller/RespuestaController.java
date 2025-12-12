@@ -1,51 +1,50 @@
-//package com.alura.foro.hub.api.controller;
-//
-//import com.alura.foro.hub.api.domain.Respuesta;
-//import com.alura.foro.hub.api.domain.Topico;
-//import com.alura.foro.hub.api.service.RespuestaService;
-//import io.swagger.v3.oas.annotations.security.SecurityRequirement;
-//import jakarta.validation.Valid;
-//import org.springframework.http.ResponseEntity;
-//import org.springframework.web.bind.annotation.*;
-//
-//import java.util.List;
-//
-//@SecurityRequirement(name = "bearer-key")
-//@RestController
-//@RequestMapping("/respuestas")
-//public class RespuestaController {
-//
-//    private final RespuestaService respuestaService;
-//
-//    public RespuestaController(RespuestaService respuestaService) {
-//        this.respuestaService = respuestaService;
-//    }
-//
-//    @GetMapping
-//    public ResponseEntity<List<Respuesta>> listarRespuestas() {
-//        return ResponseEntity.ok(respuestaService.listarRespuestas());
-//    }
-//
-//    @GetMapping("/topico/{topicoId}")
-//    public ResponseEntity<List<Respuesta>> obtenerRespuestasPorTopico(@PathVariable Long topicoId) {
-//        Topico topico = new Topico();
-//        topico.setId(topicoId);
-//        return ResponseEntity.ok(respuestaService.obtenerPorTopico(topico));
-//    }
-//
-//    @PostMapping
-//    public ResponseEntity<Respuesta> crearRespuesta(@RequestBody @Valid Respuesta respuesta) {
-//        return ResponseEntity.ok(respuestaService.crearRespuesta(respuesta));
-//    }
-//
-//    @PutMapping("/{id}")
-//    public ResponseEntity<Respuesta> actualizarRespuesta(@PathVariable Long id, @RequestBody @Valid Respuesta respuesta) {
-//        return ResponseEntity.ok(respuestaService.actualizarRespuesta(id, respuesta));
-//    }
-//
-//    @DeleteMapping("/{id}")
-//    public ResponseEntity<Void> eliminarRespuesta(@PathVariable Long id) {
-//        respuestaService.eliminarRespuesta(id);
-//        return ResponseEntity.noContent().build();
-//    }
-//}
+package com.alura.foro.hub.api.controller;
+
+import com.alura.foro.hub.api.domain.DatosCrearRespuesta;
+import com.alura.foro.hub.api.domain.DatosListadoRespuesta;
+import com.alura.foro.hub.api.service.RespuestaService;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+@RestController
+@RequestMapping("/respuestas")
+public class RespuestaController {
+
+    private final RespuestaService respuestaService;
+
+    public RespuestaController(RespuestaService respuestaService) {
+        this.respuestaService = respuestaService;
+    }
+
+    @PostMapping
+    public ResponseEntity<DatosListadoRespuesta> crear(@RequestBody @Valid DatosCrearRespuesta datos,
+                                                       HttpServletRequest request) {
+
+        Long userId = (Long) request.getAttribute("userId");
+        if (userId == null) {
+            return ResponseEntity.status(401).build();
+        }
+
+        return ResponseEntity.ok(respuestaService.crear(datos, userId));
+    }
+
+    @GetMapping("/topico/{topidoId}")
+    public ResponseEntity<Page<DatosListadoRespuesta>> listar(@PathVariable Long topicoId,
+                                                              Pageable pageable) {
+        return ResponseEntity.ok(respuestaService.listarPorTopico(topicoId, pageable));
+    }
+
+    @PatchMapping("/{id}/solucion")
+    public ResponseEntity<DatosListadoRespuesta> marcarSolucion(@PathVariable Long id, HttpServletRequest request) {
+        Long userId = (Long) request.getAttribute("userId");
+        if (userId == null) {
+            return ResponseEntity.status(401).build();
+        }
+
+        return ResponseEntity.ok(respuestaService.marcarSolucion(id, userId));
+    }
+}

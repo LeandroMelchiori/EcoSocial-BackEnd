@@ -1,10 +1,12 @@
 package com.alura.foro.hub.api.service;
 
 import com.alura.foro.hub.api.domain.*;
+import com.alura.foro.hub.api.repository.RespuestaRepository;
 import com.alura.foro.hub.api.repository.TopicoRepository;
 import com.alura.foro.hub.api.repository.UsuarioRepository;
 import com.alura.foro.hub.api.repository.CursoRepository;
 import jakarta.persistence.EntityNotFoundException;
+import org.springframework.data.domain.Pageable;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -18,13 +20,16 @@ public class TopicoService {
     private final TopicoRepository topicoRepository;
     private final UsuarioRepository usuarioRepository;
     private final CursoRepository cursoRepository;
+    private final RespuestaRepository respuestasRepository;
 
     public TopicoService(TopicoRepository topicoRepository,
                          UsuarioRepository usuarioRepository,
-                         CursoRepository cursoRepository) {
+                         CursoRepository cursoRepository,
+                         RespuestaRepository respuestasRepository) {
         this.topicoRepository = topicoRepository;
         this.usuarioRepository = usuarioRepository;
         this.cursoRepository = cursoRepository;
+        this.respuestasRepository = respuestasRepository;
     }
 
     // =========================
@@ -49,30 +54,36 @@ public class TopicoService {
     //      LISTAR TÓPICOS
     // =========================
     public List<DatosListadoTopico> listar() {
-        return topicoRepository.findAll()
-                .stream()
-                .map(t -> new DatosListadoTopico(
-                        t.getId(),
-                        t.getTitulo(),
-                        t.getMensaje(),
-                        t.getFechaCreacion(),
-                        t.getAutor().getNombre(),
-                        t.getCurso().getNombre(),
-                        t.getStatus()
-                ))
-                .toList();
+        return topicoRepository.listarConMetricas();
     }
+
 
     // =========================
     //   DETALLE POR ID
     // =========================
     @Transactional(readOnly = true)
-    public DatosDetalleTopico obtenerDetalle(Long id) {
-        var topico = topicoRepository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Tópico no encontrado"));
+    public DatosDetalleTopico detallarTopico(Long id) {
 
-        return new DatosDetalleTopico(topico);
+        Topico topico = topicoRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Tópico no encontrado"));
+
+        var respuestas = respuestasRepository
+                .findByTopicoIdOrderByFechaCreacionAsc(id, Pageable.unpaged())
+                .map(this::toDTORespuesta)
+                .getContent();
+
+        return new DatosDetalleTopico(
+                topico.getId(),
+                topico.getTitulo(),
+                topico.getMensaje(),
+                topico.getFechaCreacion(),
+                topico.getAutor().getNombre(),
+                topico.getCurso().getNombre(),
+                topico.getStatus(),
+                respuestas
+        );
     }
+
 
     // =========================
     //      ACTUALIZAR
@@ -118,29 +129,33 @@ public class TopicoService {
     //      ELIMINAR
     // =========================
     @Transactional
-    public void eliminarTopico(Long idTopico, Long usuarioIdLogueado) {
+    public void eliminarTopico(Long idTopico, Usuario usuarioLogueado) {
         var topico = topicoRepository.findById(idTopico)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Tópico no encontrado"));
 
-        // 💣 Solo el autor puede borrar
-        if (!topico.getAutor().getId().equals(usuarioIdLogueado)) {
+        boolean esAdmin = usuarioLogueado.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+
+        // 💣 Solo el autor o admin pueden borrar
+        if (!esAdmin && !topico.getAutor().getId().equals(usuarioLogueado.getId())) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN,
                     "Solo el autor del tópico puede eliminarlo");
         }
 
         // Borrado físico
         topicoRepository.delete(topico);
-
-        // (Si más adelante querés borrado lógico, acá cambiamos a:
-        // topico.setStatus(StatusTopico.ELIMINADO);
-        // y listo)
     }
 
-    public DatosDetalleTopico detallarTopico(Long id) {
-        Topico topico = topicoRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Tópico no encontrado"));
-
-        return new DatosDetalleTopico(topico);
+    private DatosListadoRespuesta toDTORespuesta(Respuesta r) {
+        return new DatosListadoRespuesta(
+                r.getId(),
+                r.getTopico().getId(),
+                r.getMensaje(),
+                r.getFechaCreacion(),
+                r.getAutor().getId(),
+                r.getAutor().getNombre(),
+                r.getSolucion()
+        );
     }
 
 }

@@ -32,7 +32,9 @@ public class TopicoController {
 
     // CREAR
     @PostMapping
-    public ResponseEntity crear(@RequestBody DatosRegistroTopico datos, HttpServletRequest request) {
+    public ResponseEntity crear(
+            @RequestBody DatosRegistroTopico datos,
+            HttpServletRequest request) {
 
         Long userId = (Long) request.getAttribute("userId");
 
@@ -41,33 +43,31 @@ public class TopicoController {
         return ResponseEntity.ok(new DatosDetalleTopico(topico));
     }
 
-    // ✏️ ACTUALIZAR
+    // ✏️ ACTUALIZAR POR ID
     @PutMapping("/{id}")
     public ResponseEntity<DatosDetalleTopico> actualizar(
             @PathVariable Long id,
             @RequestBody @Valid DatosActualizarTopico datos
     ) {
         var auth = SecurityContextHolder.getContext().getAuthentication();
-        var optional = (Optional<Usuario>) auth.getPrincipal();
-        var usuario = optional.orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+        var usuario = (Usuario) auth.getPrincipal();   // ✅
         Long usuarioId = usuario.getId();
+
 
         var dto = topicoService.actualizarTopico(id, datos, usuarioId);
         return ResponseEntity.ok(dto);
     }
 
-    // 🗑️ ELIMINAR
+    // 🗑️ ELIMINAR POR ID
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> eliminar(@PathVariable Long id) {
         var auth = SecurityContextHolder.getContext().getAuthentication();
-        var optional = (Optional<Usuario>) auth.getPrincipal();
-        var usuario = optional.orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
-        Long usuarioId = usuario.getId();
-
-        topicoService.eliminarTopico(id, usuarioId);
+        var usuario = (Usuario) auth.getPrincipal();
+        topicoService.eliminarTopico(id, usuario);
         return ResponseEntity.noContent().build();
     }
 
+    // DETALLAR POR ID
     @GetMapping("/{id}")
     public ResponseEntity<DatosDetalleTopico> detallar(@PathVariable Long id) {
         DatosDetalleTopico dto = topicoService.detallarTopico(id);

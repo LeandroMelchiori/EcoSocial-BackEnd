@@ -37,8 +37,9 @@ public class SecurityFilter extends OncePerRequestFilter {
             request.setAttribute("userId", userId);
             if (subject != null) {
                 //Token valido
-                var user = usuarioRepository.findByUsername(subject); // subject = nombre de usuario
-                var authentication = new UsernamePasswordAuthenticationToken(user, null, user.get().getAuthorities()); // forzamos un inicio de sesion
+                var userOpt = usuarioRepository.findByUsername(subject); // subject = nombre de usuario
+                var user = userOpt.orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado"));
+                var authentication = new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities()); // forzamos un inicio de sesion
                 SecurityContextHolder.getContext().setAuthentication(authentication); // seteamos la autenticacion
             }
         }
