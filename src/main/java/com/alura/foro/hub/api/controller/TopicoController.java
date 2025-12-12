@@ -67,7 +67,8 @@ public class TopicoController {
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> eliminar(@PathVariable Long id) {
         var auth = SecurityContextHolder.getContext().getAuthentication();
-        var usuario = (Usuario) auth.getPrincipal();
+        var optional = (Optional<Usuario>) auth.getPrincipal();
+        var usuario = optional.orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
         Long usuarioId = usuario.getId();
 
         topicoService.eliminarTopico(id, usuarioId);
