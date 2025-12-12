@@ -24,36 +24,24 @@ public class SecurityFilter extends OncePerRequestFilter {
     private UsuarioRepository usuarioRepository;
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request,
-                                    HttpServletResponse response,
-                                    FilterChain filterChain) throws ServletException, IOException {
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
 
-        var token = recuperarToken(request);
-
-        if (token != null) {
-            var subject = tokenService.getSubject(token); // username del usuario
-
-            var usuario = usuarioRepository.findByUsername(subject)
-                    .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado"));
-
-            // ACA guardamos el USUARIO, NO el Optional
-            var authentication = new UsernamePasswordAuthenticationToken(
-                    usuario,
-                    null,
-                    usuario.getAuthorities()
-            );
-
-            SecurityContextHolder.getContext().setAuthentication(authentication);
-        }
-
-        filterChain.doFilter(request, response);
-    }
-
-    private String recuperarToken(HttpServletRequest request) {
+        //Obtener el authHeader del header
         var authHeader = request.getHeader("Authorization");
-        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            return null;
+        System.out.println("Authorization header: " + authHeader);
+        if (authHeader != null) {
+            var token = authHeader.replace("Bearer ", "");
+            System.out.println("Token extraído: " + token);
+            var subject = tokenService.getSubject(token);
+            Long userId = tokenService.getUserId(token);
+            request.setAttribute("userId", userId);
+            if (subject != null) {
+                //Token valido
+                var user = usuarioRepository.findByUsername(subject); // subject = nombre de usuario
+                var authentication = new UsernamePasswordAuthenticationToken(user, null, user.get().getAuthorities()); // forzamos un inicio de sesion
+                SecurityContextHolder.getContext().setAuthentication(authentication); // seteamos la autenticacion
+            }
         }
-        return authHeader.replace("Bearer ", "");
+        filterChain.doFilter(request, response);
     }
 }

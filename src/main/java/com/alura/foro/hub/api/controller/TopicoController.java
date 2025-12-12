@@ -10,6 +10,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
 
 @SecurityRequirement(name = "bearer-key")
 @RestController
@@ -54,7 +55,8 @@ public class TopicoController {
             @RequestBody @Valid DatosActualizarTopico datos
     ) {
         var auth = SecurityContextHolder.getContext().getAuthentication();
-        var usuario = (Usuario) auth.getPrincipal();
+        var optional = (Optional<Usuario>) auth.getPrincipal();
+        var usuario = optional.orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
         Long usuarioId = usuario.getId();
 
         var dto = topicoService.actualizarTopico(id, datos, usuarioId);
