@@ -30,13 +30,6 @@ public class TopicoController {
         return ResponseEntity.ok(lista);
     }
 
-    // 🔍 DETALLE POR ID
-    @GetMapping("/{id}")
-    public ResponseEntity<DatosDetalleTopico> detalle(@PathVariable Long id) {
-        var dto = topicoService.obtenerDetalle(id);
-        return ResponseEntity.ok(dto);
-    }
-
     // CREAR
     @PostMapping
     public ResponseEntity crear(@RequestBody DatosRegistroTopico datos, HttpServletRequest request) {
@@ -74,4 +67,11 @@ public class TopicoController {
         topicoService.eliminarTopico(id, usuarioId);
         return ResponseEntity.noContent().build();
     }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<DatosDetalleTopico> detallar(@PathVariable Long id) {
+        DatosDetalleTopico dto = topicoService.detallarTopico(id);
+        return ResponseEntity.ok(dto);
+    }
+
 }

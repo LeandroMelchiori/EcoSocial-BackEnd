@@ -135,4 +135,12 @@ public class TopicoService {
         // topico.setStatus(StatusTopico.ELIMINADO);
         // y listo)
     }
+
+    public DatosDetalleTopico detallarTopico(Long id) {
+        Topico topico = topicoRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Tópico no encontrado"));
+
+        return new DatosDetalleTopico(topico);
+    }
+
 }
