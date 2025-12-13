@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "Topico")
@@ -34,14 +36,17 @@ public class Topico {
     @JoinColumn(name = "curso_id")
     private Curso curso;
 
+    @OneToMany(mappedBy = "topico", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Respuesta> respuestas = new ArrayList<>();
+
     // Constructor desde DTO
     public Topico(DatosRegistroTopico datos, Usuario autor, Curso curso) {
         this.titulo = datos.titulo();
         this.mensaje = datos.mensaje();
+        this.fechaCreacion = LocalDateTime.now();
         this.autor = autor;
         this.curso = curso;
-        this.status = datos.estado() != null ? datos.estado() : StatusTopico.ACTIVO;
-        this.fechaCreacion = LocalDateTime.now();
+        this.status = StatusTopico.ACTIVO; // o el que quieras por defecto
     }
 
     // Método para actualización (PUT)
@@ -54,5 +59,11 @@ public class Topico {
     // Borrado lógico
     public void cerrar() {
         this.status = StatusTopico.CERRADO;
+    }
+
+    @PrePersist
+    void prePersist() {
+        if (fechaCreacion == null) fechaCreacion = LocalDateTime.now();
+        if (status == null) status = StatusTopico.ACTIVO;
     }
 }

@@ -40,7 +40,7 @@ CREATE TABLE Topico (
 CREATE TABLE Respuesta (
                            id BIGINT AUTO_INCREMENT PRIMARY KEY,
                            mensaje TEXT NOT NULL,
-                           fechaCreacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                           fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                            topico_id BIGINT NOT NULL,
                            autor_id BIGINT NOT NULL,
                            solucion BOOLEAN DEFAULT FALSE,

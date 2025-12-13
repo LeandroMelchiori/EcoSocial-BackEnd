@@ -8,6 +8,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -20,7 +21,7 @@ public class SecurityFilter extends OncePerRequestFilter {
     private TokenService tokenService;
 
     @Autowired
-    private UsuarioRepository usersRepository;
+    private UsuarioRepository usuarioRepository;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
@@ -32,10 +33,13 @@ public class SecurityFilter extends OncePerRequestFilter {
             var token = authHeader.replace("Bearer ", "");
             System.out.println("Token extraído: " + token);
             var subject = tokenService.getSubject(token);
+            Long userId = tokenService.getUserId(token);
+            request.setAttribute("userId", userId);
             if (subject != null) {
                 //Token valido
-                var user = usersRepository.findByUsername(subject); // subject = nombre de usuario
-                var authentication = new UsernamePasswordAuthenticationToken(user, null, user.get().getAuthorities()); // forzamos un inicio de sesion
+                var userOpt = usuarioRepository.findByUsername(subject); // subject = nombre de usuario
+                var user = userOpt.orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado"));
+                var authentication = new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities()); // forzamos un inicio de sesion
                 SecurityContextHolder.getContext().setAuthentication(authentication); // seteamos la autenticacion
             }
         }
