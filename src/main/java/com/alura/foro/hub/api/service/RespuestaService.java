@@ -49,8 +49,11 @@ public class RespuestaService {
     }
 
     public Page<DatosListadoRespuesta> listarPorTopico(Long topicoId, Pageable pageable) {
-        return respuestaRepository.findByTopicoId(topicoId, pageable).map(this::toDTO);
+        return respuestaRepository
+                .findByTopicoIdOrderBySolucionDescFechaCreacionDesc(topicoId, pageable)
+                .map(this::toDTO);
     }
+
 
     @Transactional
     public DatosListadoRespuesta marcarSolucion(Long respuestaId, Long usuarioId) {
@@ -68,9 +71,9 @@ public class RespuestaService {
         respuestaRepository.desmarcarSoluciones(topico.getId());
         r.setSolucion(true);
 
-        // opcional (pero re recomendado)
-        topico.setStatus(StatusTopico.CERRADO);
-
+        // ✅ Marca el topico como solucionado
+        topico.solucionado(); // status = SOLUCIONADO
+        topicoRepository.save(topico);
         return toDTO(r);
     }
 
@@ -117,9 +120,13 @@ public class RespuestaService {
 
         boolean puedeEliminar = autorRespuestaId.equals(usuarioId) || autorTopicoId.equals(usuarioId);
         if (!puedeEliminar) {
-            throw new IllegalStateException("No tenés permisos para eliminar esta respuesta");
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "No tenés permisos para eliminar esta respuesta");
         }
-
+        if (Boolean.TRUE.equals(r.getSolucion())) {
+            var topico = r.getTopico();
+            topico.reactivarTopico(); //
+            topicoRepository.save(topico);
+        }
         respuestaRepository.delete(r);
     }
 }
