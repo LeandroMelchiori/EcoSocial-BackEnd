@@ -63,4 +63,14 @@ public class RespuestaController {
         return ResponseEntity.ok(respuestaService.actualizar(id, datos, userId));
     }
 
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> eliminar(@PathVariable Long id, HttpServletRequest request) {
+
+        Long userId = (Long) request.getAttribute("userId");
+        if (userId == null) return ResponseEntity.status(401).build();
+
+        respuestaService.eliminar(id, userId);
+        return ResponseEntity.noContent().build();
+    }
+
 }

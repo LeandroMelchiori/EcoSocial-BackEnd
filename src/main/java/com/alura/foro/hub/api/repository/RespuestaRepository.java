@@ -5,6 +5,8 @@ import com.alura.foro.hub.api.domain.Topico;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -22,4 +24,11 @@ public interface RespuestaRepository extends JpaRepository<Respuesta, Long> {
 
     Page<Respuesta> findByTopicoIdOrderByFechaCreacionAsc(Long topicoId, Pageable pageable);
 
+    @Modifying
+    @Query("""
+        update Respuesta r
+        set r.solucion = false
+        where r.topico.id = :topicoId
+        """)
+    void desmarcarSoluciones(Long topicoId);
 }

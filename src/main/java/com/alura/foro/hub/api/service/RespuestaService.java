@@ -57,19 +57,23 @@ public class RespuestaService {
         var r = respuestaRepository.findById(respuestaId)
                 .orElseThrow(() -> new EntityNotFoundException("Respuesta no encontrada"));
 
-        // Regla típica: solo el autor del tópico puede marcar solución (o ADMIN si lo manejás)
         var autorTopicoId = r.getTopico().getAutor().getId();
         if (!autorTopicoId.equals(usuarioId)) {
-            throw new IllegalStateException("No tenés permisos para marcar solución");
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN,
+                    "No tenés permisos para marcar solución");
         }
 
-        var topicoId = r.getTopico().getId();
-        respuestaRepository.findByTopicoIdAndSolucionTrue(topicoId)
-                .forEach(resp -> resp.setSolucion(false));
+        var topico = r.getTopico();
 
+        respuestaRepository.desmarcarSoluciones(topico.getId());
         r.setSolucion(true);
+
+        // opcional (pero re recomendado)
+        topico.setStatus(StatusTopico.CERRADO);
+
         return toDTO(r);
     }
+
 
     private DatosListadoRespuesta toDTO(Respuesta r) {
         return new DatosListadoRespuesta(
@@ -102,4 +106,20 @@ public class RespuestaService {
         return toDTO(respuesta);
     }
 
+    @Transactional
+    public void eliminar(Long respuestaId, Long usuarioId) {
+
+        var r = respuestaRepository.findById(respuestaId)
+                .orElseThrow(() -> new EntityNotFoundException("Respuesta no encontrada"));
+
+        Long autorRespuestaId = r.getAutor().getId();
+        Long autorTopicoId = r.getTopico().getAutor().getId();
+
+        boolean puedeEliminar = autorRespuestaId.equals(usuarioId) || autorTopicoId.equals(usuarioId);
+        if (!puedeEliminar) {
+            throw new IllegalStateException("No tenés permisos para eliminar esta respuesta");
+        }
+
+        respuestaRepository.delete(r);
+    }
 }
