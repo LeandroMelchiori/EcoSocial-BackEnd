@@ -28,9 +28,26 @@ public class SecurityConfigurations {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http.csrf(csrf -> csrf.disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // le indicamos a Spring el tipo de sesion
-                .authorizeHttpRequests((authorize) ->
-                        authorize.requestMatchers(HttpMethod.POST,"/auth/login").permitAll()
+                .authorizeHttpRequests((authorize) -> authorize
+
+                                // Login - Crear usuario (Acceso general)
+                                .requestMatchers(HttpMethod.POST,"/auth/login").permitAll()
                                 .requestMatchers(HttpMethod.POST,"/usuarios").permitAll()
+
+                                // 📚 LISTADOS (USER o ADMIN)
+                                .requestMatchers(HttpMethod.GET, "/categorias/**").authenticated()
+                                .requestMatchers(HttpMethod.GET, "/cursos/**").authenticated()
+
+                                // 🔒 CRUD CATEGORIAS → SOLO ADMIN
+                                .requestMatchers(HttpMethod.POST, "/categorias/**").hasRole("ADMIN")
+                                .requestMatchers(HttpMethod.PUT, "/categorias/**").hasRole("ADMIN")
+                                .requestMatchers(HttpMethod.DELETE, "/categorias/**").hasRole("ADMIN")
+
+                                // 🔒 CRUD CURSOS → SOLO ADMIN
+                                .requestMatchers(HttpMethod.POST, "/cursos/**").hasRole("ADMIN")
+                                .requestMatchers(HttpMethod.PUT, "/cursos/**").hasRole("ADMIN")
+                                .requestMatchers(HttpMethod.DELETE, "/cursos/**").hasRole("ADMIN")
+
                                 .requestMatchers("/v3/api-docs/**", "/swagger-ui/**","/swagger-ui.html").permitAll()
                                 .anyRequest()
                                 .authenticated())
