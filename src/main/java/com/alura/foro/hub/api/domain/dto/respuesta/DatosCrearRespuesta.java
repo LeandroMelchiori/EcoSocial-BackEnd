@@ -1,5 +1,5 @@
 // domain/dto/DatosCrearRespuesta.java
-package com.alura.foro.hub.api.domain;
+package com.alura.foro.hub.api.domain.dto.respuesta;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;

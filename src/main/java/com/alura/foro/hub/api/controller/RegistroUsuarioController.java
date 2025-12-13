@@ -1,7 +1,7 @@
 package com.alura.foro.hub.api.controller;
 
-import com.alura.foro.hub.api.domain.DatosUsuarioListado;
-import com.alura.foro.hub.api.domain.DatosUsuarioRegistro;
+import com.alura.foro.hub.api.domain.dto.usuario.DatosUsuarioListado;
+import com.alura.foro.hub.api.domain.dto.usuario.DatosUsuarioRegistro;
 import com.alura.foro.hub.api.domain.Usuario;
 import com.alura.foro.hub.api.repository.UsuarioRepository;
 import jakarta.transaction.Transactional;

@@ -1,6 +1,10 @@
 package com.alura.foro.hub.api.controller;
 
 import com.alura.foro.hub.api.domain.*;
+import com.alura.foro.hub.api.domain.dto.topico.DatosActualizarTopico;
+import com.alura.foro.hub.api.domain.dto.topico.DatosDetalleTopico;
+import com.alura.foro.hub.api.domain.dto.topico.DatosListadoTopico;
+import com.alura.foro.hub.api.domain.dto.topico.DatosRegistroTopico;
 import com.alura.foro.hub.api.service.TopicoService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.servlet.http.HttpServletRequest;
@@ -10,7 +14,6 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Optional;
 
 @SecurityRequirement(name = "bearer-key")
 @RestController

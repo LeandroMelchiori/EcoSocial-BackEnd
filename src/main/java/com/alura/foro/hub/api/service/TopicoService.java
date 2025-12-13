@@ -1,7 +1,11 @@
 package com.alura.foro.hub.api.service;
 
 import com.alura.foro.hub.api.domain.*;
-import com.alura.foro.hub.api.repository.RespuestaRepository;
+import com.alura.foro.hub.api.domain.dto.respuesta.DatosListadoRespuesta;
+import com.alura.foro.hub.api.domain.dto.topico.DatosActualizarTopico;
+import com.alura.foro.hub.api.domain.dto.topico.DatosDetalleTopico;
+import com.alura.foro.hub.api.domain.dto.topico.DatosListadoTopico;
+import com.alura.foro.hub.api.domain.dto.topico.DatosRegistroTopico;
 import com.alura.foro.hub.api.repository.TopicoRepository;
 import com.alura.foro.hub.api.repository.UsuarioRepository;
 import com.alura.foro.hub.api.repository.CursoRepository;
