@@ -5,6 +5,8 @@ import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
+
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
@@ -31,17 +33,21 @@ public class Usuario implements UserDetails {
     @Column(unique = true)
     private String username;
 
-    @ManyToMany(fetch = FetchType.EAGER)   // así te evitás dramas de lazy con authorities
-    private List<Perfil> perfiles;
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(
+            name = "usuario_perfiles",
+            joinColumns = @JoinColumn(name = "usuario_id"),
+            inverseJoinColumns = @JoinColumn(name = "perfiles_id")
+    )
+    private List<Perfil> perfiles = new ArrayList<>();
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         if (perfiles == null || perfiles.isEmpty()) {
             return List.of(new SimpleGrantedAuthority("ROLE_USER"));
         }
-
         return perfiles.stream()
-                .map(p -> new SimpleGrantedAuthority("ROLE_" + p.getNombre().toUpperCase()))
+                .map(p -> new SimpleGrantedAuthority(p.getNombre())) // ✅ sin duplicar ROLE_
                 .toList();
     }
 

@@ -1,5 +1,7 @@
 package com.alura.foro.hub.api.domain;
 
+import com.alura.foro.hub.api.domain.dto.topico.DatosActualizarTopico;
+import com.alura.foro.hub.api.domain.dto.topico.DatosRegistroTopico;
 import jakarta.persistence.*;
 import lombok.*;
 

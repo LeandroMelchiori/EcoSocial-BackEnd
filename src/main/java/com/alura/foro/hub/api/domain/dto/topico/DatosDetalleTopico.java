@@ -1,4 +1,8 @@
-package com.alura.foro.hub.api.domain;
+package com.alura.foro.hub.api.domain.dto.topico;
+
+import com.alura.foro.hub.api.domain.StatusTopico;
+import com.alura.foro.hub.api.domain.Topico;
+import com.alura.foro.hub.api.domain.dto.respuesta.DatosListadoRespuesta;
 
 import java.time.LocalDateTime;
 import java.util.List;

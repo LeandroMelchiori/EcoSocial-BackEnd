@@ -1,8 +1,8 @@
 package com.alura.foro.hub.api.controller;
 
-import com.alura.foro.hub.api.domain.DatosActualizarRespuesta;
-import com.alura.foro.hub.api.domain.DatosCrearRespuesta;
-import com.alura.foro.hub.api.domain.DatosListadoRespuesta;
+import com.alura.foro.hub.api.domain.dto.respuesta.DatosActualizarRespuesta;
+import com.alura.foro.hub.api.domain.dto.respuesta.DatosCrearRespuesta;
+import com.alura.foro.hub.api.domain.dto.respuesta.DatosListadoRespuesta;
 import com.alura.foro.hub.api.service.RespuestaService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
