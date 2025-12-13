@@ -4,7 +4,7 @@ import com.alura.foro.hub.api.domain.Usuario;
 import jakarta.validation.Valid;
 import com.alura.foro.hub.api.security.DatosJWTToken;
 import com.alura.foro.hub.api.security.TokenService;
-import com.alura.foro.hub.api.domain.UsuarioAuthenticateData;
+import com.alura.foro.hub.api.security.UsuarioAuthenticateData;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;

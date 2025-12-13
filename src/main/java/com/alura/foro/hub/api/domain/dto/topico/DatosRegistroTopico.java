@@ -1,4 +1,4 @@
-package com.alura.foro.hub.api.domain;
+package com.alura.foro.hub.api.domain.dto.topico;
 
 public record DatosRegistroTopico(
         String titulo,

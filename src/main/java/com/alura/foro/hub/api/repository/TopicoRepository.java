@@ -1,7 +1,7 @@
 package com.alura.foro.hub.api.repository;
 
 import com.alura.foro.hub.api.domain.Curso;
-import com.alura.foro.hub.api.domain.DatosListadoTopico;
+import com.alura.foro.hub.api.domain.dto.topico.DatosListadoTopico;
 import com.alura.foro.hub.api.domain.StatusTopico;
 import com.alura.foro.hub.api.domain.Topico;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -25,7 +25,7 @@ public interface TopicoRepository extends JpaRepository<Topico, Long> {
     List<Topico> findByTituloContainingIgnoreCase(String titulo);
 
     @Query("""
-    select new com.alura.foro.hub.api.domain.DatosListadoTopico(
+    select new com.alura.foro.hub.api.domain.dto.topico.DatosListadoTopico(
         t.id,
         t.titulo,
         t.mensaje,

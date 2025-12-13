@@ -2,6 +2,9 @@
 package com.alura.foro.hub.api.service;
 
 import com.alura.foro.hub.api.domain.*;
+import com.alura.foro.hub.api.domain.dto.respuesta.DatosActualizarRespuesta;
+import com.alura.foro.hub.api.domain.dto.respuesta.DatosCrearRespuesta;
+import com.alura.foro.hub.api.domain.dto.respuesta.DatosListadoRespuesta;
 import com.alura.foro.hub.api.repository.*;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.data.domain.Page;
