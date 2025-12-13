@@ -32,6 +32,7 @@ public interface TopicoRepository extends JpaRepository<Topico, Long> {
         t.fechaCreacion,
         a.nombre,
         c.nombre,
+        cat.nombre,
         t.status,
         count(r),
         max(r.fechaCreacion)
@@ -39,8 +40,9 @@ public interface TopicoRepository extends JpaRepository<Topico, Long> {
     from Topico t
     join t.autor a
     join t.curso c
+    join c.categoria cat
     left join t.respuestas r
-    group by t.id, t.titulo, t.mensaje, t.fechaCreacion, a.nombre, c.nombre, t.status
+    group by t.id, t.titulo, t.mensaje, t.fechaCreacion, a.nombre, c.nombre, cat.nombre, t.status
     order by t.fechaCreacion desc
 """)
     List<DatosListadoTopico> listarConMetricas();

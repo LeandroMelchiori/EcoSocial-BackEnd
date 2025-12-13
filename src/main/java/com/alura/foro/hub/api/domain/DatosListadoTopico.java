@@ -9,6 +9,7 @@ public record DatosListadoTopico(
         LocalDateTime fechaCreacion,
         String nombreAutor,
         String nombreCurso,
+        String nombreCategoria,
         StatusTopico status,
         Long cantidadRespuestas,
         LocalDateTime fechaUltimaRespuesta
