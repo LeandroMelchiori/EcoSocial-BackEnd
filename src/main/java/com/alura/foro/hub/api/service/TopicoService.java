@@ -20,16 +20,16 @@ public class TopicoService {
     private final TopicoRepository topicoRepository;
     private final UsuarioRepository usuarioRepository;
     private final CursoRepository cursoRepository;
-    private final RespuestaRepository respuestasRepository;
+    private final RespuestaService respuestaService;
 
     public TopicoService(TopicoRepository topicoRepository,
                          UsuarioRepository usuarioRepository,
                          CursoRepository cursoRepository,
-                         RespuestaRepository respuestasRepository) {
+                         RespuestaService respuestaService) {
         this.topicoRepository = topicoRepository;
         this.usuarioRepository = usuarioRepository;
         this.cursoRepository = cursoRepository;
-        this.respuestasRepository = respuestasRepository;
+        this.respuestaService = respuestaService;
     }
 
     // =========================
@@ -67,9 +67,8 @@ public class TopicoService {
         Topico topico = topicoRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Tópico no encontrado"));
 
-        var respuestas = respuestasRepository
-                .findByTopicoIdOrderByFechaCreacionAsc(id, Pageable.unpaged())
-                .map(this::toDTORespuesta)
+        var respuestas = respuestaService
+                .listarPorTopico(id, Pageable.unpaged())
                 .getContent();
 
         return new DatosDetalleTopico(
@@ -79,6 +78,7 @@ public class TopicoService {
                 topico.getFechaCreacion(),
                 topico.getAutor().getNombre(),
                 topico.getCurso().getNombre(),
+                topico.getCurso().getCategoria().getNombre(),
                 topico.getStatus(),
                 respuestas
         );

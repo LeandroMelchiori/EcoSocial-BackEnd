@@ -56,9 +56,18 @@ public class Topico {
         if (datos.status() != null) this.status = datos.status();
     }
 
-    // Borrado lógico
-    public void cerrar() {
+    // Cerrar topico
+    public void cerrarTopico() {
         this.status = StatusTopico.CERRADO;
+    }
+
+    // Topico solucionadi
+    public void solucionado() {
+        this.status = StatusTopico.SOLUCIONADO;
+    }
+
+    public void reactivarTopico() {
+        this.status = StatusTopico.ACTIVO;
     }
 
     @PrePersist

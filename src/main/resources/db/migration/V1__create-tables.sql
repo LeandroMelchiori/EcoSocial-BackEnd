@@ -8,21 +8,32 @@ CREATE TABLE Usuario (
 
 CREATE TABLE Perfil (
                         id BIGINT AUTO_INCREMENT PRIMARY KEY,
-                        nombre VARCHAR(50) NOT NULL
+                        nombre VARCHAR(50) NOT NULL UNIQUE
 );
 
-CREATE TABLE Usuario_Perfil (
-                                usuario_id BIGINT,
-                                perfil_id BIGINT,
-                                PRIMARY KEY (usuario_id, perfil_id),
-                                FOREIGN KEY (usuario_id) REFERENCES Usuario(id) ON DELETE CASCADE,
-                                FOREIGN KEY (perfil_id) REFERENCES Perfil(id) ON DELETE CASCADE
+CREATE TABLE usuario_perfiles (
+                                  usuario_id BIGINT NOT NULL,
+                                  perfiles_id BIGINT NOT NULL,
+                                  PRIMARY KEY (usuario_id, perfiles_id),
+                                  CONSTRAINT fk_usuario_perfiles_usuario
+                                      FOREIGN KEY (usuario_id) REFERENCES Usuario(id),
+                                  CONSTRAINT fk_usuario_perfiles_perfil
+                                      FOREIGN KEY (perfiles_id) REFERENCES Perfil(id)
+);
+
+CREATE TABLE categoria (
+                           id BIGINT AUTO_INCREMENT PRIMARY KEY,
+                           nombre VARCHAR(100) NOT NULL UNIQUE
 );
 
 CREATE TABLE Curso (
                        id BIGINT AUTO_INCREMENT PRIMARY KEY,
-                       nombre VARCHAR(100) NOT NULL,
-                       categoria VARCHAR(100) NOT NULL
+                       nombre VARCHAR(100) NOT NULL UNIQUE,
+                       categoria_id BIGINT NOT NULL,
+                       CONSTRAINT fk_curso_categoria
+                           FOREIGN KEY (categoria_id) REFERENCES categoria(id),
+                       CONSTRAINT uk_curso_nombre_categoria
+                           UNIQUE (nombre, categoria_id)
 );
 
 CREATE TABLE Topico (
