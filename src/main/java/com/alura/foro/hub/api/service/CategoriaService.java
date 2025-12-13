@@ -38,7 +38,6 @@ public class CategoriaService {
         Categoria categoria = categoriaRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Categoría no encontrada"));
         categoria.setNombre(categoriaActualizada.getNombre());
-        categoria.setDescripcion(categoriaActualizada.getDescripcion());
         return categoriaRepository.save(categoria);
     }
 

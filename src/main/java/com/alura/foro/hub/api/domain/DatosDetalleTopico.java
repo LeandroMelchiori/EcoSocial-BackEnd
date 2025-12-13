@@ -11,6 +11,7 @@ public record DatosDetalleTopico(
         LocalDateTime fechaCreacion,
         String autorNombre,
         String cursoNombre,
+        String categoriaNombre,
         StatusTopico status,
         List<DatosListadoRespuesta> respuestas
 ) {
@@ -22,6 +23,7 @@ public record DatosDetalleTopico(
                 topico.getFechaCreacion(),
                 topico.getAutor().getNombre(),
                 topico.getCurso().getNombre(),
+                topico.getCurso().getCategoria().getNombre(),
                 topico.getStatus(),
                 List.of()
         );

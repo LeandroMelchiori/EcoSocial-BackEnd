@@ -57,7 +57,7 @@ public class Topico {
     }
 
     // Cerrar topico
-    public void cerrar() {
+    public void cerrarTopico() {
         this.status = StatusTopico.CERRADO;
     }
 
@@ -69,8 +69,6 @@ public class Topico {
     public void reactivarTopico() {
         this.status = StatusTopico.ACTIVO;
     }
-
-
 
     @PrePersist
     void prePersist() {
