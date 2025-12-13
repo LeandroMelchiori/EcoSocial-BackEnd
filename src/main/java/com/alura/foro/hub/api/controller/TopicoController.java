@@ -1,17 +1,16 @@
 package com.alura.foro.hub.api.controller;
 
-import com.alura.foro.hub.api.domain.DatosActualizarTopico;
-import com.alura.foro.hub.api.domain.DatosDetalleTopico;
-import com.alura.foro.hub.api.domain.DatosListadoTopico;
-import com.alura.foro.hub.api.domain.DatosRegistroTopico;
+import com.alura.foro.hub.api.domain.*;
 import com.alura.foro.hub.api.service.TopicoService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
-import java.net.URI;
 import java.util.List;
+import java.util.Optional;
 
 @SecurityRequirement(name = "bearer-key")
 @RestController
@@ -31,33 +30,48 @@ public class TopicoController {
         return ResponseEntity.ok(lista);
     }
 
-    // DETALLE POR ID
-    @GetMapping("/{id}")
-    public ResponseEntity<DatosDetalleTopico> detalle(@PathVariable Long id) {
-        var dto = topicoService.buscarPorId(id);
-        return ResponseEntity.ok(dto);
-    }
-
     // CREAR
     @PostMapping
-    public ResponseEntity<DatosDetalleTopico> crear(@RequestBody @Valid DatosRegistroTopico datos) {
-        var dto = topicoService.crear(datos);
-        URI url = URI.create("/topicos/" + dto.id());
-        return ResponseEntity.created(url).body(dto);
+    public ResponseEntity crear(
+            @RequestBody DatosRegistroTopico datos,
+            HttpServletRequest request) {
+
+        Long userId = (Long) request.getAttribute("userId");
+
+        Topico topico = topicoService.crearTopico(datos, userId);
+
+        return ResponseEntity.ok(new DatosDetalleTopico(topico));
     }
 
-    // ACTUALIZAR
+    // ✏️ ACTUALIZAR POR ID
     @PutMapping("/{id}")
-    public ResponseEntity<DatosDetalleTopico> actualizar(@PathVariable Long id,
-                                                         @RequestBody @Valid DatosActualizarTopico datos) {
-        var dto = topicoService.actualizar(id, datos);
+    public ResponseEntity<DatosDetalleTopico> actualizar(
+            @PathVariable Long id,
+            @RequestBody @Valid DatosActualizarTopico datos
+    ) {
+        var auth = SecurityContextHolder.getContext().getAuthentication();
+        var usuario = (Usuario) auth.getPrincipal();   // ✅
+        Long usuarioId = usuario.getId();
+
+
+        var dto = topicoService.actualizarTopico(id, datos, usuarioId);
         return ResponseEntity.ok(dto);
     }
 
-    // ELIMINAR
+    // 🗑️ ELIMINAR POR ID
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> eliminar(@PathVariable Long id) {
-        topicoService.eliminar(id);
+        var auth = SecurityContextHolder.getContext().getAuthentication();
+        var usuario = (Usuario) auth.getPrincipal();
+        topicoService.eliminarTopico(id, usuario);
         return ResponseEntity.noContent().build();
     }
+
+    // DETALLAR POR ID
+    @GetMapping("/{id}")
+    public ResponseEntity<DatosDetalleTopico> detallar(@PathVariable Long id) {
+        DatosDetalleTopico dto = topicoService.detallarTopico(id);
+        return ResponseEntity.ok(dto);
+    }
+
 }

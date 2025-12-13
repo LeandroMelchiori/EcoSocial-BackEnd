@@ -1,12 +1,16 @@
 package com.alura.foro.hub.api.service;
 
 import com.alura.foro.hub.api.domain.*;
+import com.alura.foro.hub.api.repository.RespuestaRepository;
 import com.alura.foro.hub.api.repository.TopicoRepository;
 import com.alura.foro.hub.api.repository.UsuarioRepository;
 import com.alura.foro.hub.api.repository.CursoRepository;
 import jakarta.persistence.EntityNotFoundException;
-import jakarta.transaction.Transactional;
+import org.springframework.data.domain.Pageable;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
@@ -16,65 +20,57 @@ public class TopicoService {
     private final TopicoRepository topicoRepository;
     private final UsuarioRepository usuarioRepository;
     private final CursoRepository cursoRepository;
+    private final RespuestaRepository respuestasRepository;
 
     public TopicoService(TopicoRepository topicoRepository,
                          UsuarioRepository usuarioRepository,
-                         CursoRepository cursoRepository) {
+                         CursoRepository cursoRepository,
+                         RespuestaRepository respuestasRepository) {
         this.topicoRepository = topicoRepository;
         this.usuarioRepository = usuarioRepository;
         this.cursoRepository = cursoRepository;
+        this.respuestasRepository = respuestasRepository;
     }
 
     // =========================
     //      CREAR TÓPICO
     // =========================
     @Transactional
-    public DatosDetalleTopico crear(DatosRegistroTopico datos) {
+    public Topico crearTopico(DatosRegistroTopico datos, Long userId) {
 
-        var autor = usuarioRepository.findById(datos.autorId())
-                .orElseThrow(() -> new EntityNotFoundException("El autor no existe: " + datos.autorId()));
+        Usuario autor = usuarioRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("Autor no encontrado"));
 
-        var curso = cursoRepository.findById(datos.cursoId())
-                .orElseThrow(() -> new EntityNotFoundException("El curso no existe: " + datos.cursoId()));
+        Curso curso = cursoRepository.findById(datos.cursoId())
+                .orElseThrow(() -> new RuntimeException("Curso no encontrado"));
 
         Topico topico = new Topico(datos, autor, curso);
-        topicoRepository.save(topico);
 
-        return new DatosDetalleTopico(
-                topico.getId(),
-                topico.getTitulo(),
-                topico.getMensaje(),
-                topico.getFechaCreacion(),
-                topico.getAutor().getNombre(),
-                topico.getCurso().getNombre(),
-                topico.getStatus()
-        );
+        return topicoRepository.save(topico);
     }
+
 
     // =========================
     //      LISTAR TÓPICOS
     // =========================
     public List<DatosListadoTopico> listar() {
-        return topicoRepository.findAll()
-                .stream()
-                .map(t -> new DatosListadoTopico(
-                        t.getId(),
-                        t.getTitulo(),
-                        t.getMensaje(),
-                        t.getFechaCreacion(),
-                        t.getAutor().getNombre(),
-                        t.getCurso().getNombre(),
-                        t.getStatus()
-                ))
-                .toList();
+        return topicoRepository.listarConMetricas();
     }
+
 
     // =========================
     //   DETALLE POR ID
     // =========================
-    public DatosDetalleTopico buscarPorId(Long id) {
+    @Transactional(readOnly = true)
+    public DatosDetalleTopico detallarTopico(Long id) {
+
         Topico topico = topicoRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("El tópico no existe"));
+                .orElseThrow(() -> new EntityNotFoundException("Tópico no encontrado"));
+
+        var respuestas = respuestasRepository
+                .findByTopicoIdOrderByFechaCreacionAsc(id, Pageable.unpaged())
+                .map(this::toDTORespuesta)
+                .getContent();
 
         return new DatosDetalleTopico(
                 topico.getId(),
@@ -83,53 +79,83 @@ public class TopicoService {
                 topico.getFechaCreacion(),
                 topico.getAutor().getNombre(),
                 topico.getCurso().getNombre(),
-                topico.getStatus()
+                topico.getStatus(),
+                respuestas
         );
     }
+
 
     // =========================
     //      ACTUALIZAR
     // =========================
     @Transactional
-    public DatosDetalleTopico actualizar(Long id, DatosActualizarTopico datos) {
+    public DatosDetalleTopico actualizarTopico(Long idTopico,
+                                               DatosActualizarTopico datos,
+                                               Long usuarioIdLogueado) {
 
-        Topico topico = topicoRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("El tópico no existe"));
+        var topico = topicoRepository.findById(idTopico)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Tópico no encontrado"));
 
-        if (datos.titulo() != null) {
+        // 💣 Solo el autor puede modificar
+        if (!topico.getAutor().getId().equals(usuarioIdLogueado)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN,
+                    "Solo el autor del tópico puede modificarlo");
+        }
+
+        // 🔁 Actualizamos solo lo que venga distinto de null / vacío
+        if (datos.titulo() != null && !datos.titulo().isBlank()) {
             topico.setTitulo(datos.titulo());
         }
 
-        if (datos.mensaje() != null) {
+        if (datos.mensaje() != null && !datos.mensaje().isBlank()) {
             topico.setMensaje(datos.mensaje());
+        }
+
+        if (datos.cursoId() != null) {
+            var curso = cursoRepository.findById(datos.cursoId())
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Curso no encontrado"));
+            topico.setCurso(curso);
         }
 
         if (datos.status() != null) {
             topico.setStatus(datos.status());
         }
 
-        // JPA hace flush al final de la transacción, pero guardar acá no molesta
-        topicoRepository.save(topico);
-
-        return new DatosDetalleTopico(
-                topico.getId(),
-                topico.getTitulo(),
-                topico.getMensaje(),
-                topico.getFechaCreacion(),
-                topico.getAutor().getNombre(),
-                topico.getCurso().getNombre(),
-                topico.getStatus()
-        );
+        return new DatosDetalleTopico(topico);
     }
+
 
     // =========================
     //      ELIMINAR
     // =========================
     @Transactional
-    public void eliminar(Long id) {
-        if (!topicoRepository.existsById(id)) {
-            throw new EntityNotFoundException("El tópico no existe");
+    public void eliminarTopico(Long idTopico, Usuario usuarioLogueado) {
+        var topico = topicoRepository.findById(idTopico)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Tópico no encontrado"));
+
+        boolean esAdmin = usuarioLogueado.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+
+        // 💣 Solo el autor o admin pueden borrar
+        if (!esAdmin && !topico.getAutor().getId().equals(usuarioLogueado.getId())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN,
+                    "Solo el autor del tópico puede eliminarlo");
         }
-        topicoRepository.deleteById(id);
+
+        // Borrado físico
+        topicoRepository.delete(topico);
     }
+
+    private DatosListadoRespuesta toDTORespuesta(Respuesta r) {
+        return new DatosListadoRespuesta(
+                r.getId(),
+                r.getTopico().getId(),
+                r.getMensaje(),
+                r.getFechaCreacion(),
+                r.getAutor().getId(),
+                r.getAutor().getNombre(),
+                r.getSolucion()
+        );
+    }
+
 }

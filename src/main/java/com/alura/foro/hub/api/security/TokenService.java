@@ -61,5 +61,19 @@ public class TokenService {
         return Instant.now().plus(2, ChronoUnit.HOURS);
     }
 
+    public Long getUserId(String token) {
+        try {
+            DecodedJWT verifier = JWT.require(Algorithm.HMAC256(apiSecret))
+                    .withIssuer("foro hub")
+                    .build()
+                    .verify(token);
+
+            return verifier.getClaim("id").asLong();
+
+        } catch (Exception e) {
+            throw new RuntimeException("Error al verificar el token");
+        }
+    }
+
 
 }
