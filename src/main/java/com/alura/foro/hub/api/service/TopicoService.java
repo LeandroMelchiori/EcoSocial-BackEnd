@@ -82,14 +82,14 @@ public class TopicoService {
                 topico.getMensaje(),
                 topico.getFechaCreacion(),
                 topico.getAutor().getNombre(),
+                topico.getCurso().getId(),
                 topico.getCurso().getNombre(),
+                topico.getCurso().getCategoria().getId(),
                 topico.getCurso().getCategoria().getNombre(),
                 topico.getStatus(),
                 respuestas
         );
     }
-
-
     // =========================
     //      ACTUALIZAR
     // =========================
@@ -138,11 +138,7 @@ public class TopicoService {
         var topico = topicoRepository.findById(idTopico)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Tópico no encontrado"));
 
-        boolean esAdmin = usuarioLogueado.getAuthorities().stream()
-                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
-
-        // 💣 Solo el autor o admin pueden borrar
-        if (!esAdmin && !topico.getAutor().getId().equals(usuarioLogueado.getId())) {
+        if (!usuarioLogueado.esAdmin() && !topico.getAutor().getId().equals(usuarioLogueado.getId())) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN,
                     "Solo el autor del tópico puede eliminarlo");
         }

@@ -29,27 +29,35 @@ public class CategoriaController {
     }
 
     @GetMapping("/{id}/cursos")
-    public ResponseEntity<List<DatosListadoCurso>> listarCursos(@PathVariable Long id) {
+    public ResponseEntity<List<DatosListadoCurso>> listarCursos(
+            @PathVariable Long id) {
+
         return ResponseEntity.ok(categoriaService.listarCursosDeCategoria(id));
     }
 
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<DatosListadoCategoria> crear(@RequestBody @Valid DatosCrearCategoria datos) {
+    public ResponseEntity<DatosListadoCategoria> crear(
+            @RequestBody @Valid DatosCrearCategoria datos) {
+
         var creada = categoriaService.crear(datos);
         return ResponseEntity.created(URI.create("/categorias/" + creada.id())).body(creada);
     }
 
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<DatosListadoCategoria> actualizar(@PathVariable Long id,
-                                                            @RequestBody @Valid DatosActualizarCategoria datos) {
+    public ResponseEntity<DatosListadoCategoria> actualizar(
+            @PathVariable Long id,
+            @RequestBody @Valid DatosActualizarCategoria datos) {
+
         return ResponseEntity.ok(categoriaService.actualizar(id, datos));
     }
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Void> eliminar(@PathVariable Long id) {
+    public ResponseEntity<Void> eliminar(
+            @PathVariable Long id) {
+
         categoriaService.eliminar(id);
         return ResponseEntity.noContent().build();
     }

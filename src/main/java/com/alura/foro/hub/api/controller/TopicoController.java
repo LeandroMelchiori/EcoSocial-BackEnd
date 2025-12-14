@@ -12,6 +12,7 @@ import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
@@ -36,13 +37,11 @@ public class TopicoController {
 
     // CREAR
     @PostMapping
-    public ResponseEntity crear(
-            @RequestBody DatosRegistroTopico datos,
-            HttpServletRequest request) {
+    public ResponseEntity<DatosDetalleTopico> crear(
+            @RequestBody @Valid DatosRegistroTopico datos,
+            @AuthenticationPrincipal Usuario usuario) {
 
-        Long userId = (Long) request.getAttribute("userId");
-
-        Topico topico = topicoService.crearTopico(datos, userId);
+        Topico topico = topicoService.crearTopico(datos, usuario.getId());
 
         return ResponseEntity.ok(new DatosDetalleTopico(topico));
     }
@@ -51,22 +50,20 @@ public class TopicoController {
     @PutMapping("/{id}")
     public ResponseEntity<DatosDetalleTopico> actualizar(
             @PathVariable Long id,
-            @RequestBody @Valid DatosActualizarTopico datos
+            @RequestBody @Valid DatosActualizarTopico datos,
+            @AuthenticationPrincipal Usuario usuario
     ) {
-        var auth = SecurityContextHolder.getContext().getAuthentication();
-        var usuario = (Usuario) auth.getPrincipal();   // ✅
-        Long usuarioId = usuario.getId();
 
-
-        var dto = topicoService.actualizarTopico(id, datos, usuarioId);
+        var dto = topicoService.actualizarTopico(id, datos, usuario.getId());
         return ResponseEntity.ok(dto);
     }
 
     // 🗑️ ELIMINAR POR ID
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> eliminar(@PathVariable Long id) {
-        var auth = SecurityContextHolder.getContext().getAuthentication();
-        var usuario = (Usuario) auth.getPrincipal();
+    public ResponseEntity<Void> eliminar(
+            @PathVariable Long id,
+            @AuthenticationPrincipal Usuario usuario) {
+
         topicoService.eliminarTopico(id, usuario);
         return ResponseEntity.noContent().build();
     }

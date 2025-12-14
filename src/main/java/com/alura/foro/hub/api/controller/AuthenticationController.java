@@ -26,7 +26,8 @@ public class AuthenticationController {
     private TokenService tokenService;
 
     @PostMapping("/login")
-    public ResponseEntity authenticateUser(@RequestBody @Valid UsuarioAuthenticateData userAuthenticateData) {
+    public ResponseEntity authenticateUser(
+            @RequestBody @Valid UsuarioAuthenticateData userAuthenticateData) {
         Authentication authToken = new UsernamePasswordAuthenticationToken(userAuthenticateData.username(),
                 userAuthenticateData.password());
 
