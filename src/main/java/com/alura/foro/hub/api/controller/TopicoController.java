@@ -9,6 +9,8 @@ import com.alura.foro.hub.api.service.TopicoService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
@@ -28,9 +30,8 @@ public class TopicoController {
 
     // LISTAR TODOS
     @GetMapping
-    public ResponseEntity<List<DatosListadoTopico>> listar() {
-        var lista = topicoService.listar();
-        return ResponseEntity.ok(lista);
+    public ResponseEntity<Page<DatosListadoTopico>> listar(Pageable pageable) {
+        return ResponseEntity.ok(topicoService.listar(pageable));
     }
 
     // CREAR

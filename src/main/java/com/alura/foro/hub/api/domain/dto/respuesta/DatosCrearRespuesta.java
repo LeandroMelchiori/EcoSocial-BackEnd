@@ -5,6 +5,8 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
 public record DatosCrearRespuesta(
-        @NotNull Long topicoId,
-        @NotBlank String mensaje
+        @NotNull(message = "Topico no identificado")
+        Long topicoId,
+        @NotBlank(message = "El mensaje es obligatorio")
+        String mensaje
 ) {}

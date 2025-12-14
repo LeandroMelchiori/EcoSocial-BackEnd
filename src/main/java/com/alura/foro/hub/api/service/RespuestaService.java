@@ -75,21 +75,18 @@ public class RespuestaService {
         r.setSolucion(true);
 
         // ✅ Marca el topico como solucionado
-        topico.solucionado(); // status = SOLUCIONADO
+        topico.solucionado();
         topicoRepository.save(topico);
         return toDTO(r);
     }
 
-
     private DatosListadoRespuesta toDTO(Respuesta r) {
         return new DatosListadoRespuesta(
                 r.getId(),
-                r.getTopico().getId(),
                 r.getMensaje(),
-                r.getFechaCreacion(),
-                r.getAutor().getId(),
                 r.getAutor().getNombre(),
-                r.getSolucion()
+                r.getSolucion(),
+                r.getFechaCreacion()
         );
     }
 

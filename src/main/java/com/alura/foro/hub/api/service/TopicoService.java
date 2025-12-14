@@ -10,6 +10,7 @@ import com.alura.foro.hub.api.repository.TopicoRepository;
 import com.alura.foro.hub.api.repository.UsuarioRepository;
 import com.alura.foro.hub.api.repository.CursoRepository;
 import jakarta.persistence.EntityNotFoundException;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.http.HttpStatus;
@@ -57,8 +58,8 @@ public class TopicoService {
     // =========================
     //      LISTAR TÓPICOS
     // =========================
-    public List<DatosListadoTopico> listar() {
-        return topicoRepository.listarConMetricas();
+    public Page<DatosListadoTopico> listar(Pageable pageable) {
+        return topicoRepository.listarConMetricas(pageable);
     }
 
 
@@ -149,17 +150,4 @@ public class TopicoService {
         // Borrado físico
         topicoRepository.delete(topico);
     }
-
-    private DatosListadoRespuesta toDTORespuesta(Respuesta r) {
-        return new DatosListadoRespuesta(
-                r.getId(),
-                r.getTopico().getId(),
-                r.getMensaje(),
-                r.getFechaCreacion(),
-                r.getAutor().getId(),
-                r.getAutor().getNombre(),
-                r.getSolucion()
-        );
-    }
-
 }
