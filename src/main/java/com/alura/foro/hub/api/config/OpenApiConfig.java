@@ -6,12 +6,13 @@ import io.swagger.v3.oas.models.security.*;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+
 @Configuration
 public class OpenApiConfig {
 
     @Bean
     public OpenAPI customOpenAPI() {
-        final String schemeName = "bearerAuth";
+        final String schemeName = "bearer-key";
         return new OpenAPI()
                 .info(new Info()
                         .title("ForoHub API")
