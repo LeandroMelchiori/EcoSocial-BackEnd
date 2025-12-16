@@ -7,10 +7,11 @@ import java.time.LocalDateTime;
 public record DatosListadoTopico(
         Long id,
         String titulo,
-        String mensaje,
         LocalDateTime fechaCreacion,
         String nombreAutor,
+        Long cursoId,
         String nombreCurso,
+        Long categoriaId,
         String nombreCategoria,
         StatusTopico status,
         Long cantidadRespuestas,

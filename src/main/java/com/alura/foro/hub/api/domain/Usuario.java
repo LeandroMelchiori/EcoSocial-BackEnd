@@ -47,7 +47,7 @@ public class Usuario implements UserDetails {
             return List.of(new SimpleGrantedAuthority("ROLE_USER"));
         }
         return perfiles.stream()
-                .map(p -> new SimpleGrantedAuthority(p.getNombre())) // ✅ sin duplicar ROLE_
+                .map(p -> new SimpleGrantedAuthority("ROLE_" + p.getNombre().toUpperCase()))
                 .toList();
     }
 
@@ -72,5 +72,11 @@ public class Usuario implements UserDetails {
 
     @Override
     public boolean isEnabled() { return true; }
+
+    public boolean esAdmin() {
+        return getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+    }
+
 }
 

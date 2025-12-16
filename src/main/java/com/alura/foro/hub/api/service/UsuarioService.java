@@ -13,6 +13,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -47,10 +48,14 @@ public class UsuarioService {
         usuario.setUsername(datos.username());
         usuario.setPassword(passwordEncoder.encode(datos.password()));
 
-        var rolUser = perfilRepository.findByNombre("ROLE_USER")
-                .orElseThrow(() -> new IllegalStateException("No existe el perfil ROLE_USER"));
+        var rolUser = perfilRepository.findByNombre("USER")
+                .orElseThrow(() -> new IllegalStateException("No existe el perfil USER"));
 
-        usuario.setPerfiles(List.of(rolUser));
+        var rolAdmin = perfilRepository.findByNombre("ADMIN")
+                .orElseThrow(() -> new IllegalStateException("ADMIN no existe"));
+
+
+        usuario.setPerfiles(new ArrayList<>(List.of(rolUser)));
 
         return usuarioRepository.save(usuario);
     }

@@ -29,20 +29,25 @@ public class SecurityFilter extends OncePerRequestFilter {
         //Obtener el authHeader del header
         var authHeader = request.getHeader("Authorization");
         System.out.println("Authorization header: " + authHeader);
-        if (authHeader != null) {
-            var token = authHeader.replace("Bearer ", "");
-            System.out.println("Token extraído: " + token);
-            var subject = tokenService.getSubject(token);
-            Long userId = tokenService.getUserId(token);
-            request.setAttribute("userId", userId);
-            if (subject != null) {
-                //Token valido
-                var userOpt = usuarioRepository.findByUsername(subject); // subject = nombre de usuario
-                var user = userOpt.orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado"));
-                var authentication = new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities()); // forzamos un inicio de sesion
-                SecurityContextHolder.getContext().setAuthentication(authentication); // seteamos la autenticacion
-            }
+
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            filterChain.doFilter(request, response);
+            return;
         }
+
+        var token = authHeader.substring(7); // quita "Bearer "
+        System.out.println("Token extraído: " + token);
+
+        var subject = tokenService.getSubject(token);
+        Long userId = tokenService.getUserId(token);
+        request.setAttribute("userId", userId);
+
+        var user = usuarioRepository.findByUsername(subject)
+                .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado"));
+
+        var authentication = new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities());
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+
         filterChain.doFilter(request, response);
     }
 }

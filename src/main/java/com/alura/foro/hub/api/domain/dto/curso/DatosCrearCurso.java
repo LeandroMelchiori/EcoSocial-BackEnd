@@ -1,11 +1,16 @@
 package com.alura.foro.hub.api.domain.dto.curso;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
 public record DatosCrearCurso(
-        @NotBlank String nombre,
-        @NotNull Long categoriaId
+        @NotBlank
+        @Schema(description = "Nombre del curso", example = "AWS")
+        String nombre,
+        @NotNull
+        @Schema(description = "ID de la categoria", example = "1")
+        Long categoriaId
 
 ) {
 }
