@@ -122,7 +122,7 @@ public class RespuestaController {
             @PathVariable Long id,
             @AuthenticationPrincipal Usuario usuario) {
 
-        respuestaService.eliminar(id, usuario.getId());
+        respuestaService.eliminar(id, usuario);
         return ResponseEntity.noContent().build();
     }
 }

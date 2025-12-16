@@ -6,6 +6,7 @@ import com.alura.foro.hub.api.domain.dto.topico.DatosActualizarTopico;
 import com.alura.foro.hub.api.domain.dto.topico.DatosDetalleTopico;
 import com.alura.foro.hub.api.domain.dto.topico.DatosListadoTopico;
 import com.alura.foro.hub.api.domain.dto.topico.DatosRegistroTopico;
+import com.alura.foro.hub.api.mapper.TopicoMapper;
 import com.alura.foro.hub.api.repository.TopicoRepository;
 import com.alura.foro.hub.api.repository.UsuarioRepository;
 import com.alura.foro.hub.api.repository.CursoRepository;
@@ -76,19 +77,7 @@ public class TopicoService {
                 .listarPorTopico(id, Pageable.unpaged())
                 .getContent();
 
-        return new DatosDetalleTopico(
-                topico.getId(),
-                topico.getTitulo(),
-                topico.getMensaje(),
-                topico.getFechaCreacion(),
-                topico.getAutor().getNombre(),
-                topico.getCurso().getId(),
-                topico.getCurso().getNombre(),
-                topico.getCurso().getCategoria().getId(),
-                topico.getCurso().getCategoria().getNombre(),
-                topico.getStatus(),
-                respuestas
-        );
+        return TopicoMapper.toDetalle(topico, respuestas);
     }
     // =========================
     //      ACTUALIZAR

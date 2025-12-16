@@ -51,10 +51,6 @@ public class UsuarioService {
         var rolUser = perfilRepository.findByNombre("USER")
                 .orElseThrow(() -> new IllegalStateException("No existe el perfil USER"));
 
-        var rolAdmin = perfilRepository.findByNombre("ADMIN")
-                .orElseThrow(() -> new IllegalStateException("ADMIN no existe"));
-
-
         usuario.setPerfiles(new ArrayList<>(List.of(rolUser)));
 
         return usuarioRepository.save(usuario);
@@ -65,7 +61,7 @@ public class UsuarioService {
         var usuario = usuarioRepository.findById(usuarioId)
                 .orElseThrow(() -> new EntityNotFoundException("Usuario no encontrado"));
 
-        var rolAdmin = perfilRepository.findByNombre("ROLE_ADMIN")
+        var rolAdmin = perfilRepository.findByNombre("ADMIN")
                 .orElseThrow(() -> new IllegalStateException("ROLE_ADMIN no existe"));
 
         if (!usuario.getPerfiles().contains(rolAdmin)) {

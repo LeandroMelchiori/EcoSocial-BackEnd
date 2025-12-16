@@ -110,7 +110,7 @@ public class TopicoController {
     // DETALLAR POR ID
     @Operation(
             summary = "Detallar un topico",
-            description = "Permite al autor (o admin) borrar el topico seleccionado")
+            description = "Despliega detalle completo del topico con sus respuestas")
     @ApiResponses({@ApiResponse(responseCode = "200", description = "Topico detallado con exito")})
     @GetMapping("/{id}")
     public ResponseEntity<DatosDetalleTopico> detallar(@PathVariable Long id) {

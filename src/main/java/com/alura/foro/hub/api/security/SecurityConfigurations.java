@@ -8,17 +8,25 @@ import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.header.writers.StaticHeadersWriter;
+
+import static org.springframework.security.config.Customizer.withDefaults;
 
 @Configuration
 @EnableWebSecurity
+@EnableMethodSecurity
 public class SecurityConfigurations {
 
     @Autowired
@@ -26,28 +34,47 @@ public class SecurityConfigurations {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        return http.csrf(csrf -> csrf.disable())
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // le indicamos a Spring el tipo de sesion
+        return http
+                .cors(withDefaults())
+                .csrf(AbstractHttpConfigurer::disable)
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .headers(headers -> headers
+                        .cacheControl(withDefaults())
+                        .contentTypeOptions(withDefaults())
+                        .frameOptions(HeadersConfigurer.FrameOptionsConfig::deny)
+                        // Política de referer (reduce fuga de info)
+                        .referrerPolicy(ref -> ref.policy(org.springframework.security.web.header.writers.ReferrerPolicyHeaderWriter.ReferrerPolicy.NO_REFERRER))
+                        // CSP
+                        .contentSecurityPolicy(csp -> csp.policyDirectives(
+                                "default-src 'none'; frame-ancestors 'none'; base-uri 'none'"
+                        ))
+                        // Permissions-Policy
+                        .addHeaderWriter(new StaticHeadersWriter(
+                                "Permissions-Policy",
+                                "geolocation=(), microphone=(), camera=(), payment=(), usb=()"
+                        ))
+                )
+                // Authorizations EndPoints
                 .authorizeHttpRequests((authorize) -> authorize
-
-                                // Login - Crear usuario (Acceso general)
+                                // Login - Crear usuario - Listados foro (Acceso general)
                                 .requestMatchers(HttpMethod.POST,"/auth/login").permitAll()
                                 .requestMatchers(HttpMethod.POST,"/usuarios").permitAll()
-
-                                // 📚 LISTADOS (USER o ADMIN)
                                 .requestMatchers(HttpMethod.GET, "/categorias/**").authenticated()
                                 .requestMatchers(HttpMethod.GET, "/cursos/**").authenticated()
+                                .requestMatchers(HttpMethod.GET, "/topicos" ).permitAll()
+                                .requestMatchers(HttpMethod.GET, "/respuestas").permitAll()
 
-                                // 🔒 CRUD CATEGORIAS → SOLO ADMIN
+                                // 🔒 C.U.D CATEGORIAS → SOLO ADMIN
                                 .requestMatchers(HttpMethod.POST, "/categorias/**").hasRole("ADMIN")
                                 .requestMatchers(HttpMethod.PUT, "/categorias/**").hasRole("ADMIN")
                                 .requestMatchers(HttpMethod.DELETE, "/categorias/**").hasRole("ADMIN")
 
-                                // 🔒 CRUD CURSOS → SOLO ADMIN
+                                // 🔒 C.U.D CURSOS → SOLO ADMIN
                                 .requestMatchers(HttpMethod.POST, "/cursos/**").hasRole("ADMIN")
                                 .requestMatchers(HttpMethod.PUT, "/cursos/**").hasRole("ADMIN")
                                 .requestMatchers(HttpMethod.DELETE, "/cursos/**").hasRole("ADMIN")
 
+                                // Swagger UI y Docs
                                 .requestMatchers("/v3/api-docs/**", "/swagger-ui/**","/swagger-ui.html").permitAll()
                                 .anyRequest()
                                 .authenticated())
@@ -60,6 +87,7 @@ public class SecurityConfigurations {
             throws Exception {
         return authenticationConfiguration.getAuthenticationManager();
     }
+
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();

@@ -5,6 +5,7 @@ import com.alura.foro.hub.api.domain.*;
 import com.alura.foro.hub.api.domain.dto.respuesta.DatosActualizarRespuesta;
 import com.alura.foro.hub.api.domain.dto.respuesta.DatosCrearRespuesta;
 import com.alura.foro.hub.api.domain.dto.respuesta.DatosListadoRespuesta;
+import com.alura.foro.hub.api.mapper.RespuestaMapper;
 import com.alura.foro.hub.api.repository.*;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.data.domain.Page;
@@ -80,16 +81,6 @@ public class RespuestaService {
         return toDTO(r);
     }
 
-    private DatosListadoRespuesta toDTO(Respuesta r) {
-        return new DatosListadoRespuesta(
-                r.getId(),
-                r.getMensaje(),
-                r.getAutor().getNombre(),
-                r.getSolucion(),
-                r.getFechaCreacion()
-        );
-    }
-
     @Transactional
     public DatosListadoRespuesta actualizar(Long respuestaId,
                                             DatosActualizarRespuesta datos,
@@ -108,9 +99,8 @@ public class RespuestaService {
 
         return toDTO(respuesta);
     }
-
     @Transactional
-    public void eliminar(Long respuestaId, Long usuarioId) {
+    public void eliminar(Long respuestaId, Usuario usuarioLogueado) {
 
         var r = respuestaRepository.findById(respuestaId)
                 .orElseThrow(() -> new EntityNotFoundException("Respuesta no encontrada"));
@@ -118,7 +108,10 @@ public class RespuestaService {
         Long autorRespuestaId = r.getAutor().getId();
         Long autorTopicoId = r.getTopico().getAutor().getId();
 
-        boolean puedeEliminar = autorRespuestaId.equals(usuarioId) || autorTopicoId.equals(usuarioId);
+        boolean puedeEliminar =
+                    autorRespuestaId.equals(usuarioLogueado.getId())
+                        || autorTopicoId.equals(usuarioLogueado.getId())
+                        || usuarioLogueado.esAdmin();
         if (!puedeEliminar) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "No tenés permisos para eliminar esta respuesta");
         }
@@ -128,5 +121,9 @@ public class RespuestaService {
             topicoRepository.save(topico);
         }
         respuestaRepository.delete(r);
+    }
+
+    private DatosListadoRespuesta toDTO(Respuesta r) {
+        return RespuestaMapper.toListado(r);
     }
 }

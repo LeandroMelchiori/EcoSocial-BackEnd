@@ -20,11 +20,6 @@ public class TokenService {
     @Value("${api.security.secret}")
     private String apiSecret;
 
-    @PostConstruct
-    public void init() {
-        System.out.println("API Secret: " + apiSecret);
-    }
-
     public String generateToken(Usuario usuario) {
         try {
             Algorithm algorithm = HMAC256(apiSecret);
