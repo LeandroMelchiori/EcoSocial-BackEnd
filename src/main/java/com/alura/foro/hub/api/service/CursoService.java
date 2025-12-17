@@ -1,15 +1,15 @@
 package com.alura.foro.hub.api.service;
 
-import com.alura.foro.hub.api.domain.*;
-import com.alura.foro.hub.api.domain.dto.curso.DatosActualizarCurso;
-import com.alura.foro.hub.api.domain.dto.curso.DatosCrearCurso;
+import com.alura.foro.hub.api.dto.curso.DatosActualizarCurso;
+import com.alura.foro.hub.api.dto.curso.DatosCrearCurso;
+import com.alura.foro.hub.api.entity.model.Curso;
 import com.alura.foro.hub.api.repository.CursoRepository;
 import com.alura.foro.hub.api.repository.CategoriaRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
-import com.alura.foro.hub.api.domain.dto.curso.DatosListadoCurso;
+import com.alura.foro.hub.api.dto.curso.DatosListadoCurso;
 
 @Service
 public class CursoService {

@@ -1,11 +1,12 @@
 package com.alura.foro.hub.api.service;
 
-import com.alura.foro.hub.api.domain.*;
-import com.alura.foro.hub.api.domain.dto.respuesta.DatosListadoRespuesta;
-import com.alura.foro.hub.api.domain.dto.topico.DatosActualizarTopico;
-import com.alura.foro.hub.api.domain.dto.topico.DatosDetalleTopico;
-import com.alura.foro.hub.api.domain.dto.topico.DatosListadoTopico;
-import com.alura.foro.hub.api.domain.dto.topico.DatosRegistroTopico;
+import com.alura.foro.hub.api.dto.topico.DatosActualizarTopico;
+import com.alura.foro.hub.api.dto.topico.DatosDetalleTopico;
+import com.alura.foro.hub.api.dto.topico.DatosListadoTopico;
+import com.alura.foro.hub.api.dto.topico.DatosRegistroTopico;
+import com.alura.foro.hub.api.entity.model.Curso;
+import com.alura.foro.hub.api.entity.model.Topico;
+import com.alura.foro.hub.api.entity.model.Usuario;
 import com.alura.foro.hub.api.mapper.TopicoMapper;
 import com.alura.foro.hub.api.repository.TopicoRepository;
 import com.alura.foro.hub.api.repository.UsuarioRepository;
@@ -45,10 +46,10 @@ public class TopicoService {
     public Topico crearTopico(DatosRegistroTopico datos, Long userId) {
 
         Usuario autor = usuarioRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("Autor no encontrado"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Autor no encontrado"));
 
         Curso curso = cursoRepository.findById(datos.cursoId())
-                .orElseThrow(() -> new RuntimeException("Curso no encontrado"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Curso no encontrado"));
 
         Topico topico = new Topico(datos, autor, curso);
 
@@ -115,7 +116,7 @@ public class TopicoService {
             topico.setStatus(datos.status());
         }
 
-        return new DatosDetalleTopico(topico);
+        return TopicoMapper.toDetalle(topico, List.of());
     }
 
 

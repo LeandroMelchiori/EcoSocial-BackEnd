@@ -1,7 +1,7 @@
 package com.alura.foro.hub.api.mapper;
 
-import com.alura.foro.hub.api.domain.Respuesta;
-import com.alura.foro.hub.api.domain.dto.respuesta.DatosListadoRespuesta;
+import com.alura.foro.hub.api.entity.model.Respuesta;
+import com.alura.foro.hub.api.dto.respuesta.DatosListadoRespuesta;
 
 public class RespuestaMapper {
     private RespuestaMapper() {}

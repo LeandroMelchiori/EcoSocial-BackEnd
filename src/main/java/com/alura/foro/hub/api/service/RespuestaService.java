@@ -1,10 +1,12 @@
 // service/RespuestaService.java
 package com.alura.foro.hub.api.service;
 
-import com.alura.foro.hub.api.domain.*;
-import com.alura.foro.hub.api.domain.dto.respuesta.DatosActualizarRespuesta;
-import com.alura.foro.hub.api.domain.dto.respuesta.DatosCrearRespuesta;
-import com.alura.foro.hub.api.domain.dto.respuesta.DatosListadoRespuesta;
+import com.alura.foro.hub.api.dto.respuesta.DatosActualizarRespuesta;
+import com.alura.foro.hub.api.dto.respuesta.DatosCrearRespuesta;
+import com.alura.foro.hub.api.dto.respuesta.DatosListadoRespuesta;
+import com.alura.foro.hub.api.entity.enums.StatusTopico;
+import com.alura.foro.hub.api.entity.model.Respuesta;
+import com.alura.foro.hub.api.entity.model.Usuario;
 import com.alura.foro.hub.api.mapper.RespuestaMapper;
 import com.alura.foro.hub.api.repository.*;
 import jakarta.persistence.EntityNotFoundException;
@@ -39,7 +41,8 @@ public class RespuestaService {
                 .orElseThrow(() -> new EntityNotFoundException("Usuario no encontrado"));
 
         if (topico.getStatus() == StatusTopico.CERRADO) {
-            throw new IllegalStateException("El tópico está cerrado y no admite respuestas");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "El tópico está cerrado y no admite respuestas");
         }
 
         var r = new Respuesta();

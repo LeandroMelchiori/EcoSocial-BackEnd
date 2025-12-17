@@ -1,10 +1,11 @@
 package com.alura.foro.hub.api.controller;
 
-import com.alura.foro.hub.api.domain.*;
-import com.alura.foro.hub.api.domain.dto.topico.DatosActualizarTopico;
-import com.alura.foro.hub.api.domain.dto.topico.DatosDetalleTopico;
-import com.alura.foro.hub.api.domain.dto.topico.DatosListadoTopico;
-import com.alura.foro.hub.api.domain.dto.topico.DatosRegistroTopico;
+import com.alura.foro.hub.api.dto.topico.DatosActualizarTopico;
+import com.alura.foro.hub.api.dto.topico.DatosDetalleTopico;
+import com.alura.foro.hub.api.dto.topico.DatosListadoTopico;
+import com.alura.foro.hub.api.dto.topico.DatosRegistroTopico;
+import com.alura.foro.hub.api.entity.model.Topico;
+import com.alura.foro.hub.api.entity.model.Usuario;
 import com.alura.foro.hub.api.service.TopicoService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;

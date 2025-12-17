@@ -1,10 +1,11 @@
 package com.alura.foro.hub.api.service;
 
-import com.alura.foro.hub.api.domain.*;
-import com.alura.foro.hub.api.domain.dto.categoria.DatosActualizarCategoria;
-import com.alura.foro.hub.api.domain.dto.categoria.DatosCrearCategoria;
-import com.alura.foro.hub.api.domain.dto.categoria.DatosListadoCategoria;
-import com.alura.foro.hub.api.domain.dto.curso.DatosListadoCurso;
+import com.alura.foro.hub.api.dto.categoria.DatosActualizarCategoria;
+import com.alura.foro.hub.api.dto.categoria.DatosCrearCategoria;
+import com.alura.foro.hub.api.dto.categoria.DatosListadoCategoria;
+import com.alura.foro.hub.api.dto.curso.DatosListadoCurso;
+import com.alura.foro.hub.api.entity.model.Categoria;
+import com.alura.foro.hub.api.entity.model.Curso;
 import com.alura.foro.hub.api.repository.CategoriaRepository;
 import com.alura.foro.hub.api.repository.CursoRepository;
 import jakarta.persistence.EntityNotFoundException;

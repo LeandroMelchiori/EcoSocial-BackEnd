@@ -1,21 +1,16 @@
 package com.alura.foro.hub.api.service;
 
-import com.alura.foro.hub.api.domain.Usuario;
-import com.alura.foro.hub.api.domain.dto.usuario.DatosUsuarioRegistro;
+import com.alura.foro.hub.api.entity.model.Usuario;
+import com.alura.foro.hub.api.dto.usuario.DatosUsuarioRegistro;
 import com.alura.foro.hub.api.repository.PerfilRepository;
 import com.alura.foro.hub.api.repository.UsuarioRepository;
 import jakarta.persistence.EntityNotFoundException;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class UsuarioService {

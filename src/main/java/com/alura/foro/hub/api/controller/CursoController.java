@@ -1,8 +1,8 @@
 package com.alura.foro.hub.api.controller;
 
-import com.alura.foro.hub.api.domain.dto.curso.DatosActualizarCurso;
-import com.alura.foro.hub.api.domain.dto.curso.DatosCrearCurso;
-import com.alura.foro.hub.api.domain.dto.curso.DatosListadoCurso;
+import com.alura.foro.hub.api.dto.curso.DatosActualizarCurso;
+import com.alura.foro.hub.api.dto.curso.DatosCrearCurso;
+import com.alura.foro.hub.api.dto.curso.DatosListadoCurso;
 import com.alura.foro.hub.api.service.CursoService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -53,11 +53,12 @@ public class CursoController {
             security = @SecurityRequirement(name = "bearer-key")
     )
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Curso creado con exito"),
+            @ApiResponse(responseCode = "201", description = "Curso creado con exito"),
             @ApiResponse(responseCode = "400", description = "Datos inválidos"),
             @ApiResponse(responseCode = "401", description = "No autenticado"),
             @ApiResponse(responseCode = "403", description = "No autorizado"),
-            @ApiResponse(responseCode = "404", description = "Pagina inexistente")
+            @ApiResponse(responseCode = "404", description = "Pagina inexistente"),
+            @ApiResponse(responseCode = "409", description = "Ya existe un curso con ese nombre")
     })
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
@@ -73,11 +74,12 @@ public class CursoController {
             security = @SecurityRequirement(name = "bearer-key")
     )
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Curso editado con exito"),
+            @ApiResponse(responseCode = "201", description = "Curso editado con exito"),
             @ApiResponse(responseCode = "400", description = "Datos inválidos"),
             @ApiResponse(responseCode = "401", description = "No autenticado"),
             @ApiResponse(responseCode = "403", description = "No autorizado"),
-            @ApiResponse(responseCode = "404", description = "Curso no encontrado")
+            @ApiResponse(responseCode = "404", description = "Curso no encontrado"),
+            @ApiResponse(responseCode = "409", description = "Ya existe un curso con ese nombre")
     })
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
@@ -97,7 +99,9 @@ public class CursoController {
             @ApiResponse(responseCode = "400", description = "Datos inválidos"),
             @ApiResponse(responseCode = "401", description = "No autenticado"),
             @ApiResponse(responseCode = "403", description = "No autorizado"),
-            @ApiResponse(responseCode = "404", description = "Curso no encontrado")
+            @ApiResponse(responseCode = "404", description = "Curso no encontrado"),
+            @ApiResponse(responseCode = "409", description = "No se puede eliminar. " +
+                    "Existen recursos adheridos a este curso")
     })
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")

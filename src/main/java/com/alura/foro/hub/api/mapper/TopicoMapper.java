@@ -1,8 +1,8 @@
 package com.alura.foro.hub.api.mapper;
 
-import com.alura.foro.hub.api.domain.Topico;
-import com.alura.foro.hub.api.domain.dto.topico.DatosDetalleTopico;
-import com.alura.foro.hub.api.domain.dto.respuesta.DatosListadoRespuesta;
+import com.alura.foro.hub.api.entity.model.Topico;
+import com.alura.foro.hub.api.dto.topico.DatosDetalleTopico;
+import com.alura.foro.hub.api.dto.respuesta.DatosListadoRespuesta;
 
 import java.util.List;
 
