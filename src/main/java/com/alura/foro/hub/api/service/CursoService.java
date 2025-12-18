@@ -45,22 +45,20 @@ public class CursoService {
 
     @Transactional
     public DatosListadoCurso crear(DatosCrearCurso datos) {
-        var nombre = datos.nombre().trim();
+
         var categoria = categoriaRepository.findById(datos.categoriaId())
                 .orElseThrow(() -> new EntityNotFoundException("Categoría no encontrada"));
 
-        if (cursoRepository.existsByNombreIgnoreCase(nombre)) {
+        if (cursoRepository.existsByNombreIgnoreCase(datos.nombre())) {
             throw new BusinessException("Ya existe un curso con ese nombre");
         }
 
-        var curso = new Curso();
-        curso.setNombre(nombre);
-        curso.setCategoria(categoria);
+        var curso = CursoMapper.fromCrear(datos, categoria);
+        cursoRepository.save(curso);
 
-
-        curso = cursoRepository.save(curso);
         return CursoMapper.toListado(curso);
     }
+
 
     @Transactional
     public DatosListadoCurso actualizar(Long id, DatosActualizarCurso datos) {

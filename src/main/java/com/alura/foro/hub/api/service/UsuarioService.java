@@ -4,6 +4,7 @@ import com.alura.foro.hub.api.entity.model.Usuario;
 import com.alura.foro.hub.api.dto.usuario.DatosUsuarioRegistro;
 import com.alura.foro.hub.api.repository.PerfilRepository;
 import com.alura.foro.hub.api.repository.UsuarioRepository;
+import com.alura.foro.hub.api.security.exception.BusinessException;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -31,10 +32,10 @@ public class UsuarioService {
     public Usuario registrar(DatosUsuarioRegistro datos) {
 
         if (usuarioRepository.existsByEmail(datos.email())) {
-            throw new IllegalArgumentException("El email ya está registrado");
+            throw new BusinessException("El email ya está registrado");
         }
         if (usuarioRepository.existsByUsername(datos.username())) {
-            throw new IllegalArgumentException("El nombre de usuario ya está en uso");
+            throw new BusinessException("El nombre de usuario ya está en uso");
         }
 
         var usuario = new Usuario();
@@ -44,7 +45,7 @@ public class UsuarioService {
         usuario.setPassword(passwordEncoder.encode(datos.password()));
 
         var rolUser = perfilRepository.findByNombre("USER")
-                .orElseThrow(() -> new IllegalStateException("No existe el perfil USER"));
+                .orElseThrow(() -> new IllegalStateException("ROL_USER no existe"));
 
         usuario.setPerfiles(new ArrayList<>(List.of(rolUser)));
 
@@ -53,15 +54,42 @@ public class UsuarioService {
 
     @Transactional
     public void asignarRolAdmin(Long usuarioId) {
+
         var usuario = usuarioRepository.findById(usuarioId)
                 .orElseThrow(() -> new EntityNotFoundException("Usuario no encontrado"));
 
-        var rolAdmin = perfilRepository.findByNombre("ADMIN")
-                .orElseThrow(() -> new IllegalStateException("ROLE_ADMIN no existe"));
+        var rolAdmin = perfilRepository.findByNombre("admin") // o "ADMIN"
+                .orElseThrow(() -> new IllegalStateException("No existe el perfil admin"));
 
         if (!usuario.getPerfiles().contains(rolAdmin)) {
             usuario.getPerfiles().add(rolAdmin);
         }
+    }
+
+    @Transactional
+    public void quitarRolAdmin(Long usuarioObjetivoId, Long adminEjecutorId) {
+
+        if (usuarioObjetivoId.equals(adminEjecutorId)) {
+            throw new BusinessException("No podés quitarte tu propio rol de administrador");
+        }
+
+        var usuario = usuarioRepository.findById(usuarioObjetivoId)
+                .orElseThrow(() -> new EntityNotFoundException("Usuario no encontrado"));
+
+        var rolAdmin = perfilRepository.findByNombre("admin")
+                .orElseThrow(() -> new IllegalStateException("No existe el perfil admin"));
+
+        if (!usuario.getPerfiles().contains(rolAdmin)) {
+            throw new BusinessException("El usuario no tiene el rol admin");
+        }
+
+        long cantidadAdmins = usuarioRepository.countUsuariosConRol("admin");
+
+        if (cantidadAdmins <= 1) {
+            throw new BusinessException("No se puede quitar el rol admin al último administrador del sistema");
+        }
+
+        usuario.getPerfiles().remove(rolAdmin);
     }
 
 }

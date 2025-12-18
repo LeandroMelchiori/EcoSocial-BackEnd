@@ -2,6 +2,7 @@ package com.alura.foro.hub.api.controller;
 
 import com.alura.foro.hub.api.dto.usuario.DatosUsuarioListado;
 import com.alura.foro.hub.api.dto.usuario.DatosUsuarioRegistro;
+import com.alura.foro.hub.api.entity.model.Usuario;
 import com.alura.foro.hub.api.service.UsuarioService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -9,6 +10,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -54,5 +56,16 @@ public class UsuarioController {
         usuarioService.asignarRolAdmin(id);
         return ResponseEntity.ok().build();
     }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @DeleteMapping("/usuarios/{id}/admin")
+    public ResponseEntity<Void> quitarAdmin(
+            @PathVariable Long id,
+            @AuthenticationPrincipal Usuario adminLogueado
+    ) {
+        usuarioService.quitarRolAdmin(id, adminLogueado.getId());
+        return ResponseEntity.noContent().build();
+    }
+
 
 }

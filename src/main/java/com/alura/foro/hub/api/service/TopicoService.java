@@ -11,6 +11,8 @@ import com.alura.foro.hub.api.mapper.TopicoMapper;
 import com.alura.foro.hub.api.repository.TopicoRepository;
 import com.alura.foro.hub.api.repository.UsuarioRepository;
 import com.alura.foro.hub.api.repository.CursoRepository;
+import com.alura.foro.hub.api.security.exception.BusinessException;
+import com.alura.foro.hub.api.security.exception.ForbiddenException;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -19,6 +21,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.awt.*;
 import java.util.List;
 
 @Service
@@ -84,43 +87,25 @@ public class TopicoService {
     //      ACTUALIZAR
     // =========================
     @Transactional
-    public DatosDetalleTopico actualizarTopico(Long idTopico,
-                                               DatosActualizarTopico datos,
-                                               Long usuarioId) {
+    public DatosDetalleTopico actualizarTopico(Long id, DatosActualizarTopico datos, Long usuarioId) {
 
-        var topico = topicoRepository.findById(idTopico)
+        var topico = topicoRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Tópico no encontrado"));
 
-        // 💣 Solo el autor puede modificar
         if (!topico.getAutor().getId().equals(usuarioId)) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN,
-                    "Solo el autor del tópico puede modificarlo");
+            throw new ForbiddenException("Solo el autor puede modificar el tópico");
         }
 
-        // 🔁 Actualizamos solo lo que venga distinto de null / vacío
-        if (datos.titulo() != null && !datos.titulo().isBlank()) {
-            topico.setTitulo(datos.titulo());
-        }
-
-        if (datos.mensaje() != null && !datos.mensaje().isBlank()) {
-            topico.setMensaje(datos.mensaje());
-        }
-
+        Curso curso = null;
         if (datos.cursoId() != null) {
-            var curso = cursoRepository.findById(datos.cursoId())
+            curso = cursoRepository.findById(datos.cursoId())
                     .orElseThrow(() -> new EntityNotFoundException("Curso no encontrado"));
-            topico.setCurso(curso);
         }
 
-        if (datos.status() != null) {
-            topico.setStatus(datos.status());
-        }
+        TopicoMapper.aplicarActualizacion(topico, datos, curso);
 
-        var respuestas = respuestaService.listarPorTopico(idTopico, Pageable.unpaged()).getContent();
-        return TopicoMapper.toDetalle(topico, respuestas);
-
+        return TopicoMapper.toDetalle(topico);
     }
-
 
     // =========================
     //      ELIMINAR
@@ -134,8 +119,7 @@ public class TopicoService {
                 .orElseThrow(() -> new EntityNotFoundException("Autor no encontrado"));
 
         if (!user.esAdmin() && !topico.getAutor().getId().equals(userId)) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN,
-                    "Solo el autor del tópico puede eliminarlo");
+            throw new ForbiddenException("Solo el autor del tópico puede eliminarlo");
         }
 
         // Borrado físico

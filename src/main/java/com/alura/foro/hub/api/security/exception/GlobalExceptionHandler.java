@@ -76,6 +76,18 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body(body);
     }
 
+    @ExceptionHandler(ForbiddenException.class)
+    public ResponseEntity<ApiError> handleForbidden(ForbiddenException ex, HttpServletRequest req) {
+        var body = ApiError.of(
+                HttpStatus.FORBIDDEN.value(),
+                "Forbidden",
+                ex.getMessage(),
+                req.getRequestURI()
+        );
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(body);
+    }
+
+
     // ✅ 401 - auth (token inválido, no autenticado, etc.)
     @ExceptionHandler(AuthenticationException.class)
     public ResponseEntity<ApiError> handleAuth(AuthenticationException ex, HttpServletRequest req) {
@@ -130,12 +142,12 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(BusinessException.class)
     public ResponseEntity<ApiError> handleBusiness(BusinessException ex, HttpServletRequest req) {
         var body = ApiError.of(
-                HttpStatus.CONFLICT.value(),
-                "Conflict",
+                HttpStatus.BAD_REQUEST.value(),
+                "Bad request",
                 ex.getMessage(),
                 req.getRequestURI()
         );
-        return ResponseEntity.status(HttpStatus.CONFLICT).body(body);
+        return ResponseEntity.badRequest().body(body);
     }
 
 
