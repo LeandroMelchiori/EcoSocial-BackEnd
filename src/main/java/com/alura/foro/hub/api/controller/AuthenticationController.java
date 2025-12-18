@@ -1,10 +1,10 @@
 package com.alura.foro.hub.api.controller;
 
-import com.alura.foro.hub.api.domain.Usuario;
+import com.alura.foro.hub.api.entity.model.Usuario;
 import jakarta.validation.Valid;
-import com.alura.foro.hub.api.security.DatosJWTToken;
-import com.alura.foro.hub.api.security.TokenService;
-import com.alura.foro.hub.api.security.UsuarioAuthenticateData;
+import com.alura.foro.hub.api.security.jwt.DatosJWTToken;
+import com.alura.foro.hub.api.security.jwt.TokenService;
+import com.alura.foro.hub.api.security.auth.UsuarioAuthenticateData;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;

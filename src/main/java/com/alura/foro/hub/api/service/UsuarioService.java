@@ -1,21 +1,16 @@
 package com.alura.foro.hub.api.service;
 
-import com.alura.foro.hub.api.domain.Usuario;
-import com.alura.foro.hub.api.domain.dto.usuario.DatosUsuarioRegistro;
+import com.alura.foro.hub.api.entity.model.Usuario;
+import com.alura.foro.hub.api.dto.usuario.DatosUsuarioRegistro;
 import com.alura.foro.hub.api.repository.PerfilRepository;
 import com.alura.foro.hub.api.repository.UsuarioRepository;
 import jakarta.persistence.EntityNotFoundException;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class UsuarioService {
@@ -51,10 +46,6 @@ public class UsuarioService {
         var rolUser = perfilRepository.findByNombre("USER")
                 .orElseThrow(() -> new IllegalStateException("No existe el perfil USER"));
 
-        var rolAdmin = perfilRepository.findByNombre("ADMIN")
-                .orElseThrow(() -> new IllegalStateException("ADMIN no existe"));
-
-
         usuario.setPerfiles(new ArrayList<>(List.of(rolUser)));
 
         return usuarioRepository.save(usuario);
@@ -65,7 +56,7 @@ public class UsuarioService {
         var usuario = usuarioRepository.findById(usuarioId)
                 .orElseThrow(() -> new EntityNotFoundException("Usuario no encontrado"));
 
-        var rolAdmin = perfilRepository.findByNombre("ROLE_ADMIN")
+        var rolAdmin = perfilRepository.findByNombre("ADMIN")
                 .orElseThrow(() -> new IllegalStateException("ROLE_ADMIN no existe"));
 
         if (!usuario.getPerfiles().contains(rolAdmin)) {

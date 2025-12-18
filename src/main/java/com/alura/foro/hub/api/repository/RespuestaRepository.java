@@ -1,6 +1,6 @@
 package com.alura.foro.hub.api.repository;
 
-import com.alura.foro.hub.api.domain.Respuesta;
+import com.alura.foro.hub.api.entity.model.Respuesta;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;

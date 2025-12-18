@@ -1,7 +1,7 @@
 package com.alura.foro.hub.api.controller;
 
-import com.alura.foro.hub.api.domain.dto.usuario.DatosUsuarioListado;
-import com.alura.foro.hub.api.domain.dto.usuario.DatosUsuarioRegistro;
+import com.alura.foro.hub.api.dto.usuario.DatosUsuarioListado;
+import com.alura.foro.hub.api.dto.usuario.DatosUsuarioRegistro;
 import com.alura.foro.hub.api.service.UsuarioService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;

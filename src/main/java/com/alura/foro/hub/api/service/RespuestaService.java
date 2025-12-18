@@ -1,10 +1,13 @@
 // service/RespuestaService.java
 package com.alura.foro.hub.api.service;
 
-import com.alura.foro.hub.api.domain.*;
-import com.alura.foro.hub.api.domain.dto.respuesta.DatosActualizarRespuesta;
-import com.alura.foro.hub.api.domain.dto.respuesta.DatosCrearRespuesta;
-import com.alura.foro.hub.api.domain.dto.respuesta.DatosListadoRespuesta;
+import com.alura.foro.hub.api.dto.respuesta.DatosActualizarRespuesta;
+import com.alura.foro.hub.api.dto.respuesta.DatosCrearRespuesta;
+import com.alura.foro.hub.api.dto.respuesta.DatosListadoRespuesta;
+import com.alura.foro.hub.api.entity.enums.StatusTopico;
+import com.alura.foro.hub.api.entity.model.Respuesta;
+import com.alura.foro.hub.api.entity.model.Usuario;
+import com.alura.foro.hub.api.mapper.RespuestaMapper;
 import com.alura.foro.hub.api.repository.*;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.data.domain.Page;
@@ -30,15 +33,16 @@ public class RespuestaService {
     }
 
     @Transactional
-    public DatosListadoRespuesta crear(DatosCrearRespuesta datos, Long autorId) {
+    public DatosListadoRespuesta crear(DatosCrearRespuesta datos, Long userId) {
         var topico = topicoRepository.findById(datos.topicoId())
                 .orElseThrow(() -> new EntityNotFoundException("Tópico no encontrado"));
 
-        var autor = usuarioRepository.findById(autorId)
+        var autor = usuarioRepository.findById(userId)
                 .orElseThrow(() -> new EntityNotFoundException("Usuario no encontrado"));
 
         if (topico.getStatus() == StatusTopico.CERRADO) {
-            throw new IllegalStateException("El tópico está cerrado y no admite respuestas");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "El tópico está cerrado y no admite respuestas");
         }
 
         var r = new Respuesta();
@@ -52,42 +56,36 @@ public class RespuestaService {
     }
 
     public Page<DatosListadoRespuesta> listarPorTopico(Long topicoId, Pageable pageable) {
+        topicoRepository.findById(topicoId)
+                .orElseThrow(() -> new EntityNotFoundException("Tópico no encontrado"));
+
         return respuestaRepository
                 .findByTopicoIdOrderBySolucionDescFechaCreacionDesc(topicoId, pageable)
                 .map(this::toDTO);
     }
 
-
     @Transactional
     public DatosListadoRespuesta marcarSolucion(Long respuestaId, Long usuarioId) {
-        var r = respuestaRepository.findById(respuestaId)
+        var respuesta = respuestaRepository.findById(respuestaId)
                 .orElseThrow(() -> new EntityNotFoundException("Respuesta no encontrada"));
 
-        var autorTopicoId = r.getTopico().getAutor().getId();
+        var autorTopicoId = respuesta.getTopico().getAutor().getId();
         if (!autorTopicoId.equals(usuarioId)) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN,
                     "No tenés permisos para marcar solución");
         }
 
-        var topico = r.getTopico();
+        var topico = respuesta.getTopico();
 
+        // ✅ Desmarca soluciones anteriores y marca la actual
         respuestaRepository.desmarcarSoluciones(topico.getId());
-        r.setSolucion(true);
+        respuesta.setSolucion(true);
+        respuestaRepository.save(respuesta);
 
         // ✅ Marca el topico como solucionado
         topico.solucionado();
         topicoRepository.save(topico);
-        return toDTO(r);
-    }
-
-    private DatosListadoRespuesta toDTO(Respuesta r) {
-        return new DatosListadoRespuesta(
-                r.getId(),
-                r.getMensaje(),
-                r.getAutor().getNombre(),
-                r.getSolucion(),
-                r.getFechaCreacion()
-        );
+        return toDTO(respuesta);
     }
 
     @Transactional
@@ -104,13 +102,20 @@ public class RespuestaService {
                     "Solo el autor puede editar la respuesta");
         }
 
+        if (respuesta.getTopico().getStatus() == StatusTopico.CERRADO) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "El tópico está cerrado y no admite edición de respuestas");
+        }
+
         respuesta.setMensaje(datos.mensaje());
 
         return toDTO(respuesta);
     }
-
     @Transactional
-    public void eliminar(Long respuestaId, Long usuarioId) {
+    public void eliminar(Long respuestaId, Long userId) {
+
+        var user = usuarioRepository.findById(userId)
+                .orElseThrow(() -> new EntityNotFoundException("Usuario no encontrado"));
 
         var r = respuestaRepository.findById(respuestaId)
                 .orElseThrow(() -> new EntityNotFoundException("Respuesta no encontrada"));
@@ -118,7 +123,10 @@ public class RespuestaService {
         Long autorRespuestaId = r.getAutor().getId();
         Long autorTopicoId = r.getTopico().getAutor().getId();
 
-        boolean puedeEliminar = autorRespuestaId.equals(usuarioId) || autorTopicoId.equals(usuarioId);
+        boolean puedeEliminar =
+                    autorRespuestaId.equals(userId)
+                        || autorTopicoId.equals(userId)
+                        || user.esAdmin();
         if (!puedeEliminar) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "No tenés permisos para eliminar esta respuesta");
         }
@@ -128,5 +136,9 @@ public class RespuestaService {
             topicoRepository.save(topico);
         }
         respuestaRepository.delete(r);
+    }
+
+    private DatosListadoRespuesta toDTO(Respuesta r) {
+        return RespuestaMapper.toListado(r);
     }
 }

@@ -1,7 +1,9 @@
 package com.alura.foro.hub.api.controller;
 
-import com.alura.foro.hub.api.domain.dto.categoria.*;
-import com.alura.foro.hub.api.domain.dto.curso.DatosListadoCurso;
+import com.alura.foro.hub.api.dto.categoria.DatosActualizarCategoria;
+import com.alura.foro.hub.api.dto.categoria.DatosCrearCategoria;
+import com.alura.foro.hub.api.dto.categoria.DatosListadoCategoria;
+import com.alura.foro.hub.api.dto.curso.DatosListadoCurso;
 import com.alura.foro.hub.api.service.CategoriaService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -52,7 +54,8 @@ public class CategoriaController {
             @ApiResponse(responseCode = "400", description = "Datos inválidos"),
             @ApiResponse(responseCode = "401", description = "No autenticado"),
             @ApiResponse(responseCode = "403", description = "No autorizado"),
-            @ApiResponse(responseCode = "404", description = "Pagina inexistente")
+            @ApiResponse(responseCode = "404", description = "Pagina inexistente"),
+            @ApiResponse(responseCode = "409", description = "Ya existe una categoria con ese nombre")
     })
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
@@ -73,7 +76,8 @@ public class CategoriaController {
             @ApiResponse(responseCode = "400", description = "Datos inválidos"),
             @ApiResponse(responseCode = "401", description = "No autenticado"),
             @ApiResponse(responseCode = "403", description = "No autorizado"),
-            @ApiResponse(responseCode = "404", description = "Categoria no encontrada")
+            @ApiResponse(responseCode = "404", description = "Categoria no encontrada"),
+            @ApiResponse(responseCode = "409", description = "Ya existe una categoria con ese nombre")
     })
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
@@ -94,7 +98,9 @@ public class CategoriaController {
             @ApiResponse(responseCode = "400", description = "Datos inválidos"),
             @ApiResponse(responseCode = "401", description = "No autenticado"),
             @ApiResponse(responseCode = "403", description = "No autorizado"),
-            @ApiResponse(responseCode = "404", description = "Pagina inexistente")
+            @ApiResponse(responseCode = "404", description = "Pagina inexistente"),
+            @ApiResponse(responseCode = "409", description = "No se puede eliminar. existen cursos" +
+                    "adheridos a esta categoria"),
     })
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
