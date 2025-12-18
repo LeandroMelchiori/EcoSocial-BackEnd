@@ -126,11 +126,14 @@ public class TopicoService {
     //      ELIMINAR
     // =========================
     @Transactional
-    public void eliminarTopico(Long idTopico, Usuario usuarioLogueado) {
+    public void eliminarTopico(Long idTopico, Long userId) {
         var topico = topicoRepository.findById(idTopico)
                 .orElseThrow(() -> new EntityNotFoundException("Tópico no encontrado"));
 
-        if (!usuarioLogueado.esAdmin() && !topico.getAutor().getId().equals(usuarioLogueado.getId())) {
+        var user = usuarioRepository.findById(userId)
+                .orElseThrow(() -> new EntityNotFoundException("Autor no encontrado"));
+
+        if (!user.esAdmin() && !topico.getAutor().getId().equals(userId)) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN,
                     "Solo el autor del tópico puede eliminarlo");
         }

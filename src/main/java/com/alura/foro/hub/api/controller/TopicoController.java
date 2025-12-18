@@ -107,7 +107,7 @@ public class TopicoController {
             @PathVariable Long id,
             @AuthenticationPrincipal Usuario usuario) {
 
-        topicoService.eliminarTopico(id, usuario);
+        topicoService.eliminarTopico(id, usuario.getId());
         return ResponseEntity.noContent().build();
     }
 
