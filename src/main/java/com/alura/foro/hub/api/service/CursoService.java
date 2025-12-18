@@ -3,8 +3,10 @@ package com.alura.foro.hub.api.service;
 import com.alura.foro.hub.api.dto.curso.DatosActualizarCurso;
 import com.alura.foro.hub.api.dto.curso.DatosCrearCurso;
 import com.alura.foro.hub.api.entity.model.Curso;
+import com.alura.foro.hub.api.mapper.CursoMapper;
 import com.alura.foro.hub.api.repository.CursoRepository;
 import com.alura.foro.hub.api.repository.CategoriaRepository;
+import com.alura.foro.hub.api.security.exception.BusinessException;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -29,36 +31,35 @@ public class CursoService {
                 ? cursoRepository.findAll()
                 : cursoRepository.findByCategoriaId(categoriaId);
 
-        return cursos.stream().map(this::toDTO).toList();
+        return cursos.stream()
+                .map(CursoMapper::toListado)
+                .toList();
     }
 
     @Transactional(readOnly = true)
     public DatosListadoCurso detallar(Long id) {
-        var c = cursoRepository.findById(id)
+        var curso = cursoRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Curso no encontrado"));
-        return toDTO(c);
-    }
-
-    private DatosListadoCurso toDTO(Curso c) {
-        return new DatosListadoCurso(
-                c.getId(),
-                c.getNombre(),
-                c.getCategoria().getId(),
-                c.getCategoria().getNombre()
-        );
+        return CursoMapper.toListado(curso);
     }
 
     @Transactional
     public DatosListadoCurso crear(DatosCrearCurso datos) {
+        var nombre = datos.nombre().trim();
         var categoria = categoriaRepository.findById(datos.categoriaId())
                 .orElseThrow(() -> new EntityNotFoundException("Categoría no encontrada"));
 
+        if (cursoRepository.existsByNombreIgnoreCase(nombre)) {
+            throw new BusinessException("Ya existe un curso con ese nombre");
+        }
+
         var curso = new Curso();
-        curso.setNombre(datos.nombre().trim());
+        curso.setNombre(nombre);
         curso.setCategoria(categoria);
 
+
         curso = cursoRepository.save(curso);
-        return toDTO(curso);
+        return CursoMapper.toListado(curso);
     }
 
     @Transactional
@@ -69,10 +70,13 @@ public class CursoService {
         var categoria = categoriaRepository.findById(datos.categoriaId())
                 .orElseThrow(() -> new EntityNotFoundException("Categoría no encontrada"));
 
+        if (cursoRepository.existsByNombreIgnoreCase(datos.nombre())) {
+            throw new BusinessException("Ya existe un curso con ese nombre");
+        }
         curso.setNombre(datos.nombre().trim());
         curso.setCategoria(categoria);
 
-        return toDTO(curso);
+        return CursoMapper.toListado(curso);
     }
 
     @Transactional

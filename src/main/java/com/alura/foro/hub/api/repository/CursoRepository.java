@@ -7,4 +7,7 @@ import java.util.List;
 
 public interface CursoRepository extends JpaRepository<Curso, Long> {
     List<Curso> findByCategoriaId(Long categoriaId);
+
+    boolean existsByNombreIgnoreCase(String nombre);
+
 }

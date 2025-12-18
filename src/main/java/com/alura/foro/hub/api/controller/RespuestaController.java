@@ -12,6 +12,7 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -44,8 +45,9 @@ public class RespuestaController {
             @RequestBody @Valid DatosCrearRespuesta datos,
             @AuthenticationPrincipal Usuario usuario) {
 
-        return ResponseEntity.ok(respuestaService.crear(datos, usuario.getId())
-        );
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(respuestaService.crear(datos, usuario.getId()));
     }
 
     @Operation(summary = "Listar respuestas")
@@ -119,7 +121,7 @@ public class RespuestaController {
             @PathVariable Long id,
             @AuthenticationPrincipal Usuario usuario) {
 
-        respuestaService.eliminar(id, usuario);
+        respuestaService.eliminar(id, usuario.getId());
         return ResponseEntity.noContent().build();
     }
 }

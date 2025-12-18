@@ -6,8 +6,11 @@ import com.alura.foro.hub.api.dto.categoria.DatosListadoCategoria;
 import com.alura.foro.hub.api.dto.curso.DatosListadoCurso;
 import com.alura.foro.hub.api.entity.model.Categoria;
 import com.alura.foro.hub.api.entity.model.Curso;
+import com.alura.foro.hub.api.mapper.CategoriaMapper;
+import com.alura.foro.hub.api.mapper.CursoMapper;
 import com.alura.foro.hub.api.repository.CategoriaRepository;
 import com.alura.foro.hub.api.repository.CursoRepository;
+import com.alura.foro.hub.api.security.exception.BusinessException;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -30,8 +33,9 @@ public class CategoriaService {
     public List<DatosListadoCategoria> listar() {
         return categoriaRepository.findAll()
                 .stream()
-                .map(c -> new DatosListadoCategoria(c.getId(), c.getNombre()))
+                .map(CategoriaMapper::toListado)
                 .toList();
+
     }
 
     @Transactional(readOnly = true)
@@ -42,20 +46,23 @@ public class CategoriaService {
 
         return cursoRepository.findByCategoriaId(categoriaId)
                 .stream()
-                .map(this::toDTO)
+                .map(CursoMapper::toListado)
                 .toList();
     }
 
     @Transactional
     public DatosListadoCategoria crear(DatosCrearCategoria datos) {
         if (categoriaRepository.existsByNombreIgnoreCase(datos.nombre())) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "Ya existe una categoría con ese nombre");
+            throw new BusinessException("Ya existe una categoría con ese nombre");
+
         }
+
         var cat = new Categoria();
         cat.setNombre(datos.nombre().trim());
 
         cat = categoriaRepository.save(cat);
-        return new DatosListadoCategoria(cat.getId(), cat.getNombre());
+        return CategoriaMapper.toListado(cat);
+
     }
 
     @Transactional
@@ -67,12 +74,12 @@ public class CategoriaService {
         var nuevoNombre = datos.nombre().trim();
         if (!cat.getNombre().equalsIgnoreCase(nuevoNombre)
                 && categoriaRepository.existsByNombreIgnoreCase(nuevoNombre)) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "Ya existe una categoría con ese nombre");
+            throw new BusinessException("Ya existe una categoría con ese nombre");
         }
 
         cat.setNombre(nuevoNombre);
 
-        return new DatosListadoCategoria(cat.getId(), cat.getNombre());
+        return CategoriaMapper.toListado(cat);
     }
 
     @Transactional
@@ -82,21 +89,9 @@ public class CategoriaService {
 
         // Regla recomendada: si tiene cursos, no borrar
         if (cat.getCursos() != null && !cat.getCursos().isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT,
-                    "No se puede borrar la categoría porque tiene cursos asociados");
+            throw new BusinessException("No se puede borrar la categoría porque tiene cursos asociados");
         }
 
         categoriaRepository.delete(cat);
-    }
-
-
-
-    private DatosListadoCurso toDTO(Curso c) {
-        return new DatosListadoCurso(
-                c.getId(),
-                c.getNombre(),
-                c.getCategoria().getId(),
-                c.getCategoria().getNombre()
-        );
     }
 }

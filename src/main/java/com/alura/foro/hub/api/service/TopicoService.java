@@ -43,18 +43,19 @@ public class TopicoService {
     //      CREAR TÓPICO
     // =========================
     @Transactional
-    public Topico crearTopico(DatosRegistroTopico datos, Long userId) {
+    public DatosDetalleTopico crearTopico(DatosRegistroTopico datos, Long usuarioId) {
+        var autor = usuarioRepository.findById(usuarioId)
+                .orElseThrow(() -> new EntityNotFoundException("Autor no encontrado"));
 
-        Usuario autor = usuarioRepository.findById(userId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Autor no encontrado"));
+        var curso = cursoRepository.findById(datos.cursoId())
+                .orElseThrow(() -> new EntityNotFoundException("Curso no encontrado"));
 
-        Curso curso = cursoRepository.findById(datos.cursoId())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Curso no encontrado"));
+        var topico = new Topico(datos, autor, curso);
+        topico = topicoRepository.save(topico);
 
-        Topico topico = new Topico(datos, autor, curso);
-
-        return topicoRepository.save(topico);
+        return TopicoMapper.toDetalle(topico, List.of());
     }
+
 
 
     // =========================
@@ -63,7 +64,6 @@ public class TopicoService {
     public Page<DatosListadoTopico> listar(Pageable pageable) {
         return topicoRepository.listarConMetricas(pageable);
     }
-
 
     // =========================
     //   DETALLE POR ID
@@ -86,13 +86,13 @@ public class TopicoService {
     @Transactional
     public DatosDetalleTopico actualizarTopico(Long idTopico,
                                                DatosActualizarTopico datos,
-                                               Long usuarioIdLogueado) {
+                                               Long usuarioId) {
 
         var topico = topicoRepository.findById(idTopico)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Tópico no encontrado"));
+                .orElseThrow(() -> new EntityNotFoundException("Tópico no encontrado"));
 
         // 💣 Solo el autor puede modificar
-        if (!topico.getAutor().getId().equals(usuarioIdLogueado)) {
+        if (!topico.getAutor().getId().equals(usuarioId)) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN,
                     "Solo el autor del tópico puede modificarlo");
         }
@@ -108,7 +108,7 @@ public class TopicoService {
 
         if (datos.cursoId() != null) {
             var curso = cursoRepository.findById(datos.cursoId())
-                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Curso no encontrado"));
+                    .orElseThrow(() -> new EntityNotFoundException("Curso no encontrado"));
             topico.setCurso(curso);
         }
 
@@ -116,7 +116,9 @@ public class TopicoService {
             topico.setStatus(datos.status());
         }
 
-        return TopicoMapper.toDetalle(topico, List.of());
+        var respuestas = respuestaService.listarPorTopico(idTopico, Pageable.unpaged()).getContent();
+        return TopicoMapper.toDetalle(topico, respuestas);
+
     }
 
 
@@ -126,7 +128,7 @@ public class TopicoService {
     @Transactional
     public void eliminarTopico(Long idTopico, Usuario usuarioLogueado) {
         var topico = topicoRepository.findById(idTopico)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Tópico no encontrado"));
+                .orElseThrow(() -> new EntityNotFoundException("Tópico no encontrado"));
 
         if (!usuarioLogueado.esAdmin() && !topico.getAutor().getId().equals(usuarioLogueado.getId())) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN,
