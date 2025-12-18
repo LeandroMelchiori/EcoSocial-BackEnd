@@ -1,7 +1,7 @@
 
 INSERT INTO perfil (nombre) VALUES
-                                ('ROLE_USER'),
-                                ('ROLE_ADMIN');
+                                ('USER'),
+                                ('ADMIN');
 
 
 INSERT INTO categoria (nombre)

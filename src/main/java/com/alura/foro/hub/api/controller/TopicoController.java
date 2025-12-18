@@ -1,10 +1,11 @@
 package com.alura.foro.hub.api.controller;
 
-import com.alura.foro.hub.api.domain.*;
-import com.alura.foro.hub.api.domain.dto.topico.DatosActualizarTopico;
-import com.alura.foro.hub.api.domain.dto.topico.DatosDetalleTopico;
-import com.alura.foro.hub.api.domain.dto.topico.DatosListadoTopico;
-import com.alura.foro.hub.api.domain.dto.topico.DatosRegistroTopico;
+import com.alura.foro.hub.api.dto.topico.DatosActualizarTopico;
+import com.alura.foro.hub.api.dto.topico.DatosDetalleTopico;
+import com.alura.foro.hub.api.dto.topico.DatosListadoTopico;
+import com.alura.foro.hub.api.dto.topico.DatosRegistroTopico;
+import com.alura.foro.hub.api.entity.model.Topico;
+import com.alura.foro.hub.api.entity.model.Usuario;
 import com.alura.foro.hub.api.service.TopicoService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -13,6 +14,7 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -56,9 +58,11 @@ public class TopicoController {
             @RequestBody @Valid DatosRegistroTopico datos,
             @AuthenticationPrincipal Usuario usuario) {
 
-        Topico topico = topicoService.crearTopico(datos, usuario.getId());
+        var dto = topicoService.crearTopico(datos, usuario.getId());
 
-        return ResponseEntity.ok(new DatosDetalleTopico(topico));
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(dto);
     }
 
     // ✏️ ACTUALIZAR POR ID
@@ -103,14 +107,14 @@ public class TopicoController {
             @PathVariable Long id,
             @AuthenticationPrincipal Usuario usuario) {
 
-        topicoService.eliminarTopico(id, usuario);
+        topicoService.eliminarTopico(id, usuario.getId());
         return ResponseEntity.noContent().build();
     }
 
     // DETALLAR POR ID
     @Operation(
             summary = "Detallar un topico",
-            description = "Permite al autor (o admin) borrar el topico seleccionado")
+            description = "Despliega detalle completo del topico con sus respuestas")
     @ApiResponses({@ApiResponse(responseCode = "200", description = "Topico detallado con exito")})
     @GetMapping("/{id}")
     public ResponseEntity<DatosDetalleTopico> detallar(@PathVariable Long id) {

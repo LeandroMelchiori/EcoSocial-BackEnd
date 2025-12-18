@@ -1,6 +1,6 @@
 package com.alura.foro.hub.api.service;
 
-import com.alura.foro.hub.api.domain.Perfil;
+import com.alura.foro.hub.api.entity.model.Perfil;
 import com.alura.foro.hub.api.repository.PerfilRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
