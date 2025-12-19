@@ -4,6 +4,7 @@ import com.alura.foro.hub.api.entity.model.Usuario;
 import com.alura.foro.hub.api.dto.respuesta.DatosActualizarRespuesta;
 import com.alura.foro.hub.api.dto.respuesta.DatosCrearRespuesta;
 import com.alura.foro.hub.api.dto.respuesta.DatosListadoRespuesta;
+import com.alura.foro.hub.api.security.exception.ApiResponsesDefault;
 import com.alura.foro.hub.api.service.RespuestaService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -30,16 +31,46 @@ public class RespuestaController {
 
     @Operation(
             summary = "Crear respuesta",
-            description = "Permite al usuario logueado hacer un comentario en el topico seleccionado",
+            description = "Permite al usuario logueado responder a un tópico",
             security = @SecurityRequirement(name = "bearer-key")
     )
-    @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Respuesta creada con exito"),
-            @ApiResponse(responseCode = "400", description = "Datos inválidos"),
-            @ApiResponse(responseCode = "401", description = "No autenticado"),
-            @ApiResponse(responseCode = "403", description = "No autorizado"),
-            @ApiResponse(responseCode = "404", description = "Error al cargar la pagina solicitada")
-    })
+    @ApiResponsesDefault
+    @ApiResponse(
+            responseCode = "201",
+            description = "Respuesta creada",
+            content = @io.swagger.v3.oas.annotations.media.Content(
+                    mediaType = "application/json",
+                    schema = @io.swagger.v3.oas.annotations.media.Schema(implementation = DatosListadoRespuesta.class),
+                    examples = @io.swagger.v3.oas.annotations.media.ExampleObject(
+                            name = "Respuesta creada",
+                            value = """
+                        {
+                          "id": 45,
+                          "mensaje": "Tenés que inscribirte como monotributista y emitir factura C",
+                          "autorNombre": "Otro Usuario",
+                          "solucion": false,
+                          "fechaCreacion": "2025-12-18T19:10:00"
+                        }
+                        """
+                    )
+            )
+    )
+    @io.swagger.v3.oas.annotations.parameters.RequestBody(
+            required = true,
+            content = @io.swagger.v3.oas.annotations.media.Content(
+                    mediaType = "application/json",
+                    schema = @io.swagger.v3.oas.annotations.media.Schema(implementation = DatosCrearRespuesta.class),
+                    examples = @io.swagger.v3.oas.annotations.media.ExampleObject(
+                            name = "Crear respuesta",
+                            value = """
+                        {
+                          "topicoId": 10,
+                          "mensaje": "Tenés que inscribirte como monotributista y emitir factura C"
+                        }
+                        """
+                    )
+            )
+    )
     @PostMapping
     public ResponseEntity<DatosListadoRespuesta> crear(
             @RequestBody @Valid DatosCrearRespuesta datos,
@@ -50,27 +81,75 @@ public class RespuestaController {
                 .body(respuestaService.crear(datos, usuario.getId()));
     }
 
-    @Operation(summary = "Listar respuestas")
-    @ApiResponses({@ApiResponse(responseCode = "200", description = "Respuestas encontradas")})
+    @Operation(
+            summary = "Listar respuestas de un tópico",
+            description = "Devuelve una lista paginada de respuestas asociadas a un tópico"
+    )
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Listado de respuestas",
+                    content = @io.swagger.v3.oas.annotations.media.Content(
+                            mediaType = "application/json",
+                            examples = @io.swagger.v3.oas.annotations.media.ExampleObject(
+                                    name = "Página de respuestas",
+                                    value = """
+                                {
+                                  "content": [
+                                    {
+                                      "id": 45,
+                                      "mensaje": "Tenés que inscribirte como monotributista y emitir factura C",
+                                      "autorNombre": "Otro Usuario",
+                                      "solucion": false,
+                                      "fechaCreacion": "2025-12-18T19:10:00"
+                                    }
+                                  ],
+                                  "totalElements": 1,
+                                  "totalPages": 1,
+                                  "size": 10,
+                                  "number": 0,
+                                  "first": true,
+                                  "last": true
+                                }
+                                """
+                            )
+                    )
+            )
+    })
     @GetMapping("/topico/{topicoId}")
     public ResponseEntity<Page<DatosListadoRespuesta>> listar(
             @PathVariable Long topicoId,
             Pageable pageable) {
+
         return ResponseEntity.ok(respuestaService.listarPorTopico(topicoId, pageable));
     }
 
     @Operation(
-            summary = "Marcar respuesta como solucion",
-            description = "Permite al autor del tópico marcar una respuesta como la solucion al topico",
+            summary = "Marcar respuesta como solución",
+            description = "Permite al autor del tópico marcar una respuesta como solución",
             security = @SecurityRequirement(name = "bearer-key")
     )
-    @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Solucion marcada con exito"),
-            @ApiResponse(responseCode = "400", description = "Datos inválidos"),
-            @ApiResponse(responseCode = "401", description = "No autenticado"),
-            @ApiResponse(responseCode = "403", description = "No autorizado"),
-            @ApiResponse(responseCode = "404", description = "Respuesta no encontrada")
-    })
+    @ApiResponsesDefault
+    @ApiResponse(
+            responseCode = "200",
+            description = "Respuesta marcada como solución",
+            content = @io.swagger.v3.oas.annotations.media.Content(
+                    mediaType = "application/json",
+                    schema = @io.swagger.v3.oas.annotations.media.Schema(implementation = DatosListadoRespuesta.class),
+                    examples = @io.swagger.v3.oas.annotations.media.ExampleObject(
+                            name = "Solución marcada",
+                            value = """
+                        {
+                          "id": 45,
+                          "mensaje": "Tenés que inscribirte como monotributista y emitir factura C",
+                          "autorNombre": "Otro Usuario",
+                          "solucion": true,
+                          "fechaCreacion": "2025-12-18T19:10:00"
+                        }
+                        """
+                    )
+            )
+    )
     @PatchMapping("/{id}/solucion")
     public ResponseEntity<DatosListadoRespuesta> marcarSolucion(
             @PathVariable Long id,
@@ -81,27 +160,59 @@ public class RespuestaController {
         );
     }
 
+
     @Operation(
             summary = "Actualizar respuesta",
-            description = "Permite al autor del tópico modificar su contenido o cambiar su curso.",
+            description = "Permite al autor de la respuesta modificar su contenido",
             security = @SecurityRequirement(name = "bearer-key")
     )
-    @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Respuesta actualizada"),
-            @ApiResponse(responseCode = "400", description = "Datos inválidos"),
-            @ApiResponse(responseCode = "401", description = "No autenticado"),
-            @ApiResponse(responseCode = "403", description = "No autorizado"),
-            @ApiResponse(responseCode = "404", description = "Pagina no encontrada")
-    })
+    @ApiResponsesDefault
+    @ApiResponse(
+            responseCode = "200",
+            description = "Respuesta actualizada",
+            content = @io.swagger.v3.oas.annotations.media.Content(
+                    mediaType = "application/json",
+                    schema = @io.swagger.v3.oas.annotations.media.Schema(implementation = DatosListadoRespuesta.class),
+                    examples = @io.swagger.v3.oas.annotations.media.ExampleObject(
+                            name = "Respuesta actualizada",
+                            value = """
+                        {
+                          "id": 45,
+                          "mensaje": "Actualicé la respuesta con más detalle",
+                          "autorNombre": "Otro Usuario",
+                          "solucion": false,
+                          "fechaCreacion": "2025-12-18T19:10:00"
+                        }
+                        """
+                    )
+            )
+    )
+    @io.swagger.v3.oas.annotations.parameters.RequestBody(
+            required = true,
+            content = @io.swagger.v3.oas.annotations.media.Content(
+                    mediaType = "application/json",
+                    schema = @io.swagger.v3.oas.annotations.media.Schema(implementation = DatosActualizarRespuesta.class),
+                    examples = @io.swagger.v3.oas.annotations.media.ExampleObject(
+                            name = "Actualizar respuesta",
+                            value = """
+                        {
+                          "mensaje": "Actualicé la respuesta con más detalle"
+                        }
+                        """
+                    )
+            )
+    )
     @PutMapping("/{id}")
     public ResponseEntity<DatosListadoRespuesta> editar(
             @PathVariable Long id,
             @RequestBody @Valid DatosActualizarRespuesta datos,
             @AuthenticationPrincipal Usuario usuario) {
 
-        return ResponseEntity.ok(respuestaService.actualizar(id, datos, usuario.getId())
+        return ResponseEntity.ok(
+                respuestaService.actualizar(id, datos, usuario.getId())
         );
     }
+
 
     @Operation(
             summary = "Eliminar respuesta",
@@ -109,13 +220,8 @@ public class RespuestaController {
                     " (tambien autor del topico o admin) eliminar la respuesta seleccionada",
             security = @SecurityRequirement(name = "bearer-key")
     )
-    @ApiResponses({
-            @ApiResponse(responseCode = "204", description = "Respuesta eliminada"),
-            @ApiResponse(responseCode = "400", description = "Datos inválidos"),
-            @ApiResponse(responseCode = "401", description = "No autenticado"),
-            @ApiResponse(responseCode = "403", description = "No autorizado"),
-            @ApiResponse(responseCode = "404", description = "No se encuentra la pagina solicitada")
-    })
+    @ApiResponsesDefault
+    @ApiResponse(responseCode = "204", description = "Respuesta eliminada")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> eliminar(
             @PathVariable Long id,
