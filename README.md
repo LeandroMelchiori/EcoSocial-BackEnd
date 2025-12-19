@@ -11,7 +11,7 @@ Asegúrate de tener instalados:
 
 - [Java 17+](https://www.oracle.com/java/technologies/javase-jdk17-downloads.html)
 - [Maven 3+](https://maven.apache.org/download.cgi)
-- MYSQL
+- [MYSQL]([https://maven.apache.org/download.cgi](https://dev.mysql.com/downloads/))
   
 ### Pasos para la instalación
 
