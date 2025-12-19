@@ -3,6 +3,7 @@ package com.alura.foro.hub.api.repository;
 import com.alura.foro.hub.api.entity.model.Usuario;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
@@ -29,4 +30,11 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
         """)
     Usuario findByUsernameConPerfiles(String username);
 
+    @Query("""
+    select count(u)
+    from Usuario u
+    join u.perfiles p
+    where p.nombre = :rol
+""")
+long countUsuariosConRol(@Param("rol") String rol);
 }
