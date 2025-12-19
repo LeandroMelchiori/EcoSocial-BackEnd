@@ -45,7 +45,7 @@ public class UsuarioService {
         usuario.setPassword(passwordEncoder.encode(datos.password()));
 
         var rolUser = perfilRepository.findByNombre("USER")
-                .orElseThrow(() -> new IllegalStateException("ROL_USER no existe"));
+                .orElseThrow(() -> new IllegalStateException("ROL_USER no exist"));
 
         usuario.setPerfiles(new ArrayList<>(List.of(rolUser)));
 

@@ -100,7 +100,6 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(body);
     }
 
-    // ✅ para ResponseStatusException que tirás en services
     @ExceptionHandler(ResponseStatusException.class)
     public ResponseEntity<ApiError> handleResponseStatus(ResponseStatusException ex, HttpServletRequest req) {
         var status = ex.getStatusCode();
@@ -142,12 +141,12 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(BusinessException.class)
     public ResponseEntity<ApiError> handleBusiness(BusinessException ex, HttpServletRequest req) {
         var body = ApiError.of(
-                HttpStatus.BAD_REQUEST.value(),
-                "Bad request",
+                HttpStatus.CONFLICT.value(),
+                "Conflict",
                 ex.getMessage(),
                 req.getRequestURI()
         );
-        return ResponseEntity.badRequest().body(body);
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(body);
     }
 
 

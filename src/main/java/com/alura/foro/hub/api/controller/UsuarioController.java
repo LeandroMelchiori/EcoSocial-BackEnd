@@ -24,7 +24,7 @@ public class UsuarioController {
     }
 
     @Operation(summary = "Registrar usuario")
-    @ApiResponses({@ApiResponse(responseCode = "200", description = "Usuario registrado con exito")})
+    @ApiResponses({@ApiResponse(responseCode = "201", description = "Usuario registrado con exito")})
     @PostMapping
     public ResponseEntity<?> registrar(@RequestBody @Valid DatosUsuarioRegistro datos) {
 
