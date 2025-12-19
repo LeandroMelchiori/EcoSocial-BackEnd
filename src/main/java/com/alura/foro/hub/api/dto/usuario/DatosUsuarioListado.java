@@ -1,9 +1,11 @@
 package com.alura.foro.hub.api.dto.usuario;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+
+@Schema(description = "Datos básicos de un usuario")
 public record DatosUsuarioListado(
-        Long id,
-        String nombre,
-        String email,
-        String username
-) {
-    }
+        @Schema(example = "1") Long id,
+        @Schema(example = "user") String nombre,
+        @Schema(example = "users@gmail.com") String email,
+        @Schema(example = "user") String username
+) {}

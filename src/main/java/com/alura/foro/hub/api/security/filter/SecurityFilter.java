@@ -25,28 +25,49 @@ public class SecurityFilter extends OncePerRequestFilter {
     }
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
-            throws ServletException, IOException {
-        try {
-            var authHeader = request.getHeader("Authorization");
-            if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-                filterChain.doFilter(request, response);
-                return;
-            }
+    protected void doFilterInternal(
+            HttpServletRequest request,
+            HttpServletResponse response,
+            FilterChain filterChain
+    ) throws ServletException, IOException {
 
-            var token = authHeader.substring(7);
+        var authHeader = request.getHeader("Authorization");
+
+        // 1️⃣ No hay header o no es Bearer → request público
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
+        // 2️⃣ Extraer token y limpiar
+        var token = authHeader.substring(7).trim();
+
+        // 3️⃣ Token vacío → ignorar (NO es un error)
+        if (token.isBlank()) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
+        try {
             var subject = tokenService.getSubject(token);
 
             var user = usuarioRepository.findByUsername(subject)
                     .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado"));
 
-            var authentication = new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities());
-            SecurityContextHolder.getContext().setAuthentication(authentication);
+            var authentication =
+                    new UsernamePasswordAuthenticationToken(
+                            user,
+                            null,
+                            user.getAuthorities()
+                    );
 
+            SecurityContextHolder.getContext().setAuthentication(authentication);
             filterChain.doFilter(request, response);
+
         } catch (Exception ex) {
             SecurityContextHolder.clearContext();
             throw new BadCredentialsException("Token inválido o expirado", ex);
         }
     }
+
 }

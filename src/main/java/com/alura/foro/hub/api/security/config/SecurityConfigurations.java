@@ -56,9 +56,10 @@ public class SecurityConfigurations {
                         // Política de referer (reduce fuga de info)
                         .referrerPolicy(ref -> ref.policy(org.springframework.security.web.header.writers.ReferrerPolicyHeaderWriter.ReferrerPolicy.NO_REFERRER))
                         // CSP
-                        .contentSecurityPolicy(csp -> csp.policyDirectives(
-                                "default-src 'none'; frame-ancestors 'none'; base-uri 'none'"
-                        ))
+                        .contentSecurityPolicy(csp -> csp
+                                .policyDirectives("default-src * 'unsafe-inline' 'unsafe-eval' data: blob:"
+                                )
+                        )
                         // Permissions-Policy
                         .addHeaderWriter(new StaticHeadersWriter(
                                 "Permissions-Policy",
@@ -86,8 +87,15 @@ public class SecurityConfigurations {
                                 .requestMatchers(HttpMethod.DELETE, "/cursos/**").hasRole("ADMIN")
 
                                 // Swagger UI y Docs
-                                .requestMatchers("/v3/api-docs/**", "/swagger-ui/**","/swagger-ui.html").permitAll()
-                                .anyRequest()
+                                .requestMatchers(
+                                        "/v3/api-docs",
+                                        "/v3/api-docs/**",
+                                        "/swagger-ui.html",
+                                        "/swagger-ui/**",
+                                        "/swagger-ui/oauth2-redirect.html",
+                                        "/webjars/**"
+                                ).permitAll()
+                        .anyRequest()
                                 .authenticated())
                 .addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class) // llamada a nuestro filtro antes que el de spring
                 .build();

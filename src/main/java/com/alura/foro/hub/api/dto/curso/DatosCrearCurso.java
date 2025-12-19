@@ -6,7 +6,7 @@ import jakarta.validation.constraints.NotNull;
 
 public record DatosCrearCurso(
         @NotBlank
-        @Schema(description = "Nombre del curso", example = "AWS")
+        @Schema(description = "Nombre del curso", example = "IAM")
         String nombre,
         @NotNull
         @Schema(description = "ID de la categoria", example = "1")

@@ -3,6 +3,7 @@ package com.alura.foro.hub.api.controller;
 import com.alura.foro.hub.api.dto.curso.DatosActualizarCurso;
 import com.alura.foro.hub.api.dto.curso.DatosCrearCurso;
 import com.alura.foro.hub.api.dto.curso.DatosListadoCurso;
+import com.alura.foro.hub.api.security.exception.ApiResponsesDefault;
 import com.alura.foro.hub.api.service.CursoService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -27,82 +28,184 @@ public class CursoController {
         this.cursoService = cursoService;
     }
 
-    // GET /cursos o GET /cursos?categoriaId=1
     @Operation(
             summary = "Listar cursos",
-            description = "Permite listar todos los cursos")
+            description = "Permite listar todos los cursos o filtrar por categoría"
+    )
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Cursos encontrados",
+                    content = @io.swagger.v3.oas.annotations.media.Content(
+                            mediaType = "application/json",
+                            examples = @io.swagger.v3.oas.annotations.media.ExampleObject(
+                                    name = "Listado de cursos",
+                                    value = """
+                                [
+                                  {
+                                    "id": 1,
+                                    "nombre": "AWS",
+                                    "categoriaId": 2,
+                                    "categoriaNombre": "Cloud"
+                                  },
+                                  {
+                                    "id": 2,
+                                    "nombre": "Spring Boot",
+                                    "categoriaId": 1,
+                                    "categoriaNombre": "Backend"
+                                  }
+                                ]
+                                """
+                            )
+                    )
+            )
+    })
     @GetMapping
     public ResponseEntity<List<DatosListadoCurso>> listar(
             @RequestParam(required = false) Long categoriaId) {
         return ResponseEntity.ok(cursoService.listar(categoriaId));
     }
 
+
     @Operation(
             summary = "Detallar curso",
-            description = "Permite consultar un curso por su id")
-    @ApiResponses({@ApiResponse(responseCode = "404", description = "Curso no encontrado")})
+            description = "Permite consultar un curso por su id"
+    )
+    @ApiResponsesDefault
+    @ApiResponse(
+            responseCode = "200",
+            description = "Curso encontrado",
+            content = @io.swagger.v3.oas.annotations.media.Content(
+                    mediaType = "application/json",
+                    schema = @io.swagger.v3.oas.annotations.media.Schema(implementation = DatosListadoCurso.class),
+                    examples = @io.swagger.v3.oas.annotations.media.ExampleObject(
+                            name = "Detalle de curso",
+                            value = """
+                        {
+                          "id": 1,
+                          "nombre": "AWS",
+                          "categoriaId": 2,
+                          "categoriaNombre": "Cloud"
+                        }
+                        """
+                    )
+            )
+    )
     @GetMapping("/{id}")
-    public ResponseEntity<DatosListadoCurso> detallar(
-            @PathVariable Long id) {
+    public ResponseEntity<DatosListadoCurso> detallar(@PathVariable Long id) {
         return ResponseEntity.ok(cursoService.detallar(id));
     }
+
 
     @Operation(
             summary = "Crear curso",
             description = "Permite a un administrador crear un curso nuevo",
             security = @SecurityRequirement(name = "bearer-key")
     )
-    @ApiResponses({
-            @ApiResponse(responseCode = "201", description = "Curso creado con exito"),
-            @ApiResponse(responseCode = "400", description = "Datos inválidos"),
-            @ApiResponse(responseCode = "401", description = "No autenticado"),
-            @ApiResponse(responseCode = "403", description = "No autorizado"),
-            @ApiResponse(responseCode = "404", description = "Pagina inexistente"),
-            @ApiResponse(responseCode = "409", description = "Ya existe un curso con ese nombre")
-    })
+    @ApiResponsesDefault
+    @ApiResponse(
+            responseCode = "201",
+            description = "Curso creado",
+            content = @io.swagger.v3.oas.annotations.media.Content(
+                    mediaType = "application/json",
+                    schema = @io.swagger.v3.oas.annotations.media.Schema(implementation = DatosListadoCurso.class),
+                    examples = @io.swagger.v3.oas.annotations.media.ExampleObject(
+                            name = "Curso creado",
+                            value = """
+                        {
+                          "id": 3,
+                          "nombre": "Docker",
+                          "categoriaId": 2,
+                          "categoriaNombre": "Cloud"
+                        }
+                        """
+                    )
+            )
+    )
+    @io.swagger.v3.oas.annotations.parameters.RequestBody(
+            required = true,
+            content = @io.swagger.v3.oas.annotations.media.Content(
+                    mediaType = "application/json",
+                    schema = @io.swagger.v3.oas.annotations.media.Schema(implementation = DatosCrearCurso.class),
+                    examples = @io.swagger.v3.oas.annotations.media.ExampleObject(
+                            name = "Crear curso",
+                            value = """
+                        {
+                          "nombre": "Docker",
+                          "categoriaId": 2
+                        }
+                        """
+                    )
+            )
+    )
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<DatosListadoCurso> crear(
             @RequestBody @Valid DatosCrearCurso datos) {
+
         var creado = cursoService.crear(datos);
         return ResponseEntity.created(URI.create("/cursos/" + creado.id())).body(creado);
     }
+
 
     @Operation(
             summary = "Editar curso",
             description = "Permite a un administrador editar un curso",
             security = @SecurityRequirement(name = "bearer-key")
     )
-    @ApiResponses({
-            @ApiResponse(responseCode = "201", description = "Curso editado con exito"),
-            @ApiResponse(responseCode = "400", description = "Datos inválidos"),
-            @ApiResponse(responseCode = "401", description = "No autenticado"),
-            @ApiResponse(responseCode = "403", description = "No autorizado"),
-            @ApiResponse(responseCode = "404", description = "Curso no encontrado"),
-            @ApiResponse(responseCode = "409", description = "Ya existe un curso con ese nombre")
-    })
+    @ApiResponsesDefault
+    @ApiResponse(
+            responseCode = "200",
+            description = "Curso editado",
+            content = @io.swagger.v3.oas.annotations.media.Content(
+                    mediaType = "application/json",
+                    schema = @io.swagger.v3.oas.annotations.media.Schema(implementation = DatosListadoCurso.class),
+                    examples = @io.swagger.v3.oas.annotations.media.ExampleObject(
+                            name = "Curso actualizado",
+                            value = """
+                        {
+                          "id": 1,
+                          "nombre": "AWS Avanzado",
+                          "categoriaId": 2,
+                          "categoriaNombre": "Cloud"
+                        }
+                        """
+                    )
+            )
+    )
+    @io.swagger.v3.oas.annotations.parameters.RequestBody(
+            required = true,
+            content = @io.swagger.v3.oas.annotations.media.Content(
+                    mediaType = "application/json",
+                    schema = @io.swagger.v3.oas.annotations.media.Schema(implementation = DatosActualizarCurso.class),
+                    examples = @io.swagger.v3.oas.annotations.media.ExampleObject(
+                            name = "Actualizar curso",
+                            value = """
+                        {
+                          "nombre": "AWS Avanzado",
+                          "categoriaId": 2
+                        }
+                        """
+                    )
+            )
+    )
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<DatosListadoCurso> actualizar(
             @PathVariable Long id,
             @RequestBody @Valid DatosActualizarCurso datos) {
+
         return ResponseEntity.ok(cursoService.actualizar(id, datos));
     }
+
 
     @Operation(
             summary = "Eliminar curso",
             description = "Permite a un administrador eliminar un curso",
             security = @SecurityRequirement(name = "bearer-key")
     )
-    @ApiResponses({
-            @ApiResponse(responseCode = "204", description = "Curso eliminado con exito"),
-            @ApiResponse(responseCode = "400", description = "Datos inválidos"),
-            @ApiResponse(responseCode = "401", description = "No autenticado"),
-            @ApiResponse(responseCode = "403", description = "No autorizado"),
-            @ApiResponse(responseCode = "404", description = "Curso no encontrado"),
-            @ApiResponse(responseCode = "409", description = "No se puede eliminar. " +
-                    "Existen recursos adheridos a este curso")
-    })
+    @ApiResponsesDefault
+    @ApiResponse(responseCode = "204", description = "Curso eliminado")
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> eliminar(
