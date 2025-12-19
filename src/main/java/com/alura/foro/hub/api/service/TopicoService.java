@@ -1,16 +1,15 @@
 package com.alura.foro.hub.api.service;
 
-import com.alura.foro.hub.api.dto.topico.DatosActualizarTopico;
-import com.alura.foro.hub.api.dto.topico.DatosDetalleTopico;
-import com.alura.foro.hub.api.dto.topico.DatosListadoTopico;
-import com.alura.foro.hub.api.dto.topico.DatosRegistroTopico;
+import com.alura.foro.hub.api.dto.topico.*;
 import com.alura.foro.hub.api.entity.model.Curso;
 import com.alura.foro.hub.api.entity.model.Topico;
+import com.alura.foro.hub.api.entity.model.TopicoSpecifications;
 import com.alura.foro.hub.api.entity.model.Usuario;
 import com.alura.foro.hub.api.mapper.TopicoMapper;
 import com.alura.foro.hub.api.repository.TopicoRepository;
 import com.alura.foro.hub.api.repository.UsuarioRepository;
 import com.alura.foro.hub.api.repository.CursoRepository;
+import com.alura.foro.hub.api.security.exception.BadRequestException;
 import com.alura.foro.hub.api.security.exception.BusinessException;
 import com.alura.foro.hub.api.security.exception.ForbiddenException;
 import jakarta.persistence.EntityNotFoundException;
@@ -124,5 +123,27 @@ public class TopicoService {
 
         // Borrado físico
         topicoRepository.delete(topico);
+    }
+
+    public Page<DatosListadoTopico> buscar(TopicoFiltro filtro, Pageable pageable) {
+
+        if (filtro.desde() != null && filtro.hasta() != null &&
+                filtro.desde().isAfter(filtro.hasta())) {
+            throw new BadRequestException(
+                    "Rango de fechas inválido: 'desde' no puede ser mayor que 'hasta'."
+            );
+        }
+
+        return topicoRepository.buscarConMetricas(
+                filtro.q(),
+                filtro.cursoId(),
+                filtro.autorId(),
+                filtro.status(),
+                filtro.desde(),
+                filtro.hasta(),
+                filtro.nombreCurso(),
+                filtro.nombreCategoria(),
+                pageable
+        );
     }
 }

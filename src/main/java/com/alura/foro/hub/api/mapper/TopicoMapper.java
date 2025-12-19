@@ -1,6 +1,7 @@
 package com.alura.foro.hub.api.mapper;
 
 import com.alura.foro.hub.api.dto.topico.DatosActualizarTopico;
+import com.alura.foro.hub.api.dto.topico.DatosListadoTopico;
 import com.alura.foro.hub.api.dto.topico.DatosRegistroTopico;
 import com.alura.foro.hub.api.entity.model.Curso;
 import com.alura.foro.hub.api.entity.model.Topico;
