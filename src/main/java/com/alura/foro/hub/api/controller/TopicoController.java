@@ -1,9 +1,7 @@
 package com.alura.foro.hub.api.controller;
 
-import com.alura.foro.hub.api.dto.topico.DatosActualizarTopico;
-import com.alura.foro.hub.api.dto.topico.DatosDetalleTopico;
-import com.alura.foro.hub.api.dto.topico.DatosListadoTopico;
-import com.alura.foro.hub.api.dto.topico.DatosRegistroTopico;
+import com.alura.foro.hub.api.dto.topico.*;
+import com.alura.foro.hub.api.entity.enums.StatusTopico;
 import com.alura.foro.hub.api.entity.model.Usuario;
 import com.alura.foro.hub.api.security.exception.ApiResponsesDefault;
 import com.alura.foro.hub.api.service.TopicoService;
@@ -17,10 +15,13 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+
+import java.time.LocalDateTime;
 
 @RestController
 @RequestMapping("/topicos")
@@ -286,5 +287,29 @@ public class TopicoController {
     public ResponseEntity<DatosDetalleTopico> detallar(@PathVariable Long id) {
         DatosDetalleTopico dto = topicoService.detallarTopico(id);
         return ResponseEntity.ok(dto);
+    }
+
+    @GetMapping("/buscar")
+    public Page<DatosListadoTopico> buscar(
+            @RequestParam(required = false) String q,
+            @RequestParam(required = false) Long cursoId,
+            @RequestParam(required = false) Long autorId,
+            @RequestParam(required = false) StatusTopico status,
+            @RequestParam(required = false)
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime desde,
+            @RequestParam(required = false)
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime hasta,
+            @RequestParam(required = false) String nombreCurso,
+            @RequestParam(required = false) String nombreCategoria,
+            Pageable pageable
+    ) {
+        return topicoService.buscar(
+                new TopicoFiltro(
+                        q, cursoId, autorId, status,
+                        desde, hasta,
+                        nombreCurso, nombreCategoria
+                ),
+                pageable
+        );
     }
 }
