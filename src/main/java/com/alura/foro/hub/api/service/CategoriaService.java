@@ -54,16 +54,14 @@ public class CategoriaService {
     public DatosListadoCategoria crear(DatosCrearCategoria datos) {
         if (categoriaRepository.existsByNombreIgnoreCase(datos.nombre())) {
             throw new BusinessException("Ya existe una categoría con ese nombre");
-
         }
 
-        var cat = new Categoria();
-        cat.setNombre(datos.nombre().trim());
+        var cat = CategoriaMapper.fromCrear(datos);
+        categoriaRepository.save(cat);
 
-        cat = categoriaRepository.save(cat);
         return CategoriaMapper.toListado(cat);
-
     }
+
 
     @Transactional
     public DatosListadoCategoria actualizar(Long id, DatosActualizarCategoria datos) {
