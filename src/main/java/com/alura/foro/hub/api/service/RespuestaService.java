@@ -8,7 +8,6 @@ import com.alura.foro.hub.api.entity.enums.StatusTopico;
 import com.alura.foro.hub.api.entity.model.Respuesta;
 import com.alura.foro.hub.api.mapper.RespuestaMapper;
 import com.alura.foro.hub.api.repository.*;
-import com.alura.foro.hub.api.security.exception.BusinessException;
 import com.alura.foro.hub.api.security.exception.ForbiddenException;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.data.domain.Page;

@@ -66,7 +66,6 @@ public class CursoController {
         return ResponseEntity.ok(cursoService.listar(categoriaId));
     }
 
-
     @Operation(
             summary = "Detallar curso",
             description = "Permite consultar un curso por su id"
@@ -95,7 +94,6 @@ public class CursoController {
     public ResponseEntity<DatosListadoCurso> detallar(@PathVariable Long id) {
         return ResponseEntity.ok(cursoService.detallar(id));
     }
-
 
     @Operation(
             summary = "Crear curso",
@@ -147,7 +145,6 @@ public class CursoController {
         return ResponseEntity.created(URI.create("/cursos/" + creado.id())).body(creado);
     }
 
-
     @Operation(
             summary = "Editar curso",
             description = "Permite a un administrador editar un curso",
@@ -197,7 +194,6 @@ public class CursoController {
 
         return ResponseEntity.ok(cursoService.actualizar(id, datos));
     }
-
 
     @Operation(
             summary = "Eliminar curso",

@@ -3,22 +3,17 @@ package com.alura.foro.hub.api.service;
 import com.alura.foro.hub.api.dto.topico.*;
 import com.alura.foro.hub.api.entity.model.Curso;
 import com.alura.foro.hub.api.entity.model.Topico;
-import com.alura.foro.hub.api.entity.model.TopicoSpecifications;
-import com.alura.foro.hub.api.entity.model.Usuario;
 import com.alura.foro.hub.api.mapper.TopicoMapper;
 import com.alura.foro.hub.api.repository.TopicoRepository;
 import com.alura.foro.hub.api.repository.UsuarioRepository;
 import com.alura.foro.hub.api.repository.CursoRepository;
 import com.alura.foro.hub.api.security.exception.BadRequestException;
-import com.alura.foro.hub.api.security.exception.BusinessException;
 import com.alura.foro.hub.api.security.exception.ForbiddenException;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.awt.*;
 import java.util.List;
@@ -125,7 +120,11 @@ public class TopicoService {
         topicoRepository.delete(topico);
     }
 
+
     public Page<DatosListadoTopico> buscar(TopicoFiltro filtro, Pageable pageable) {
+        String q = normalizar(filtro.q());
+        String nombreCurso = normalizar(filtro.nombreCurso());
+        String nombreCategoria = normalizar(filtro.nombreCategoria());
 
         if (filtro.desde() != null && filtro.hasta() != null &&
                 filtro.desde().isAfter(filtro.hasta())) {
@@ -145,5 +144,11 @@ public class TopicoService {
                 filtro.nombreCategoria(),
                 pageable
         );
+    }
+
+    private String normalizar(String s) {
+        if (s == null) return null;
+        s = s.trim();
+        return s.isBlank() ? null : s;
     }
 }

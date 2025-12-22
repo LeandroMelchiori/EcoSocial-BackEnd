@@ -289,6 +289,19 @@ public class TopicoController {
         return ResponseEntity.ok(dto);
     }
 
+    @Operation(
+            summary = "Búsqueda avanzada de tópicos",
+            description = """
+        Permite filtrar tópicos con parámetros opcionales y paginación.
+
+        Ejemplos:
+        - /topicos/buscar?q=jwt
+        - /topicos/buscar?nombreCurso=spring&status=ABIERTO
+        - /topicos/buscar?desde=2025-01-01T00:00:00&hasta=2025-12-31T23:59:59
+        - /topicos/buscar?q=java&page=0&size=10&sort=fechaCreacion,desc
+    """
+    )
+    @ApiResponsesDefault
     @GetMapping("/buscar")
     public Page<DatosListadoTopico> buscar(
             @RequestParam(required = false) String q,

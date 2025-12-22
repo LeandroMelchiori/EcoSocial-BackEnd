@@ -4,18 +4,14 @@ import com.alura.foro.hub.api.dto.categoria.DatosActualizarCategoria;
 import com.alura.foro.hub.api.dto.categoria.DatosCrearCategoria;
 import com.alura.foro.hub.api.dto.categoria.DatosListadoCategoria;
 import com.alura.foro.hub.api.dto.curso.DatosListadoCurso;
-import com.alura.foro.hub.api.entity.model.Categoria;
-import com.alura.foro.hub.api.entity.model.Curso;
 import com.alura.foro.hub.api.mapper.CategoriaMapper;
 import com.alura.foro.hub.api.mapper.CursoMapper;
 import com.alura.foro.hub.api.repository.CategoriaRepository;
 import com.alura.foro.hub.api.repository.CursoRepository;
 import com.alura.foro.hub.api.security.exception.BusinessException;
 import jakarta.persistence.EntityNotFoundException;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 

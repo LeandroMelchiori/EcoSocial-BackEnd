@@ -1,13 +1,14 @@
 package com.alura.foro.hub.api.security.filter;
 
 import com.alura.foro.hub.api.repository.UsuarioRepository;
+import com.alura.foro.hub.api.security.exception.ApiError;
 import com.alura.foro.hub.api.security.jwt.TokenService;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -18,6 +19,7 @@ public class SecurityFilter extends OncePerRequestFilter {
 
     private final TokenService tokenService;
     private final UsuarioRepository usuarioRepository;
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     public SecurityFilter(TokenService tokenService, UsuarioRepository usuarioRepository) {
         this.tokenService = tokenService;
@@ -33,16 +35,14 @@ public class SecurityFilter extends OncePerRequestFilter {
 
         var authHeader = request.getHeader("Authorization");
 
-        // 1️⃣ No hay header o no es Bearer → request público
+        // 🔓 Sin token → request público
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             filterChain.doFilter(request, response);
             return;
         }
 
-        // 2️⃣ Extraer token y limpiar
         var token = authHeader.substring(7).trim();
 
-        // 3️⃣ Token vacío → ignorar (NO es un error)
         if (token.isBlank()) {
             filterChain.doFilter(request, response);
             return;
@@ -54,20 +54,26 @@ public class SecurityFilter extends OncePerRequestFilter {
             var user = usuarioRepository.findByUsername(subject)
                     .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado"));
 
-            var authentication =
-                    new UsernamePasswordAuthenticationToken(
-                            user,
-                            null,
-                            user.getAuthorities()
-                    );
+            var authentication = new org.springframework.security.authentication.UsernamePasswordAuthenticationToken(
+                    user, null, user.getAuthorities()
+            );
 
             SecurityContextHolder.getContext().setAuthentication(authentication);
             filterChain.doFilter(request, response);
 
         } catch (Exception ex) {
             SecurityContextHolder.clearContext();
-            throw new BadCredentialsException("Token inválido o expirado", ex);
+
+            var apiError = ApiError.of(
+                    HttpStatus.UNAUTHORIZED.value(),
+                    "Unauthorized",
+                    "Token inválido o expirado",
+                    request.getRequestURI()
+            );
+
+            response.setStatus(HttpStatus.UNAUTHORIZED.value());
+            response.setContentType("application/json");
+            response.getWriter().write(objectMapper.writeValueAsString(apiError));
         }
     }
-
 }

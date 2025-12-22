@@ -2,7 +2,6 @@ package com.alura.foro.hub.api.service;
 
 import com.alura.foro.hub.api.dto.curso.DatosActualizarCurso;
 import com.alura.foro.hub.api.dto.curso.DatosCrearCurso;
-import com.alura.foro.hub.api.entity.model.Curso;
 import com.alura.foro.hub.api.mapper.CursoMapper;
 import com.alura.foro.hub.api.repository.CursoRepository;
 import com.alura.foro.hub.api.repository.CategoriaRepository;

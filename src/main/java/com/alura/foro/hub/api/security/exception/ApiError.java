@@ -27,6 +27,4 @@ public record ApiError(
     public static ApiError of(int status, String error, String message, String path, List<FieldErrorItem> fieldErrors) {
         return new ApiError(OffsetDateTime.now(), status, error, message, path, fieldErrors);
     }
-
-
 }
