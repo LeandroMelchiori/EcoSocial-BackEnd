@@ -1,12 +1,16 @@
 package com.alura.foro.hub.api.security.config;
 
 import com.alura.foro.hub.api.repository.UsuarioRepository;
+import com.alura.foro.hub.api.security.exception.ApiError;
 import com.alura.foro.hub.api.security.filter.RateLimitFilter;
 import com.alura.foro.hub.api.security.filter.SecurityFilter;
 import com.alura.foro.hub.api.security.jwt.TokenService;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.MediaType;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -20,6 +24,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.header.writers.StaticHeadersWriter;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.web.AuthenticationEntryPoint;
+import org.springframework.security.web.access.AccessDeniedHandler;
 
 import static org.springframework.security.config.Customizer.withDefaults;
 
@@ -46,9 +53,13 @@ public class SecurityConfigurations {
         return http
                 .cors(withDefaults())
                 .csrf(AbstractHttpConfigurer::disable)
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .exceptionHandling(ex -> ex
+                        .authenticationEntryPoint(authenticationEntryPoint())
+                        .accessDeniedHandler(accessDeniedHandler())
+                )
                 .addFilterBefore(rateLimitFilter, UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class)
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .headers(headers -> headers
                         .cacheControl(withDefaults())
                         .contentTypeOptions(withDefaults())
@@ -71,8 +82,8 @@ public class SecurityConfigurations {
                                 // Login - Crear usuario - Listados foro (Acceso general)
                                 .requestMatchers(HttpMethod.POST,"/auth/login").permitAll()
                                 .requestMatchers(HttpMethod.POST,"/usuarios").permitAll()
-                                .requestMatchers(HttpMethod.GET, "/categorias/**").authenticated()
-                                .requestMatchers(HttpMethod.GET, "/cursos/**").authenticated()
+                                .requestMatchers(HttpMethod.GET, "/categorias").permitAll()
+                                .requestMatchers(HttpMethod.GET, "/cursos").permitAll()
                                 .requestMatchers(HttpMethod.GET, "/topicos" ).permitAll()
                                 .requestMatchers(HttpMethod.GET, "/respuestas").permitAll()
 
@@ -97,7 +108,6 @@ public class SecurityConfigurations {
                                 ).permitAll()
                         .anyRequest()
                                 .authenticated())
-                .addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class) // llamada a nuestro filtro antes que el de spring
                 .build();
     }
 
@@ -111,5 +121,38 @@ public class SecurityConfigurations {
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
+
+    @Bean
+    public AuthenticationEntryPoint authenticationEntryPoint() {
+        return (request, response, authException) -> {
+            var body = ApiError.of(
+                    HttpServletResponse.SC_UNAUTHORIZED,
+                    "Unauthorized",
+                    "Token inválido o ausente.",
+                    request.getRequestURI()
+            );
+            writeJson(response, HttpServletResponse.SC_UNAUTHORIZED, body);
+        };
+    }
+
+    @Bean
+    public AccessDeniedHandler accessDeniedHandler() {
+        return (request, response, accessDeniedException) -> {
+            var body = ApiError.of(
+                    HttpServletResponse.SC_FORBIDDEN,
+                    "Forbidden",
+                    "No tenés permisos para realizar esta acción.",
+                    request.getRequestURI()
+            );
+            writeJson(response, HttpServletResponse.SC_FORBIDDEN, body);
+        };
+    }
+
+    private void writeJson(HttpServletResponse response, int status, Object body) throws java.io.IOException {
+        response.setStatus(status);
+        response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+        new ObjectMapper().writeValue(response.getOutputStream(), body);
+    }
+
 }
 

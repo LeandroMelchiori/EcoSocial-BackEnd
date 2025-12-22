@@ -3,7 +3,6 @@ package com.alura.foro.hub.api.controller;
 import com.alura.foro.hub.api.dto.categoria.DatosActualizarCategoria;
 import com.alura.foro.hub.api.dto.categoria.DatosCrearCategoria;
 import com.alura.foro.hub.api.dto.categoria.DatosListadoCategoria;
-import com.alura.foro.hub.api.dto.curso.DatosActualizarCurso;
 import com.alura.foro.hub.api.dto.curso.DatosListadoCurso;
 import com.alura.foro.hub.api.security.exception.ApiResponsesDefault;
 import com.alura.foro.hub.api.service.CategoriaService;
@@ -57,7 +56,6 @@ public class CategoriaController {
         return ResponseEntity.ok(categoriaService.listar());
     }
 
-
     @Operation(
             summary = "Listar cursos de una categoria",
             description = "Permite listar todos los cursos de una categoria"
@@ -88,7 +86,6 @@ public class CategoriaController {
     public ResponseEntity<List<DatosListadoCurso>> listarCursos(@PathVariable Long id) {
         return ResponseEntity.ok(categoriaService.listarCursosDeCategoria(id));
     }
-
 
     @Operation(
             summary = "Crear categoria",
@@ -136,7 +133,6 @@ public class CategoriaController {
         var creada = categoriaService.crear(datos);
         return ResponseEntity.created(URI.create("/categorias/" + creada.id())).body(creada);
     }
-
 
     @Operation(
             summary = "Actualizar categoria",
