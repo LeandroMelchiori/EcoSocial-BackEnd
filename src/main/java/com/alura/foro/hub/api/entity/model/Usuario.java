@@ -77,6 +77,5 @@ public class Usuario implements UserDetails {
         return getAuthorities().stream()
                 .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
     }
-
 }
 
