@@ -28,8 +28,9 @@ public interface RespuestaRepository extends JpaRepository<Respuesta, Long> {
         update Respuesta r
         set r.solucion = false
         where r.topico.id = :topicoId
-        """)
-    void desmarcarSoluciones(Long topicoId);
+    """)
+    void desmarcarSoluciones(@org.springframework.data.repository.query.Param("topicoId") Long topicoId);
+
 
     Page<Respuesta> findByTopicoIdOrderBySolucionDescFechaCreacionDesc(Long topicoId, Pageable pageable);
 
