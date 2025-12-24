@@ -134,14 +134,14 @@ public class TopicoService {
         }
 
         return topicoRepository.buscarConMetricas(
-                filtro.q(),
+                q,
                 filtro.cursoId(),
                 filtro.autorId(),
                 filtro.status(),
                 filtro.desde(),
                 filtro.hasta(),
-                filtro.nombreCurso(),
-                filtro.nombreCategoria(),
+                nombreCurso,
+                nombreCategoria,
                 pageable
         );
     }

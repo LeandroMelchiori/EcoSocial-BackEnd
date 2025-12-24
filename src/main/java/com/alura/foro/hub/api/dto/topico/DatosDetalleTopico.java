@@ -39,7 +39,7 @@ public record DatosDetalleTopico(
         @Schema(example = "Economía social")
         String categoriaNombre,
 
-        @Schema(example = "ABIERTO")
+        @Schema(example = "ACTIVO")
         StatusTopico status,
 
         List<DatosListadoRespuesta> respuestas
