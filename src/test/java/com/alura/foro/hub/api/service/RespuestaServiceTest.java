@@ -12,7 +12,6 @@ import com.alura.foro.hub.api.repository.RespuestaRepository;
 import com.alura.foro.hub.api.repository.TopicoRepository;
 import com.alura.foro.hub.api.repository.UsuarioRepository;
 import com.alura.foro.hub.api.security.exception.ForbiddenException;
-import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
