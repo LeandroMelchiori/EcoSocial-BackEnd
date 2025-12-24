@@ -2,41 +2,52 @@ package com.alura.foro.hub.api.repository;
 
 import com.alura.foro.hub.api.entity.enums.StatusTopico;
 import com.alura.foro.hub.api.entity.model.*;
-import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Import;
+import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.data.domain.*;
+import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
+import org.springframework.data.domain.AuditorAware;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.transaction.annotation.Transactional;
 
+import jakarta.persistence.EntityManager;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
 @DataJpaTest
 @ActiveProfiles("test")
+@Import(RespuestaRepositoryTest.AuditingTestConfig.class)
 class RespuestaRepositoryTest {
 
-    @Autowired
-    EntityManager em;
+    @Autowired EntityManager em;
+    @Autowired RespuestaRepository respuestaRepository;
 
-    @Autowired
-    RespuestaRepository respuestaRepository;
+    // =========================
+    // CONFIG AUDITORÍA TEST
+    // =========================
+    @TestConfiguration
+    @EnableJpaAuditing
+    static class AuditingTestConfig {
+        @Bean
+        AuditorAware<Long> auditorAware() {
+            return () -> Optional.of(1L); // userId ficticio
+        }
+    }
 
-    /* ======================
-       Helpers con auditoría
-       ====================== */
+    // ========= Helpers =========
 
     private Usuario crearUsuario(String username, String nombre) {
         Usuario u = new Usuario();
         u.setUsername(username);
         u.setNombre(nombre);
-        u.setEmail(username + "@test.com");
+        u.setEmail(username + "@mail.com");
         u.setPassword("123456");
-
-        auditar(u);
         em.persist(u);
         return u;
     }
@@ -44,8 +55,6 @@ class RespuestaRepositoryTest {
     private Categoria crearCategoria(String nombre) {
         Categoria c = new Categoria();
         c.setNombre(nombre);
-
-        auditar(c);
         em.persist(c);
         return c;
     }
@@ -54,72 +63,34 @@ class RespuestaRepositoryTest {
         Curso c = new Curso();
         c.setNombre(nombre);
         c.setCategoria(categoria);
-
-        auditar(c);
         em.persist(c);
         return c;
     }
 
-    private Topico crearTopico(
-            String titulo,
-            Usuario autor,
-            Curso curso,
-            StatusTopico status,
-            LocalDateTime fechaCreacion
-    ) {
+    private Topico crearTopico(String titulo, Usuario autor, Curso curso,
+                               StatusTopico status, LocalDateTime fecha) {
         Topico t = new Topico();
         t.setTitulo(titulo);
         t.setMensaje("mensaje");
         t.setAutor(autor);
         t.setCurso(curso);
         t.setStatus(status);
-        t.setFechaCreacion(fechaCreacion);
-
-        auditar(t);
+        t.setFechaCreacion(fecha);
         em.persist(t);
         return t;
     }
 
-    private Respuesta crearRespuesta(
-            Topico topico,
-            Usuario autor,
-            String mensaje,
-            boolean solucion,
-            LocalDateTime fecha
-    ) {
+    private Respuesta crearRespuesta(Topico topico, Usuario autor,
+                                     String mensaje, boolean solucion,
+                                     LocalDateTime fecha) {
         Respuesta r = new Respuesta();
         r.setTopico(topico);
         r.setAutor(autor);
         r.setMensaje(mensaje);
         r.setSolucion(solucion);
         r.setFechaCreacion(fecha);
-
-        auditar(r);
         em.persist(r);
         return r;
-    }
-
-    private void auditar(Object entity) {
-        if (entity instanceof Categoria c) {
-            c.setCreatedAt(LocalDateTime.now());
-            c.setUpdatedAt(LocalDateTime.now());
-        }
-        if (entity instanceof Curso c) {
-            c.setCreatedAt(LocalDateTime.now());
-            c.setUpdatedAt(LocalDateTime.now());
-        }
-        if (entity instanceof Topico t) {
-            t.setCreatedAt(LocalDateTime.now());
-            t.setUpdatedAt(LocalDateTime.now());
-        }
-        if (entity instanceof Respuesta r) {
-            r.setCreatedAt(LocalDateTime.now());
-            r.setUpdatedAt(LocalDateTime.now());
-        }
-        if (entity instanceof Usuario u) {
-            u.setCreatedAt(LocalDateTime.now());
-            u.setUpdatedAt(LocalDateTime.now());
-        }
     }
 
     private void flushAndClear() {
@@ -127,12 +98,10 @@ class RespuestaRepositoryTest {
         em.clear();
     }
 
-    /* ======================
-       Tests
-       ====================== */
-
+    // =========================
+    // desmarcarSoluciones
+    // =========================
     @Test
-    @Transactional
     void desmarcarSoluciones_poneFalseTodasLasSolucionesDelTopico() {
         var cat = crearCategoria("Backend");
         var curso = crearCurso("Spring", cat);
@@ -140,17 +109,15 @@ class RespuestaRepositoryTest {
         var autorTopico = crearUsuario("autor", "Autor");
         var autorResp = crearUsuario("resp", "Resp");
 
-        var topico = crearTopico(
-                "T1",
-                autorTopico,
-                curso,
-                StatusTopico.ACTIVO,
-                LocalDateTime.now()
-        );
+        var topico = crearTopico("T1", autorTopico, curso,
+                StatusTopico.ACTIVO, LocalDateTime.now());
 
-        crearRespuesta(topico, autorResp, "R1", true,  LocalDateTime.of(2025, 12, 10, 10, 0));
-        crearRespuesta(topico, autorResp, "R2", true,  LocalDateTime.of(2025, 12, 10, 11, 0));
-        crearRespuesta(topico, autorResp, "R3", false, LocalDateTime.of(2025, 12, 10, 12, 0));
+        crearRespuesta(topico, autorResp, "R1", true,
+                LocalDateTime.of(2025, 12, 10, 10, 0));
+        crearRespuesta(topico, autorResp, "R2", true,
+                LocalDateTime.of(2025, 12, 10, 11, 0));
+        crearRespuesta(topico, autorResp, "R3", false,
+                LocalDateTime.of(2025, 12, 10, 12, 0));
 
         flushAndClear();
 
@@ -165,6 +132,9 @@ class RespuestaRepositoryTest {
         assertThat(todas).allMatch(r -> Boolean.FALSE.equals(r.getSolucion()));
     }
 
+    // =========================
+    // Orden: solucion DESC, fecha DESC
+    // =========================
     @Test
     void findByTopicoIdOrderBySolucionDescFechaCreacionDesc_ordenCorrecto() {
         var cat = crearCategoria("Backend");
@@ -173,13 +143,8 @@ class RespuestaRepositoryTest {
         var autorTopico = crearUsuario("autor", "Autor");
         var autorResp = crearUsuario("resp", "Resp");
 
-        var topico = crearTopico(
-                "T1",
-                autorTopico,
-                curso,
-                StatusTopico.ACTIVO,
-                LocalDateTime.now()
-        );
+        var topico = crearTopico("T1", autorTopico, curso,
+                StatusTopico.ACTIVO, LocalDateTime.now());
 
         crearRespuesta(topico, autorResp, "SOL NUEVA", true,
                 LocalDateTime.of(2025, 12, 20, 10, 0));
@@ -194,9 +159,7 @@ class RespuestaRepositoryTest {
 
         Page<Respuesta> page =
                 respuestaRepository.findByTopicoIdOrderBySolucionDescFechaCreacionDesc(
-                        topico.getId(),
-                        PageRequest.of(0, 10)
-                );
+                        topico.getId(), PageRequest.of(0, 10));
 
         var mensajes = page.getContent()
                 .stream()
@@ -211,6 +174,9 @@ class RespuestaRepositoryTest {
         );
     }
 
+    // =========================
+    // findByTopicoIdAndSolucionTrue
+    // =========================
     @Test
     void findByTopicoIdAndSolucionTrue_devuelveSoloSolucionesDeEseTopico() {
         var cat = crearCategoria("Backend");
@@ -219,8 +185,10 @@ class RespuestaRepositoryTest {
         var autorTopico = crearUsuario("autor", "Autor");
         var autorResp = crearUsuario("resp", "Resp");
 
-        var t1 = crearTopico("T1", autorTopico, curso, StatusTopico.ACTIVO, LocalDateTime.now());
-        var t2 = crearTopico("T2", autorTopico, curso, StatusTopico.ACTIVO, LocalDateTime.now());
+        var t1 = crearTopico("T1", autorTopico, curso,
+                StatusTopico.ACTIVO, LocalDateTime.now());
+        var t2 = crearTopico("T2", autorTopico, curso,
+                StatusTopico.ACTIVO, LocalDateTime.now());
 
         crearRespuesta(t1, autorResp, "T1-SOL", true, LocalDateTime.now());
         crearRespuesta(t1, autorResp, "T1-NO", false, LocalDateTime.now());
@@ -228,13 +196,16 @@ class RespuestaRepositoryTest {
 
         flushAndClear();
 
-        List<Respuesta> soluciones = respuestaRepository.findByTopicoIdAndSolucionTrue(t1.getId());
+        var soluciones = respuestaRepository.findByTopicoIdAndSolucionTrue(t1.getId());
 
         assertThat(soluciones).hasSize(1);
         assertThat(soluciones.get(0).getMensaje()).isEqualTo("T1-SOL");
         assertThat(soluciones.get(0).getSolucion()).isTrue();
     }
 
+    // =========================
+    // findBySolucionTrue
+    // =========================
     @Test
     void findBySolucionTrue_devuelveTodasLasRespuestasMarcadasComoSolucion() {
         var cat = crearCategoria("Backend");
@@ -243,8 +214,10 @@ class RespuestaRepositoryTest {
         var autorTopico = crearUsuario("autor", "Autor");
         var autorResp = crearUsuario("resp", "Resp");
 
-        var t1 = crearTopico("T1", autorTopico, curso, StatusTopico.ACTIVO, LocalDateTime.now());
-        var t2 = crearTopico("T2", autorTopico, curso, StatusTopico.ACTIVO, LocalDateTime.now());
+        var t1 = crearTopico("T1", autorTopico, curso,
+                StatusTopico.ACTIVO, LocalDateTime.now());
+        var t2 = crearTopico("T2", autorTopico, curso,
+                StatusTopico.ACTIVO, LocalDateTime.now());
 
         crearRespuesta(t1, autorResp, "S1", true, LocalDateTime.now());
         crearRespuesta(t1, autorResp, "N1", false, LocalDateTime.now());
@@ -252,12 +225,12 @@ class RespuestaRepositoryTest {
 
         flushAndClear();
 
-        List<Respuesta> soluciones = respuestaRepository.findBySolucionTrue();
+        var sols = respuestaRepository.findBySolucionTrue();
 
-        assertThat(soluciones).hasSize(2);
-        assertThat(soluciones).allMatch(r -> Boolean.TRUE.equals(r.getSolucion()));
-        assertThat(soluciones.stream().map(Respuesta::getMensaje).toList())
-                .containsExactlyInAnyOrder("S1", "S2");
+        assertThat(sols).hasSize(2);
+        assertThat(sols).allMatch(r -> Boolean.TRUE.equals(r.getSolucion()));
+        assertThat(
+                sols.stream().map(Respuesta::getMensaje).toList()
+        ).containsExactlyInAnyOrder("S1", "S2");
     }
 }
-

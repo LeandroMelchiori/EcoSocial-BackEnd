@@ -47,7 +47,6 @@ class TopicoServiceTest {
 
     @BeforeEach
     void setUp() {
-        // Setup mínimo: SOLO crear mocks base.
         autor = mock(Usuario.class);
         admin = mock(Usuario.class);
         otro  = mock(Usuario.class);
@@ -217,9 +216,6 @@ class TopicoServiceTest {
         when(topicoRepository.findById(100L)).thenReturn(Optional.of(topico));
 
         when(topico.getAutor()).thenReturn(autor);
-        when(autor.getId()).thenReturn(10L);
-
-        // Para el mapper/detalle
         when(topico.getId()).thenReturn(100L);
         when(topico.getTitulo()).thenReturn("Viejo");
         when(topico.getMensaje()).thenReturn("Viejo msg");
@@ -228,6 +224,7 @@ class TopicoServiceTest {
         when(topico.getCurso()).thenReturn(curso);
 
         when(autor.getNombre()).thenReturn("Autor");
+        when(autor.getId()).thenReturn(10L);
 
         when(curso.getId()).thenReturn(1L);
         when(curso.getNombre()).thenReturn("Curso");
@@ -248,10 +245,9 @@ class TopicoServiceTest {
     @Test
     void actualizarTopico_cambiaCurso_y_cursoNoExiste_404() {
         when(topicoRepository.findById(100L)).thenReturn(Optional.of(topico));
+        when(cursoRepository.findById(99L)).thenReturn(Optional.empty());
         when(topico.getAutor()).thenReturn(autor);
         when(autor.getId()).thenReturn(10L);
-
-        when(cursoRepository.findById(99L)).thenReturn(Optional.empty());
 
         var datos = new DatosActualizarTopico("Nuevo", "Nuevo msg", 99L, StatusTopico.ACTIVO);
 
@@ -268,12 +264,12 @@ class TopicoServiceTest {
     @Test
     void eliminarTopico_ok_siEsAutor() {
         when(topicoRepository.findById(100L)).thenReturn(Optional.of(topico));
-
         when(usuarioRepository.findById(10L)).thenReturn(Optional.of(autor));
+
         when(autor.esAdmin()).thenReturn(false);
+        when(autor.getId()).thenReturn(10L);
 
         when(topico.getAutor()).thenReturn(autor);
-        when(autor.getId()).thenReturn(10L);
 
         topicoService.eliminarTopico(100L, 10L);
 
@@ -283,8 +279,8 @@ class TopicoServiceTest {
     @Test
     void eliminarTopico_ok_siEsAdmin() {
         when(topicoRepository.findById(100L)).thenReturn(Optional.of(topico));
-
         when(usuarioRepository.findById(99L)).thenReturn(Optional.of(admin));
+
         when(admin.esAdmin()).thenReturn(true);
 
         topicoService.eliminarTopico(100L, 99L);
@@ -295,11 +291,12 @@ class TopicoServiceTest {
     @Test
     void eliminarTopico_403_siNoEsAutorNiAdmin() {
         when(topicoRepository.findById(100L)).thenReturn(Optional.of(topico));
-
         when(usuarioRepository.findById(50L)).thenReturn(Optional.of(otro));
+
         when(otro.esAdmin()).thenReturn(false);
 
         when(topico.getAutor()).thenReturn(autor);
+
         when(autor.getId()).thenReturn(10L);
 
         assertThatThrownBy(() -> topicoService.eliminarTopico(100L, 50L))
@@ -334,7 +331,7 @@ class TopicoServiceTest {
     }
 
     // =========================
-    // BUSCAR (validación rango fechas + llamado repo)
+    // BUSCAR
     // =========================
     @Test
     void buscar_badRequest_siDesdeMayorQueHasta() {
