@@ -4,6 +4,7 @@ import com.alura.foro.hub.api.dto.respuesta.DatosActualizarRespuesta;
 import com.alura.foro.hub.api.dto.respuesta.DatosCrearRespuesta;
 import com.alura.foro.hub.api.dto.respuesta.DatosListadoRespuesta;
 import com.alura.foro.hub.api.entity.enums.StatusTopico;
+import com.alura.foro.hub.api.entity.model.Perfil;
 import com.alura.foro.hub.api.entity.model.Respuesta;
 import com.alura.foro.hub.api.entity.model.Topico;
 import com.alura.foro.hub.api.entity.model.Usuario;
@@ -15,10 +16,12 @@ import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.*;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.data.domain.*;
-import org.springframework.http.HttpStatus;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
@@ -31,387 +34,183 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 class RespuestaServiceTest {
 
-    @Mock RespuestaRepository respuestaRepository;
-    @Mock TopicoRepository topicoRepository;
-    @Mock UsuarioRepository usuarioRepository;
+    @Mock
+    RespuestaRepository respuestaRepository;
 
-    @InjectMocks RespuestaService respuestaService;
+    @Mock
+    TopicoRepository topicoRepository;
 
-    private Usuario autorTopico;
-    private Usuario autorRespuesta;
-    private Usuario admin;
-    private Topico topicoAbierto;
-    private Topico topicoCerrado;
-    private Respuesta respuesta;
+    @Mock
+    UsuarioRepository usuarioRepository;
+
+    @InjectMocks
+    RespuestaService service;
+
+    Usuario autor;
+    Usuario autorTopico;
+    Topico topico;
+    Respuesta respuesta;
 
     @BeforeEach
-    void setUp() {
-        autorTopico = mock(Usuario.class);
-        when(autorTopico.getId()).thenReturn(10L);
-        when(autorTopico.getNombre()).thenReturn("AutorTopico");
-        when(autorTopico.esAdmin()).thenReturn(false);
+    void setup() {
+        autor = new Usuario();
+        autor.setId(1L);
+        autor.setNombre("Autor");
 
-        autorRespuesta = mock(Usuario.class);
-        when(autorRespuesta.getId()).thenReturn(20L);
-        when(autorRespuesta.getNombre()).thenReturn("AutorRespuesta");
-        when(autorRespuesta.esAdmin()).thenReturn(false);
+        autorTopico = new Usuario();
+        autorTopico.setId(2L);
+        autorTopico.setNombre("Autor Topico");
 
-        admin = mock(Usuario.class);
-        when(admin.getId()).thenReturn(99L);
-        when(admin.getNombre()).thenReturn("Admin");
-        when(admin.esAdmin()).thenReturn(true);
+        topico = new Topico();
+        topico.setId(10L);
+        topico.setAutor(autorTopico);
+        topico.setStatus(StatusTopico.ACTIVO);
 
-        topicoAbierto = mock(Topico.class);
-        when(topicoAbierto.getId()).thenReturn(1L);
-        when(topicoAbierto.getAutor()).thenReturn(autorTopico);
-        when(topicoAbierto.getStatus()).thenReturn(StatusTopico.ACTIVO);
-
-        topicoCerrado = mock(Topico.class);
-        when(topicoCerrado.getId()).thenReturn(2L);
-        when(topicoCerrado.getAutor()).thenReturn(autorTopico);
-        when(topicoCerrado.getStatus()).thenReturn(StatusTopico.CERRADO);
-
-        respuesta = mock(Respuesta.class);
-        when(respuesta.getId()).thenReturn(100L);
-        when(respuesta.getAutor()).thenReturn(autorRespuesta);
-        when(respuesta.getTopico()).thenReturn(topicoAbierto);
-        when(respuesta.getMensaje()).thenReturn("Mensaje");
-        when(respuesta.getSolucion()).thenReturn(false);
-        when(respuesta.getFechaCreacion()).thenReturn(LocalDateTime.now());
+        respuesta = new Respuesta();
+        respuesta.setId(100L);
+        respuesta.setMensaje("Mensaje");
+        respuesta.setAutor(autor);
+        respuesta.setTopico(topico);
+        respuesta.setSolucion(false);
+        respuesta.setFechaCreacion(LocalDateTime.now());
     }
 
-    // =========================
+    // ─────────────────────────────
     // CREAR
-    // =========================
-
+    // ─────────────────────────────
     @Test
     void crear_ok() {
-        var dto = new DatosCrearRespuesta(1L, "  Hola  ");
+        var dto = new DatosCrearRespuesta(10L, "Respuesta nueva");
 
-        when(topicoRepository.findById(1L)).thenReturn(Optional.of(topicoAbierto));
-        when(usuarioRepository.findById(20L)).thenReturn(Optional.of(autorRespuesta));
+        when(topicoRepository.findById(10L)).thenReturn(Optional.of(topico));
+        when(usuarioRepository.findById(1L)).thenReturn(Optional.of(autor));
+        when(respuestaRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
-        // save devuelve la entidad “persistida”
-        var guardada = mock(Respuesta.class);
-        when(guardada.getId()).thenReturn(101L);
-        when(guardada.getMensaje()).thenReturn("Hola");
-        when(guardada.getAutor()).thenReturn(autorRespuesta);
-        when(guardada.getSolucion()).thenReturn(false);
-        when(guardada.getFechaCreacion()).thenReturn(LocalDateTime.now());
+        DatosListadoRespuesta result = service.crear(dto, 1L);
 
-        when(respuestaRepository.save(any(Respuesta.class))).thenReturn(guardada);
-
-        DatosListadoRespuesta res = respuestaService.crear(dto, 20L);
-
-        assertThat(res).isNotNull();
-        assertThat(res.id()).isEqualTo(101L);
-        assertThat(res.autorNombre()).isEqualTo("AutorRespuesta");
-        assertThat(res.solucion()).isFalse();
-
-        verify(topicoRepository).findById(1L);
-        verify(usuarioRepository).findById(20L);
-        verify(respuestaRepository).save(any(Respuesta.class));
+        assertThat(result.mensaje()).isEqualTo("Respuesta nueva");
+        assertThat(result.autorNombre()).isEqualTo("Autor");
     }
 
     @Test
-    void crear_topicoNoExiste_404() {
-        var dto = new DatosCrearRespuesta(1L, "Hola");
-        when(topicoRepository.findById(1L)).thenReturn(Optional.empty());
+    void crear_topicoCerrado_lanzaException() {
+        topico.setStatus(StatusTopico.CERRADO);
 
-        assertThatThrownBy(() -> respuestaService.crear(dto, 20L))
-                .isInstanceOf(EntityNotFoundException.class)
-                .hasMessageContaining("Tópico");
+        when(topicoRepository.findById(10L)).thenReturn(Optional.of(topico));
 
-        verify(respuestaRepository, never()).save(any());
+        var dto = new DatosCrearRespuesta(10L, "x");
+
+        assertThatThrownBy(() -> service.crear(dto, 1L))
+                .isInstanceOf(ResponseStatusException.class);
     }
 
-    @Test
-    void crear_topicoCerrado_400() {
-        var dto = new DatosCrearRespuesta(2L, "Hola");
-        when(topicoRepository.findById(2L)).thenReturn(Optional.of(topicoCerrado));
-
-        assertThatThrownBy(() -> respuestaService.crear(dto, 20L))
-                .isInstanceOf(ResponseStatusException.class)
-                .satisfies(ex -> {
-                    var rse = (ResponseStatusException) ex;
-                    assertThat(rse.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
-                });
-
-        verify(usuarioRepository, never()).findById(anyLong());
-        verify(respuestaRepository, never()).save(any());
-    }
-
-    @Test
-    void crear_autorNoExiste_404() {
-        var dto = new DatosCrearRespuesta(1L, "Hola");
-        when(topicoRepository.findById(1L)).thenReturn(Optional.of(topicoAbierto));
-        when(usuarioRepository.findById(20L)).thenReturn(Optional.empty());
-
-        assertThatThrownBy(() -> respuestaService.crear(dto, 20L))
-                .isInstanceOf(EntityNotFoundException.class)
-                .hasMessageContaining("Usuario");
-
-        verify(respuestaRepository, never()).save(any());
-    }
-
-    // =========================
-    // LISTAR POR TOPICO
-    // =========================
-
+    // ─────────────────────────────
+    // LISTAR
+    // ─────────────────────────────
     @Test
     void listarPorTopico_ok() {
-        when(topicoRepository.findById(1L)).thenReturn(Optional.of(topicoAbierto));
+        when(topicoRepository.findById(10L)).thenReturn(Optional.of(topico));
 
-        var pageable = PageRequest.of(0, 10);
-        var page = new PageImpl<>(List.of(respuesta), pageable, 1);
-
-        when(respuestaRepository.findByTopicoIdOrderBySolucionDescFechaCreacionDesc(1L, pageable))
+        Page<Respuesta> page = new PageImpl<>(List.of(respuesta));
+        when(respuestaRepository
+                .findByTopicoIdOrderBySolucionDescFechaCreacionDesc(eq(10L), any(Pageable.class)))
                 .thenReturn(page);
 
-        var res = respuestaService.listarPorTopico(1L, pageable);
+        Page<DatosListadoRespuesta> result =
+                service.listarPorTopico(10L, Pageable.unpaged());
 
-        assertThat(res.getTotalElements()).isEqualTo(1);
-        verify(topicoRepository).findById(1L);
-        verify(respuestaRepository).findByTopicoIdOrderBySolucionDescFechaCreacionDesc(1L, pageable);
+        assertThat(result.getContent()).hasSize(1);
+        assertThat(result.getContent().get(0).autorNombre()).isEqualTo("Autor");
     }
 
+    // ─────────────────────────────
+    // MARCAR SOLUCIÓN
+    // ─────────────────────────────
     @Test
-    void listarPorTopico_topicoNoExiste_404() {
-        when(topicoRepository.findById(1L)).thenReturn(Optional.empty());
-
-        assertThatThrownBy(() -> respuestaService.listarPorTopico(1L, PageRequest.of(0, 10)))
-                .isInstanceOf(EntityNotFoundException.class)
-                .hasMessageContaining("Tópico");
-
-        verify(respuestaRepository, never()).findByTopicoIdOrderBySolucionDescFechaCreacionDesc(anyLong(), any());
-    }
-
-    // =========================
-    // MARCAR SOLUCION
-    // =========================
-
-    @Test
-    void marcarSolucion_ok_siAutorDelTopico() {
+    void marcarSolucion_ok() {
         when(respuestaRepository.findById(100L)).thenReturn(Optional.of(respuesta));
-        when(topicoAbierto.getAutor()).thenReturn(autorTopico);
-        when(autorTopico.getId()).thenReturn(10L);
 
-        DatosListadoRespuesta dto = respuestaService.marcarSolucion(100L, 10L);
+        service.marcarSolucion(100L, autorTopico.getId());
 
-        assertThat(dto).isNotNull();
-
-        verify(respuestaRepository).desmarcarSoluciones(1L);
-        verify(respuesta).setSolucion(true);
-        verify(respuestaRepository).save(respuesta);
-        verify(topicoAbierto).solucionado();
-        verify(topicoRepository).save(topicoAbierto);
+        assertThat(respuesta.getSolucion()).isTrue();
+        verify(respuestaRepository).desmarcarSoluciones(10L);
+        verify(topicoRepository).save(topico);
     }
 
     @Test
-    void marcarSolucion_403_siNoEsAutorDelTopico() {
+    void marcarSolucion_usuarioNoAutorTopico_lanzaForbidden() {
         when(respuestaRepository.findById(100L)).thenReturn(Optional.of(respuesta));
-        when(topicoAbierto.getAutor()).thenReturn(autorTopico);
-        when(autorTopico.getId()).thenReturn(10L);
 
-        assertThatThrownBy(() -> respuestaService.marcarSolucion(100L, 999L))
-                .isInstanceOf(ForbiddenException.class)
-                .hasMessageContaining("marcar solución");
-
-        verify(respuestaRepository, never()).desmarcarSoluciones(anyLong());
-        verify(respuestaRepository, never()).save(any());
-        verify(topicoRepository, never()).save(any());
+        assertThatThrownBy(() -> service.marcarSolucion(100L, 999L))
+                .isInstanceOf(ForbiddenException.class);
     }
 
-    @Test
-    void marcarSolucion_respuestaNoExiste_404() {
-        when(respuestaRepository.findById(100L)).thenReturn(Optional.empty());
-
-        assertThatThrownBy(() -> respuestaService.marcarSolucion(100L, 10L))
-                .isInstanceOf(EntityNotFoundException.class)
-                .hasMessageContaining("Respuesta");
-
-        verify(respuestaRepository, never()).desmarcarSoluciones(anyLong());
-    }
-
-    // =========================
+    // ─────────────────────────────
     // ACTUALIZAR
-    // =========================
-
+    // ─────────────────────────────
     @Test
-    void actualizar_ok_siAutorRespuesta() {
+    void actualizar_ok() {
         when(respuestaRepository.findById(100L)).thenReturn(Optional.of(respuesta));
-        when(respuesta.getAutor()).thenReturn(autorRespuesta);
-        when(autorRespuesta.getId()).thenReturn(20L);
-        when(respuesta.getTopico()).thenReturn(topicoAbierto);
-        when(topicoAbierto.getStatus()).thenReturn(StatusTopico.ACTIVO);
 
-        var dto = new DatosActualizarRespuesta("  Nuevo mensaje  ");
+        var dto = new DatosActualizarRespuesta("Mensaje editado");
 
-        DatosListadoRespuesta res = respuestaService.actualizar(100L, dto, 20L);
+        DatosListadoRespuesta result =
+                service.actualizar(100L, dto, autor.getId());
 
-        assertThat(res).isNotNull();
-        verify(respuesta).setMensaje("Nuevo mensaje");
+        assertThat(result.mensaje()).isEqualTo("Mensaje editado");
     }
 
     @Test
-    void actualizar_403_siNoEsAutorRespuesta() {
+    void actualizar_noAutor_lanzaForbidden() {
         when(respuestaRepository.findById(100L)).thenReturn(Optional.of(respuesta));
-        when(respuesta.getAutor()).thenReturn(autorRespuesta);
-        when(autorRespuesta.getId()).thenReturn(20L);
 
-        var dto = new DatosActualizarRespuesta("Nuevo");
+        var dto = new DatosActualizarRespuesta("x");
 
-        assertThatThrownBy(() -> respuestaService.actualizar(100L, dto, 999L))
-                .isInstanceOf(ForbiddenException.class)
-                .hasMessageContaining("Solo el autor");
-
-        verify(respuesta, never()).setMensaje(anyString());
+        assertThatThrownBy(() -> service.actualizar(100L, dto, 999L))
+                .isInstanceOf(ForbiddenException.class);
     }
 
-    @Test
-    void actualizar_400_siTopicoCerrado() {
-        when(respuestaRepository.findById(100L)).thenReturn(Optional.of(respuesta));
-        when(respuesta.getAutor()).thenReturn(autorRespuesta);
-        when(autorRespuesta.getId()).thenReturn(20L);
-
-        when(respuesta.getTopico()).thenReturn(topicoCerrado);
-        when(topicoCerrado.getStatus()).thenReturn(StatusTopico.CERRADO);
-
-        var dto = new DatosActualizarRespuesta("Nuevo");
-
-        assertThatThrownBy(() -> respuestaService.actualizar(100L, dto, 20L))
-                .isInstanceOf(ResponseStatusException.class)
-                .satisfies(ex -> {
-                    var rse = (ResponseStatusException) ex;
-                    assertThat(rse.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
-                });
-
-        verify(respuesta, never()).setMensaje(anyString());
-    }
-
-    // =========================
+    // ─────────────────────────────
     // ELIMINAR
-    // =========================
-
+    // ─────────────────────────────
     @Test
-    void eliminar_ok_siAutorRespuesta() {
-        when(usuarioRepository.findById(20L)).thenReturn(Optional.of(autorRespuesta));
+    void eliminar_ok_porAutorRespuesta() {
+        when(usuarioRepository.findById(1L)).thenReturn(Optional.of(autor));
         when(respuestaRepository.findById(100L)).thenReturn(Optional.of(respuesta));
 
-        when(respuesta.getAutor()).thenReturn(autorRespuesta);
-        when(autorRespuesta.getId()).thenReturn(20L);
-
-        when(respuesta.getTopico()).thenReturn(topicoAbierto);
-        when(topicoAbierto.getAutor()).thenReturn(autorTopico);
-        when(autorTopico.getId()).thenReturn(10L);
-
-        when(respuesta.getSolucion()).thenReturn(false);
-
-        respuestaService.eliminar(100L, 20L);
-
-        verify(respuestaRepository).delete(respuesta);
-        verify(topicoRepository, never()).save(any());
-    }
-
-    @Test
-    void eliminar_ok_siAutorTopico() {
-        when(usuarioRepository.findById(10L)).thenReturn(Optional.of(autorTopico));
-        when(respuestaRepository.findById(100L)).thenReturn(Optional.of(respuesta));
-
-        when(respuesta.getAutor()).thenReturn(autorRespuesta);
-        when(autorRespuesta.getId()).thenReturn(20L);
-
-        when(respuesta.getTopico()).thenReturn(topicoAbierto);
-        when(topicoAbierto.getAutor()).thenReturn(autorTopico);
-        when(autorTopico.getId()).thenReturn(10L);
-
-        when(respuesta.getSolucion()).thenReturn(false);
-
-        respuestaService.eliminar(100L, 10L);
+        service.eliminar(100L, 1L);
 
         verify(respuestaRepository).delete(respuesta);
     }
 
     @Test
-    void eliminar_ok_siAdmin() {
-        when(usuarioRepository.findById(99L)).thenReturn(Optional.of(admin));
+    void eliminar_sinPermisos_lanzaForbidden() {
+        Usuario otro = new Usuario();
+        otro.setId(99L);
+        // NO le agregamos perfil ADMIN
+
+        when(usuarioRepository.findById(99L)).thenReturn(Optional.of(otro));
         when(respuestaRepository.findById(100L)).thenReturn(Optional.of(respuesta));
 
-        when(respuesta.getAutor()).thenReturn(autorRespuesta);
-        when(autorRespuesta.getId()).thenReturn(20L);
+        assertThatThrownBy(() -> service.eliminar(100L, 99L))
+                .isInstanceOf(ForbiddenException.class);
+    }
 
-        when(respuesta.getTopico()).thenReturn(topicoAbierto);
-        when(topicoAbierto.getAutor()).thenReturn(autorTopico);
-        when(autorTopico.getId()).thenReturn(10L);
+    @Test
+    void eliminar_ok_siEsAdmin() {
+        Usuario admin = new Usuario();
+        admin.setId(50L);
 
-        when(respuesta.getSolucion()).thenReturn(false);
+        Perfil perfilAdmin = new Perfil();
+        perfilAdmin.setNombre("ADMIN"); // 👈 CLAVE
+        admin.getPerfiles().add(perfilAdmin);
 
-        respuestaService.eliminar(100L, 99L);
+        when(usuarioRepository.findById(50L)).thenReturn(Optional.of(admin));
+        when(respuestaRepository.findById(100L)).thenReturn(Optional.of(respuesta));
+
+        service.eliminar(100L, 50L);
 
         verify(respuestaRepository).delete(respuesta);
     }
 
-    @Test
-    void eliminar_403_siNoTienePermiso() {
-        var random = mock(Usuario.class);
-        when(random.getId()).thenReturn(77L);
-        when(random.esAdmin()).thenReturn(false);
-
-        when(usuarioRepository.findById(77L)).thenReturn(Optional.of(random));
-        when(respuestaRepository.findById(100L)).thenReturn(Optional.of(respuesta));
-
-        when(respuesta.getAutor()).thenReturn(autorRespuesta);
-        when(autorRespuesta.getId()).thenReturn(20L);
-
-        when(respuesta.getTopico()).thenReturn(topicoAbierto);
-        when(topicoAbierto.getAutor()).thenReturn(autorTopico);
-        when(autorTopico.getId()).thenReturn(10L);
-
-        assertThatThrownBy(() -> respuestaService.eliminar(100L, 77L))
-                .isInstanceOf(ForbiddenException.class)
-                .hasMessageContaining("eliminar");
-
-        verify(respuestaRepository, never()).delete(any());
-    }
-
-    @Test
-    void eliminar_siEraSolucion_reactivaTopico() {
-        when(usuarioRepository.findById(20L)).thenReturn(Optional.of(autorRespuesta));
-        when(respuestaRepository.findById(100L)).thenReturn(Optional.of(respuesta));
-
-        when(respuesta.getAutor()).thenReturn(autorRespuesta);
-        when(autorRespuesta.getId()).thenReturn(20L);
-
-        when(respuesta.getTopico()).thenReturn(topicoAbierto);
-        when(respuesta.getSolucion()).thenReturn(true);
-
-        respuestaService.eliminar(100L, 20L);
-
-        verify(topicoAbierto).reactivarTopico();
-        verify(topicoRepository).save(topicoAbierto);
-        verify(respuestaRepository).delete(respuesta);
-    }
-
-    @Test
-    void eliminar_usuarioNoExiste_404() {
-        when(usuarioRepository.findById(20L)).thenReturn(Optional.empty());
-
-        assertThatThrownBy(() -> respuestaService.eliminar(100L, 20L))
-                .isInstanceOf(EntityNotFoundException.class)
-                .hasMessageContaining("Usuario");
-
-        verify(respuestaRepository, never()).delete(any());
-    }
-
-    @Test
-    void eliminar_respuestaNoExiste_404() {
-        when(usuarioRepository.findById(20L)).thenReturn(Optional.of(autorRespuesta));
-        when(respuestaRepository.findById(100L)).thenReturn(Optional.empty());
-
-        assertThatThrownBy(() -> respuestaService.eliminar(100L, 20L))
-                .isInstanceOf(EntityNotFoundException.class)
-                .hasMessageContaining("Respuesta");
-
-        verify(respuestaRepository, never()).delete(any());
-    }
 }

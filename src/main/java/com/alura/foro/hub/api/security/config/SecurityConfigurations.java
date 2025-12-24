@@ -82,10 +82,10 @@ public class SecurityConfigurations {
                                 // Login - Crear usuario - Listados foro (Acceso general)
                                 .requestMatchers(HttpMethod.POST,"/auth/login").permitAll()
                                 .requestMatchers(HttpMethod.POST,"/usuarios").permitAll()
-                                .requestMatchers(HttpMethod.GET, "/categorias").permitAll()
-                                .requestMatchers(HttpMethod.GET, "/cursos").permitAll()
-                                .requestMatchers(HttpMethod.GET, "/topicos" ).permitAll()
-                                .requestMatchers(HttpMethod.GET, "/respuestas").permitAll()
+                                .requestMatchers(HttpMethod.GET, "/categorias/**").permitAll()
+                                .requestMatchers(HttpMethod.GET, "/cursos/**").permitAll()
+                                .requestMatchers(HttpMethod.GET, "/topicos/**" ).permitAll()
+                                .requestMatchers(HttpMethod.GET, "/respuestas/topico/**").permitAll()
 
                                 // 🔒 C.U.D CATEGORIAS → SOLO ADMIN
                                 .requestMatchers(HttpMethod.POST, "/categorias/**").hasRole("ADMIN")

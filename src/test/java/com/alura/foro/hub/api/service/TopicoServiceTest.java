@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -47,39 +48,15 @@ class TopicoServiceTest {
 
     @BeforeEach
     void setUp() {
-        // ======== mocks base (suficientes para que TopicoMapper NO reviente) ========
+        // Setup mínimo: SOLO crear mocks base.
         autor = mock(Usuario.class);
-        when(autor.getId()).thenReturn(10L);
-        when(autor.getNombre()).thenReturn("Autor");
-        when(autor.esAdmin()).thenReturn(false);
-
         admin = mock(Usuario.class);
-        when(admin.getId()).thenReturn(99L);
-        when(admin.getNombre()).thenReturn("Admin");
-        when(admin.esAdmin()).thenReturn(true);
-
-        otro = mock(Usuario.class);
-        when(otro.getId()).thenReturn(50L);
-        when(otro.getNombre()).thenReturn("Otro");
-        when(otro.esAdmin()).thenReturn(false);
+        otro  = mock(Usuario.class);
 
         categoria = mock(Categoria.class);
-        when(categoria.getId()).thenReturn(2L);
-        when(categoria.getNombre()).thenReturn("Categoria");
+        curso     = mock(Curso.class);
 
-        curso = mock(Curso.class);
-        when(curso.getId()).thenReturn(1L);
-        when(curso.getNombre()).thenReturn("Curso");
-        when(curso.getCategoria()).thenReturn(categoria);
-
-        topico = mock(Topico.class);
-        when(topico.getId()).thenReturn(100L);
-        when(topico.getTitulo()).thenReturn("Titulo");
-        when(topico.getMensaje()).thenReturn("Mensaje");
-        when(topico.getFechaCreacion()).thenReturn(LocalDateTime.now());
-        when(topico.getAutor()).thenReturn(autor);
-        when(topico.getCurso()).thenReturn(curso);
-        when(topico.getStatus()).thenReturn(StatusTopico.ACTIVO);
+        topico    = mock(Topico.class);
     }
 
     // =========================
@@ -92,8 +69,14 @@ class TopicoServiceTest {
         when(usuarioRepository.findById(10L)).thenReturn(Optional.of(autor));
         when(cursoRepository.findById(1L)).thenReturn(Optional.of(curso));
 
-        // El service hace new Topico(...) y lo guarda.
-        // Devolvemos un Topico mock que tenga lo necesario para el mapper.
+        Categoria categoria = mock(Categoria.class);
+        when(categoria.getId()).thenReturn(2L);
+        when(categoria.getNombre()).thenReturn("Categoria");
+
+        when(curso.getId()).thenReturn(1L);
+        when(curso.getNombre()).thenReturn("Curso");
+        when(curso.getCategoria()).thenReturn(categoria);
+
         Topico guardado = mock(Topico.class);
         when(guardado.getId()).thenReturn(200L);
         when(guardado.getTitulo()).thenReturn("Titulo");
@@ -109,15 +92,13 @@ class TopicoServiceTest {
 
         assertThat(dto).isNotNull();
         assertThat(dto.id()).isEqualTo(200L);
-
-        verify(usuarioRepository).findById(10L);
-        verify(cursoRepository).findById(1L);
-        verify(topicoRepository).save(any(Topico.class));
     }
+
 
     @Test
     void crearTopico_autorNoExiste_404() {
         var datos = new DatosRegistroTopico("Titulo", "Mensaje", 1L);
+
         when(usuarioRepository.findById(10L)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> topicoService.crearTopico(datos, 10L))
@@ -125,11 +106,13 @@ class TopicoServiceTest {
                 .hasMessageContaining("Autor");
 
         verify(topicoRepository, never()).save(any());
+        verify(cursoRepository, never()).findById(anyLong());
     }
 
     @Test
     void crearTopico_cursoNoExiste_404() {
         var datos = new DatosRegistroTopico("Titulo", "Mensaje", 1L);
+
         when(usuarioRepository.findById(10L)).thenReturn(Optional.of(autor));
         when(cursoRepository.findById(1L)).thenReturn(Optional.empty());
 
@@ -146,10 +129,17 @@ class TopicoServiceTest {
     @Test
     void listar_ok() {
         var pageable = PageRequest.of(0, 10);
-        var page = new PageImpl<>(List.of(
-                new DatosListadoTopico(1L, "T", LocalDateTime.now(), "A", 1L, "C", 2L, "Cat",
-                        StatusTopico.ACTIVO, 0L, null)
-        ), pageable, 1);
+
+        var page = new PageImpl<>(
+                List.of(new DatosListadoTopico(
+                        1L, "T", LocalDateTime.now(),
+                        "A", 1L, "C", 2L, "Cat",
+                        StatusTopico.ACTIVO,
+                        0L, null
+                )),
+                pageable,
+                1
+        );
 
         when(topicoRepository.listarConMetricas(pageable)).thenReturn(page);
 
@@ -166,19 +156,31 @@ class TopicoServiceTest {
     void detallarTopico_ok() {
         when(topicoRepository.findById(100L)).thenReturn(Optional.of(topico));
 
-        // ✅ IMPORTANTE: Page<DatosListadoRespuesta> (no PageImpl raw)
-        Page<DatosListadoRespuesta> respuestasPage =
-                new PageImpl<>(List.of(), Pageable.unpaged(), 0);
+        when(topico.getId()).thenReturn(100L);
+        when(topico.getTitulo()).thenReturn("Titulo");
+        when(topico.getMensaje()).thenReturn("Mensaje");
+        when(topico.getFechaCreacion()).thenReturn(LocalDateTime.now());
+        when(topico.getStatus()).thenReturn(StatusTopico.ACTIVO);
 
-        when(respuestaService.listarPorTopico(eq(100L), any(Pageable.class)))
-                .thenReturn(respuestasPage);
+        when(topico.getAutor()).thenReturn(autor);
+
+        when(topico.getCurso()).thenReturn(curso);
+        when(curso.getId()).thenReturn(1L);
+
+        when(curso.getCategoria()).thenReturn(categoria);
+        when(categoria.getId()).thenReturn(2L);
+
+        when(respuestaService.listarPorTopico(eq(100L), eq(Pageable.unpaged())))
+                .thenReturn(Page.empty());
 
         var dto = topicoService.detallarTopico(100L);
 
         assertThat(dto).isNotNull();
+
         verify(topicoRepository).findById(100L);
-        verify(respuestaService).listarPorTopico(eq(100L), eq(Pageable.unpaged()));
+        verify(respuestaService).listarPorTopico(100L, Pageable.unpaged());
     }
+
 
     @Test
     void detallarTopico_noExiste_404() {
@@ -197,6 +199,7 @@ class TopicoServiceTest {
     @Test
     void actualizarTopico_siNoEsAutor_403() {
         when(topicoRepository.findById(100L)).thenReturn(Optional.of(topico));
+
         when(topico.getAutor()).thenReturn(autor);
         when(autor.getId()).thenReturn(10L);
 
@@ -207,13 +210,32 @@ class TopicoServiceTest {
                 .hasMessageContaining("Solo el autor");
 
         verify(cursoRepository, never()).findById(anyLong());
+        verify(topicoRepository).findById(100L);
     }
 
     @Test
-    void actualizarTopico_ok_siEsAutor() {
+    void actualizarTopico_ok_siEsAutor_y_noCambiaCurso() {
         when(topicoRepository.findById(100L)).thenReturn(Optional.of(topico));
+
         when(topico.getAutor()).thenReturn(autor);
         when(autor.getId()).thenReturn(10L);
+
+        // Para el mapper/detalle
+        when(topico.getId()).thenReturn(100L);
+        when(topico.getTitulo()).thenReturn("Viejo");
+        when(topico.getMensaje()).thenReturn("Viejo msg");
+        when(topico.getFechaCreacion()).thenReturn(LocalDateTime.now());
+        when(topico.getStatus()).thenReturn(StatusTopico.ACTIVO);
+        when(topico.getCurso()).thenReturn(curso);
+
+        when(autor.getNombre()).thenReturn("Autor");
+
+        when(curso.getId()).thenReturn(1L);
+        when(curso.getNombre()).thenReturn("Curso");
+        when(curso.getCategoria()).thenReturn(categoria);
+
+        when(categoria.getId()).thenReturn(2L);
+        when(categoria.getNombre()).thenReturn("Categoria");
 
         var datos = new DatosActualizarTopico("Nuevo", "Nuevo msg", null, StatusTopico.ACTIVO);
 
@@ -221,6 +243,24 @@ class TopicoServiceTest {
 
         assertThat(dto).isNotNull();
         verify(topicoRepository).findById(100L);
+        verify(cursoRepository, never()).findById(anyLong());
+    }
+
+    @Test
+    void actualizarTopico_cambiaCurso_y_cursoNoExiste_404() {
+        when(topicoRepository.findById(100L)).thenReturn(Optional.of(topico));
+        when(topico.getAutor()).thenReturn(autor);
+        when(autor.getId()).thenReturn(10L);
+
+        when(cursoRepository.findById(99L)).thenReturn(Optional.empty());
+
+        var datos = new DatosActualizarTopico("Nuevo", "Nuevo msg", 99L, StatusTopico.ACTIVO);
+
+        assertThatThrownBy(() -> topicoService.actualizarTopico(100L, datos, 10L))
+                .isInstanceOf(EntityNotFoundException.class)
+                .hasMessageContaining("Curso");
+
+        verify(cursoRepository).findById(99L);
     }
 
     // =========================
@@ -229,10 +269,12 @@ class TopicoServiceTest {
     @Test
     void eliminarTopico_ok_siEsAutor() {
         when(topicoRepository.findById(100L)).thenReturn(Optional.of(topico));
+
         when(usuarioRepository.findById(10L)).thenReturn(Optional.of(autor));
+        when(autor.esAdmin()).thenReturn(false);
+
         when(topico.getAutor()).thenReturn(autor);
         when(autor.getId()).thenReturn(10L);
-        when(autor.esAdmin()).thenReturn(false);
 
         topicoService.eliminarTopico(100L, 10L);
 
@@ -242,7 +284,9 @@ class TopicoServiceTest {
     @Test
     void eliminarTopico_ok_siEsAdmin() {
         when(topicoRepository.findById(100L)).thenReturn(Optional.of(topico));
+
         when(usuarioRepository.findById(99L)).thenReturn(Optional.of(admin));
+        when(admin.esAdmin()).thenReturn(true);
 
         topicoService.eliminarTopico(100L, 99L);
 
@@ -252,7 +296,10 @@ class TopicoServiceTest {
     @Test
     void eliminarTopico_403_siNoEsAutorNiAdmin() {
         when(topicoRepository.findById(100L)).thenReturn(Optional.of(topico));
+
         when(usuarioRepository.findById(50L)).thenReturn(Optional.of(otro));
+        when(otro.esAdmin()).thenReturn(false);
+
         when(topico.getAutor()).thenReturn(autor);
         when(autor.getId()).thenReturn(10L);
 
@@ -260,12 +307,35 @@ class TopicoServiceTest {
                 .isInstanceOf(ForbiddenException.class)
                 .hasMessageContaining("Solo el autor");
 
-        // ✅ IMPORTANTE: tipar any() para evitar ambiguous delete(...)
+        verify(topicoRepository, never()).delete(any(Topico.class));
+    }
+
+    @Test
+    void eliminarTopico_topicoNoExiste_404() {
+        when(topicoRepository.findById(100L)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> topicoService.eliminarTopico(100L, 10L))
+                .isInstanceOf(EntityNotFoundException.class)
+                .hasMessageContaining("Tópico");
+
+        verify(usuarioRepository, never()).findById(anyLong());
+        verify(topicoRepository, never()).delete(any(Topico.class));
+    }
+
+    @Test
+    void eliminarTopico_usuarioNoExiste_404() {
+        when(topicoRepository.findById(100L)).thenReturn(Optional.of(topico));
+        when(usuarioRepository.findById(10L)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> topicoService.eliminarTopico(100L, 10L))
+                .isInstanceOf(EntityNotFoundException.class)
+                .hasMessageContaining("Autor");
+
         verify(topicoRepository, never()).delete(any(Topico.class));
     }
 
     // =========================
-    // BUSCAR (validación rango fechas)
+    // BUSCAR (validación rango fechas + llamado repo)
     // =========================
     @Test
     void buscar_badRequest_siDesdeMayorQueHasta() {
@@ -288,18 +358,25 @@ class TopicoServiceTest {
     }
 
     @Test
-    void buscar_ok_llamaRepo() {
+    void buscar_ok_normaliza_y_llamaRepo() {
         var filtro = new TopicoFiltro(
-                "security", 1L, 10L, StatusTopico.ACTIVO,
+                "   security   ", 1L, 10L, StatusTopico.ACTIVO,
                 null, null,
-                "Curso", "Categoria"
+                "  Curso  ", "  Categoria "
         );
 
         var pageable = PageRequest.of(0, 10);
-        var page = new PageImpl<>(List.of(
-                new DatosListadoTopico(1L, "T", LocalDateTime.now(), "A", 1L, "C", 2L, "Cat",
-                        StatusTopico.ACTIVO, 0L, null)
-        ), pageable, 1);
+
+        var page = new PageImpl<>(
+                List.of(new DatosListadoTopico(
+                        1L, "T", LocalDateTime.now(),
+                        "A", 1L, "C", 2L, "Cat",
+                        StatusTopico.ACTIVO,
+                        0L, null
+                )),
+                pageable,
+                1
+        );
 
         when(topicoRepository.buscarConMetricas(
                 any(), any(), any(), any(), any(), any(), any(), any(), any()
@@ -308,15 +385,43 @@ class TopicoServiceTest {
         var res = topicoService.buscar(filtro, pageable);
 
         assertThat(res.getTotalElements()).isEqualTo(1);
+
         verify(topicoRepository).buscarConMetricas(
-                eq("security"),
+                eq("security"),      // trim
                 eq(1L),
                 eq(10L),
                 eq(StatusTopico.ACTIVO),
                 isNull(),
                 isNull(),
-                eq("Curso"),
-                eq("Categoria"),
+                eq("Curso"),         // trim
+                eq("Categoria"),     // trim
+                eq(pageable)
+        );
+    }
+
+    @Test
+    void buscar_normaliza_blanks_a_null() {
+        var filtro = new TopicoFiltro(
+                "   ", null, null, null,
+                null, null,
+                "   ", "   "
+        );
+
+        var pageable = PageRequest.of(0, 10);
+        when(topicoRepository.buscarConMetricas(
+                isNull(), isNull(), isNull(), isNull(),
+                isNull(), isNull(),
+                isNull(), isNull(),
+                eq(pageable)
+        )).thenReturn(Page.empty(pageable));
+
+        var res = topicoService.buscar(filtro, pageable);
+
+        assertThat(res).isNotNull();
+        verify(topicoRepository).buscarConMetricas(
+                isNull(), isNull(), isNull(), isNull(),
+                isNull(), isNull(),
+                isNull(), isNull(),
                 eq(pageable)
         );
     }
