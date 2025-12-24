@@ -1,6 +1,5 @@
 package com.alura.foro.hub.api.service;
 
-import com.alura.foro.hub.api.dto.respuesta.DatosListadoRespuesta;
 import com.alura.foro.hub.api.dto.topico.*;
 import com.alura.foro.hub.api.entity.enums.StatusTopico;
 import com.alura.foro.hub.api.entity.model.Categoria;
