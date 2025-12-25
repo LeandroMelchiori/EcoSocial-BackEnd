@@ -24,9 +24,10 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.header.writers.StaticHeadersWriter;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.access.AccessDeniedHandler;
+
+import java.io.IOException;
 
 import static org.springframework.security.config.Customizer.withDefaults;
 
@@ -79,13 +80,16 @@ public class SecurityConfigurations {
                 )
                 // Authorizations EndPoints
                 .authorizeHttpRequests((authorize) -> authorize
-                                // Login - Crear usuario - Listados foro (Acceso general)
+                                // Accesos publicos
                                 .requestMatchers(HttpMethod.POST,"/auth/login").permitAll()
                                 .requestMatchers(HttpMethod.POST,"/usuarios").permitAll()
                                 .requestMatchers(HttpMethod.GET, "/categorias/**").permitAll()
                                 .requestMatchers(HttpMethod.GET, "/cursos/**").permitAll()
                                 .requestMatchers(HttpMethod.GET, "/topicos/**" ).permitAll()
                                 .requestMatchers(HttpMethod.GET, "/respuestas/topico/**").permitAll()
+                                .requestMatchers(HttpMethod.GET, "/actuator/**").permitAll()
+                                .requestMatchers(HttpMethod.GET, "/actuator/health/**").permitAll()
+                                .requestMatchers(HttpMethod.GET, "/actuator/info/**").permitAll()
 
                                 // 🔒 C.U.D CATEGORIAS → SOLO ADMIN
                                 .requestMatchers(HttpMethod.POST, "/categorias/**").hasRole("ADMIN")
@@ -147,12 +151,19 @@ public class SecurityConfigurations {
             writeJson(response, HttpServletResponse.SC_FORBIDDEN, body);
         };
     }
+    private final ObjectMapper objectMapper;
 
-    private void writeJson(HttpServletResponse response, int status, Object body) throws java.io.IOException {
+    public SecurityConfigurations(ObjectMapper objectMapper) {
+        this.objectMapper = objectMapper;
+    }
+
+    private void writeJson(HttpServletResponse response, int status, Object body) throws IOException {
         response.setStatus(status);
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
-        new ObjectMapper().writeValue(response.getOutputStream(), body);
+        response.setCharacterEncoding("UTF-8");
+        objectMapper.writeValue(response.getOutputStream(), body);
     }
+
 
 }
 
