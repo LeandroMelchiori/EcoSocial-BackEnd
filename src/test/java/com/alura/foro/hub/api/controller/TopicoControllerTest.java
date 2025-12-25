@@ -169,6 +169,8 @@ class TopicoControllerTest {
         org.junit.jupiter.api.Assertions.assertEquals("backend", f.nombreCategoria());
     }
 
+
+
     // =========================
     // POST /topicos (crear)
     // =========================
@@ -270,6 +272,28 @@ class TopicoControllerTest {
     }
 
     @Test
+    void actualizar_403_si_service_lanza_forbidden() throws Exception {
+        var body = new DatosActualizarTopico(
+                "titulo",
+                "mensaje",
+                1L,
+                StatusTopico.ACTIVO
+        );
+
+        when(topicoService.actualizarTopico(eq(10L), any(DatosActualizarTopico.class), eq(99L)))
+                .thenThrow(new com.alura.foro.hub.api.security.exception.ForbiddenException("Solo el autor puede modificar el tópico"));
+
+        mvc.perform(put("/topicos/10")
+                        .with(authentication(authConUsuario(99L)))
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(body)))
+                .andExpect(status().isForbidden());
+
+        verify(topicoService).actualizarTopico(eq(10L), any(DatosActualizarTopico.class), eq(99L));
+    }
+
+    @Test
     void actualizar_badRequest_siBodyInvalido() throws Exception {
         // Ojo: tu record NO tiene @Validaciones, así que esto puede NO dar 400.
         // Te lo dejo igual por si luego agregás @NotBlank, etc.
@@ -300,5 +324,19 @@ class TopicoControllerTest {
                 .andExpect(status().isNoContent());
 
         verify(topicoService).eliminarTopico(10L, 10L);
+    }
+
+
+    @Test
+    void eliminar_403_si_service_lanza_forbidden() throws Exception {
+        doThrow(new com.alura.foro.hub.api.security.exception.ForbiddenException("Solo el autor del tópico puede eliminarlo"))
+                .when(topicoService).eliminarTopico(10L, 99L);
+
+        mvc.perform(delete("/topicos/10")
+                        .with(authentication(authConUsuario(99L)))
+                        .with(csrf()))
+                .andExpect(status().isForbidden());
+
+        verify(topicoService).eliminarTopico(10L, 99L);
     }
 }

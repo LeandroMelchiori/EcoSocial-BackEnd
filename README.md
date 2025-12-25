@@ -26,6 +26,7 @@ cuenta con documentación OpenAPI (Swagger) para referencia.
 - **Postman** para pruebas de los endpoints
 - **Maven** como gestor de dependencias
 
+
 ## 🚀 Funcionalidades principales
 
 ### 👤 Autenticación y usuarios
@@ -59,6 +60,32 @@ cuenta con documentación OpenAPI (Swagger) para referencia.
 - Filtros de seguridad personalizados
 - Manejo centralizado de errores
 - Validaciones de datos con mensajes claros
+
+--- 
+
+## 🧩 Arquitectura
+
+El proyecto sigue una arquitectura por capas:
+
+- Controller: manejo HTTP
+- Service: lógica de negocio
+- Repository: acceso a datos
+- Security: autenticación y autorización con JWT
+
+---
+
+## 📊 Monitoreo
+
+El proyecto utiliza **Spring Boot Actuator** para exponer endpoints de monitoreo básicos.
+
+Endpoints disponibles:
+
+- `GET /actuator/health` → Estado de la aplicación
+- `GET /actuator/info` → Información general del proyecto
+
+Estos endpoints permiten verificar que la API esté activa sin exponer información sensible.
+
+---
 
 ## ⚙️ Requisitos y configuración
 
@@ -291,6 +318,26 @@ La API implementa medidas de seguridad orientadas a entornos reales:
 
 ---
 
+## 🧪 Testing
+
+El proyecto cuenta con:
+- Tests de controladores (MockMvc)
+- Tests de seguridad (401 / 403 / 201)
+- Pruebas funcionales end-to-end con Postman
+
+Durante los tests automatizados se utiliza un perfil `test`
+con base de datos en memoria.
+
+### 📬 Colección de Postman
+
+El proyecto incluye una colección de Postman con flujos completos
+de prueba (registro, login, tópicos, respuestas, cursos y categorías).
+
+📁 Ubicación:
+```text
+/postman/ForoHub.postman_collection.json
+```
+---
 ## 📌 Notas finales
 
 - El proyecto está diseñado como **API REST**, sin interfaz gráfica
