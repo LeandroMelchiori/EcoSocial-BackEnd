@@ -21,5 +21,8 @@ public record DatosListadoRespuesta(
         Boolean solucion,
 
         @Schema(example = "2025-12-18T19:10:00")
-        LocalDateTime fechaCreacion
+        LocalDateTime fechaCreacion,
+
+        @Schema(example = "8")
+        Long cantidadHijas
 ) {}

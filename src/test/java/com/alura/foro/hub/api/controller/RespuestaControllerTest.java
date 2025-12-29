@@ -55,7 +55,8 @@ class RespuestaControllerTest {
                 "Respuesta",
                 "Otro Usuario",
                 false,
-                LocalDateTime.of(2025, 12, 18, 19, 10, 0)
+                LocalDateTime.of(2025, 12, 18, 19, 10, 0),
+                0L
         );
 
         when(respuestaService.crear(any(DatosCrearRespuesta.class), eq(10L)))
@@ -103,7 +104,8 @@ class RespuestaControllerTest {
                 "Mensaje",
                 "Otro Usuario",
                 false,
-                LocalDateTime.now()
+                LocalDateTime.now(),
+                0L
         );
 
         when(respuestaService.listarPorTopico(eq(10L), any(Pageable.class)))
@@ -132,7 +134,8 @@ class RespuestaControllerTest {
                 "Mensaje",
                 "Otro Usuario",
                 true,
-                LocalDateTime.now()
+                LocalDateTime.now(),
+                0L
         );
 
         when(respuestaService.marcarSolucion(eq(45L), eq(10L))).thenReturn(dto);
@@ -160,7 +163,8 @@ class RespuestaControllerTest {
                 "Actualicé la respuesta",
                 "Otro Usuario",
                 false,
-                LocalDateTime.now()
+                LocalDateTime.now(),
+                0L
         );
 
         when(respuestaService.actualizar(eq(45L), any(DatosActualizarRespuesta.class), eq(10L)))

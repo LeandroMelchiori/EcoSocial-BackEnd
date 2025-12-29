@@ -1,5 +1,6 @@
 package com.alura.foro.hub.api.controller;
 
+import com.alura.foro.hub.api.dto.respuesta.DatosDetalleRespuesta;
 import com.alura.foro.hub.api.entity.model.Usuario;
 import com.alura.foro.hub.api.dto.respuesta.DatosActualizarRespuesta;
 import com.alura.foro.hub.api.dto.respuesta.DatosCrearRespuesta;
@@ -18,7 +19,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
-@SecurityRequirement(name = "bearer-key")
 @RestController
 @RequestMapping("/respuestas")
 public class RespuestaController {
@@ -71,6 +71,7 @@ public class RespuestaController {
                     )
             )
     )
+    @SecurityRequirement(name = "bearer-key")
     @PostMapping
     public ResponseEntity<DatosListadoRespuesta> crear(
             @RequestBody @Valid DatosCrearRespuesta datos,
@@ -127,6 +128,26 @@ public class RespuestaController {
     }
 
     @Operation(
+            summary = "Detalle de una respuesta",
+            description = "Devuelve el detalle de una respuesta junto con sus respuestas hijas"
+    )
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Detalle de la respuesta"
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Respuesta no encontrada"
+            )
+    })
+    @GetMapping("/{id}")
+    public ResponseEntity<DatosDetalleRespuesta> detalle(@PathVariable Long id) {
+        return ResponseEntity.ok(respuestaService.detalle(id));
+    }
+
+
+    @Operation(
             summary = "Marcar respuesta como solución",
             description = "Permite al autor del tópico marcar una respuesta como solución",
             security = @SecurityRequirement(name = "bearer-key")
@@ -152,6 +173,7 @@ public class RespuestaController {
                     )
             )
     )
+    @SecurityRequirement(name = "bearer-key")
     @PatchMapping("/{id}/solucion")
     public ResponseEntity<DatosListadoRespuesta> marcarSolucion(
             @PathVariable Long id,
@@ -163,7 +185,6 @@ public class RespuestaController {
                 respuestaService.marcarSolucion(id, usuario.getId())
         );
     }
-
 
     @Operation(
             summary = "Actualizar respuesta",
@@ -206,6 +227,7 @@ public class RespuestaController {
                     )
             )
     )
+    @SecurityRequirement(name = "bearer-key")
     @PutMapping("/{id}")
     public ResponseEntity<DatosListadoRespuesta> editar(
             @PathVariable Long id,
@@ -226,6 +248,7 @@ public class RespuestaController {
                     " (tambien autor del topico o admin) eliminar la respuesta seleccionada",
             security = @SecurityRequirement(name = "bearer-key")
     )
+    @SecurityRequirement(name = "bearer-key")
     @ApiResponsesDefault
     @ApiResponse(responseCode = "204", description = "Respuesta eliminada")
     @DeleteMapping("/{id}")

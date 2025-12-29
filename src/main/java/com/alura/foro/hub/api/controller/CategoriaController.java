@@ -18,7 +18,6 @@ import org.springframework.web.bind.annotation.*;
 import java.net.URI;
 import java.util.List;
 
-@SecurityRequirement(name = "bearer-key")
 @RestController
 @RequestMapping("/categorias")
 public class CategoriaController {
@@ -127,6 +126,7 @@ public class CategoriaController {
     )
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
+    @SecurityRequirement(name = "bearer-key")
     public ResponseEntity<DatosListadoCategoria> crear(
             @RequestBody @Valid DatosCrearCategoria datos) {
 
@@ -174,6 +174,7 @@ public class CategoriaController {
     )
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
+    @SecurityRequirement(name = "bearer-key")
     public ResponseEntity<DatosListadoCategoria> actualizar(
             @PathVariable Long id,
             @RequestBody @Valid DatosActualizarCategoria datos) {
@@ -190,6 +191,7 @@ public class CategoriaController {
     @ApiResponse(responseCode = "204", description = "Categoria eliminada")
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
+    @SecurityRequirement(name = "bearer-key")
     public ResponseEntity<Void> eliminar(
             @PathVariable Long id) {
 

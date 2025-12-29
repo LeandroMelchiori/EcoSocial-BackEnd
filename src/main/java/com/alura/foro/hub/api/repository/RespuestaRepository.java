@@ -3,9 +3,11 @@ package com.alura.foro.hub.api.repository;
 import com.alura.foro.hub.api.entity.model.Respuesta;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -13,15 +15,10 @@ import java.util.List;
 @Repository
 public interface RespuestaRepository extends JpaRepository<Respuesta, Long> {
 
-    // Buscar respuestas de un tópico específico
-    Page<Respuesta> findByTopicoId(Long topicoId, Pageable pageable);
-
     // Buscar respuestas marcadas como solución
     List<Respuesta> findBySolucionTrue();
 
     List<Respuesta> findByTopicoIdAndSolucionTrue(Long topicoId);
-
-    Page<Respuesta> findByTopicoIdOrderByFechaCreacionAsc(Long topicoId, Pageable pageable);
 
     @Modifying
     @Query("""
@@ -31,7 +28,14 @@ public interface RespuestaRepository extends JpaRepository<Respuesta, Long> {
     """)
     void desmarcarSoluciones(@org.springframework.data.repository.query.Param("topicoId") Long topicoId);
 
-
     Page<Respuesta> findByTopicoIdOrderBySolucionDescFechaCreacionDesc(Long topicoId, Pageable pageable);
 
+    @Query("""
+        select r.id, count(rh.id)
+        from Respuesta r
+        left join RespuestaHija rh on rh.respuesta.id = r.id
+        where r.topico.id = :topicoId
+        group by r.id
+    """)
+    List<Object[]> contarHijasPorRespuestaDeTopico(@Param("topicoId") Long topicoId);
 }

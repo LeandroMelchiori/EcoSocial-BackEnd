@@ -28,10 +28,10 @@ public class RateLimitFilter extends OncePerRequestFilter {
     private final Map<String, Window> counters = new ConcurrentHashMap<>();
 
     // Ajustá límites según endpoint
-    private static final int LOGIN_MAX_PER_MIN = 10;         // /auth/login
-    private static final int WRITE_MAX_PER_MIN = 30;         // POST/PUT/PATCH/DELETE
-    private static final int READ_MAX_PER_MIN  = 120;        // GET
-    private static final long WINDOW_SECONDS = 60;
+    private static final int LOGIN_MAX_PER_MIN = 100;         // /auth/login
+    private static final int WRITE_MAX_PER_MIN = 300;         // POST/PUT/PATCH/DELETE
+    private static final int READ_MAX_PER_MIN  = 1200;        // GET
+    private static final long WINDOW_SECONDS = 600;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,
