@@ -132,6 +132,11 @@ public class RespuestaService {
         Respuesta respuesta = respuestaRepository.findById(respuestaId)
                 .orElseThrow(() -> new EntityNotFoundException("Respuesta no encontrada"));
 
+        Duration duracion = Duration.between(respuesta.getFechaCreacion(), LocalDateTime.now());
+
+        if (duracion.toMinutes() > 10) {throw new BadRequestException("El tiempo para editar esta respuesta ya expiró");}
+
+
         if (!respuesta.getAutor().getId().equals(usuarioId)) {
             throw new ForbiddenException("Solo el autor puede editar la respuesta");
         }
