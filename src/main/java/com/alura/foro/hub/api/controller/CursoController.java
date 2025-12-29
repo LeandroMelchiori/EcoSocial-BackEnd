@@ -17,7 +17,6 @@ import org.springframework.web.bind.annotation.*;
 import java.net.URI;
 import java.util.List;
 
-@SecurityRequirement(name = "bearer-key")
 @RestController
 @RequestMapping("/cursos")
 public class CursoController {
@@ -136,6 +135,7 @@ public class CursoController {
                     )
             )
     )
+    @SecurityRequirement(name = "bearer-key")
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<DatosListadoCurso> crear(
@@ -186,6 +186,7 @@ public class CursoController {
                     )
             )
     )
+    @SecurityRequirement(name = "bearer-key")
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<DatosListadoCurso> actualizar(
@@ -200,6 +201,7 @@ public class CursoController {
             description = "Permite a un administrador eliminar un curso",
             security = @SecurityRequirement(name = "bearer-key")
     )
+    @SecurityRequirement(name = "bearer-key")
     @ApiResponsesDefault
     @ApiResponse(responseCode = "204", description = "Curso eliminado")
     @DeleteMapping("/{id}")

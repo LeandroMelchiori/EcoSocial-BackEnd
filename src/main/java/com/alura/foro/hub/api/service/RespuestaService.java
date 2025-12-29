@@ -3,11 +3,14 @@ package com.alura.foro.hub.api.service;
 
 import com.alura.foro.hub.api.dto.respuesta.DatosActualizarRespuesta;
 import com.alura.foro.hub.api.dto.respuesta.DatosCrearRespuesta;
+import com.alura.foro.hub.api.dto.respuesta.DatosDetalleRespuesta;
 import com.alura.foro.hub.api.dto.respuesta.DatosListadoRespuesta;
 import com.alura.foro.hub.api.entity.enums.StatusTopico;
 import com.alura.foro.hub.api.entity.model.Respuesta;
+import com.alura.foro.hub.api.mapper.RespuestaHijaMapper;
 import com.alura.foro.hub.api.mapper.RespuestaMapper;
 import com.alura.foro.hub.api.repository.*;
+import com.alura.foro.hub.api.security.exception.BadRequestException;
 import com.alura.foro.hub.api.security.exception.ForbiddenException;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.data.domain.Page;
@@ -17,20 +20,28 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.time.Duration;
+import java.time.LocalDateTime;
+import java.util.Map;
+
 @Service
 public class RespuestaService {
 
     private final RespuestaRepository respuestaRepository;
     private final TopicoRepository topicoRepository;
     private final UsuarioRepository usuarioRepository;
+    private final RespuestaHijaRepository respuestaHijaRepository;
 
     public RespuestaService(RespuestaRepository respuestaRepository,
                             TopicoRepository topicoRepository,
-                            UsuarioRepository usuarioRepository) {
+                            UsuarioRepository usuarioRepository,
+                            RespuestaHijaRepository respuestaHijaRepository) {
         this.respuestaRepository = respuestaRepository;
         this.topicoRepository = topicoRepository;
         this.usuarioRepository = usuarioRepository;
+        this.respuestaHijaRepository = respuestaHijaRepository;
     }
+
 
     @Transactional
     public DatosListadoRespuesta crear(DatosCrearRespuesta datos, Long autorId) {
@@ -45,10 +56,11 @@ public class RespuestaService {
         var autor = usuarioRepository.findById(autorId)
                 .orElseThrow(() -> new EntityNotFoundException("Usuario no encontrado"));
 
-        var respuesta = RespuestaMapper.fromCrear(datos, topico, autor);
-        respuesta = respuestaRepository.save(respuesta);
+        var respuesta = respuestaRepository.save(
+                RespuestaMapper.fromCrear(datos, topico, autor)
+        );
 
-        return RespuestaMapper.toListado(respuesta);
+        return RespuestaMapper.toListado(respuesta, 0L);
     }
 
     @Transactional(readOnly = true)
@@ -56,10 +68,42 @@ public class RespuestaService {
         topicoRepository.findById(topicoId)
                 .orElseThrow(() -> new EntityNotFoundException("Tópico no encontrado"));
 
+        // 1) Traés el conteo una sola vez
+        Map<Long, Long> conteos = mapCantidadHijas(topicoId);
+
+        // 2) Listás respuestas SIN cargar hijas
         return respuestaRepository
                 .findByTopicoIdOrderBySolucionDescFechaCreacionDesc(topicoId, pageable)
-                .map(RespuestaMapper::toListado);
+                .map(r -> RespuestaMapper.toListado(
+                        r,
+                        conteos.getOrDefault(r.getId(), 0L)
+                ));
     }
+
+    @Transactional(readOnly = true)
+    public DatosDetalleRespuesta detalle(Long respuestaId) {
+        Respuesta respuesta = respuestaRepository.findById(respuestaId)
+                .orElseThrow(() -> new EntityNotFoundException("Respuesta no encontrada"));
+
+        Duration duracion = Duration.between(respuesta.getFechaCreacion(), LocalDateTime.now());
+
+        if (duracion.toMinutes() > 720) {throw new BadRequestException("El tiempo para editar esta respuesta ya expiró");}
+
+        // hijas con autor (sin N+1)
+        var hijas = respuestaHijaRepository.buscarPorRespuestaConAutor(respuestaId)
+                .stream()
+                .map(RespuestaHijaMapper::toListado)
+                .toList();
+
+        return RespuestaMapper.toDetalle(
+                respuesta,
+                (long) hijas.size(),
+                hijas
+        );
+    }
+
+
+
 
     @Transactional
     public DatosListadoRespuesta marcarSolucion(Long respuestaId, Long usuarioId) {
@@ -80,7 +124,7 @@ public class RespuestaService {
         topico.solucionado();
         topicoRepository.save(topico);
 
-        return RespuestaMapper.toListado(respuesta);
+        return RespuestaMapper.toListado(respuesta, 0L);
     }
 
     @Transactional
@@ -99,7 +143,7 @@ public class RespuestaService {
 
         RespuestaMapper.aplicarActualizacion(respuesta, dto);
 
-        return RespuestaMapper.toListado(respuesta);
+        return RespuestaMapper.toListado(respuesta, 0L);
     }
 
     @Transactional
@@ -130,4 +174,14 @@ public class RespuestaService {
 
         respuestaRepository.delete(r);
     }
+
+    private Map<Long, Long> mapCantidadHijas(Long topicoId) {
+        return respuestaRepository.contarHijasPorRespuestaDeTopico(topicoId)
+                .stream()
+                .collect(java.util.stream.Collectors.toMap(
+                        row -> (Long) row[0],
+                        row -> (Long) row[1]
+                ));
+    }
+
 }

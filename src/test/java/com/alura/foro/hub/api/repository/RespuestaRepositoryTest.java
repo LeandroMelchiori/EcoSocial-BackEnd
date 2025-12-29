@@ -125,7 +125,7 @@ class RespuestaRepositoryTest {
         flushAndClear();
 
         var todas = respuestaRepository
-                .findByTopicoId(topico.getId(), Pageable.unpaged())
+                .findByTopicoIdOrderBySolucionDescFechaCreacionDesc(topico.getId(), Pageable.unpaged())
                 .getContent();
 
         assertThat(todas).hasSize(3);
