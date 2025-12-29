@@ -56,7 +56,8 @@ class RespuestaControllerTest {
                 "Otro Usuario",
                 false,
                 LocalDateTime.of(2025, 12, 18, 19, 10, 0),
-                0L
+                0L,
+                null
         );
 
         when(respuestaService.crear(any(DatosCrearRespuesta.class), eq(10L)))
@@ -105,7 +106,8 @@ class RespuestaControllerTest {
                 "Otro Usuario",
                 false,
                 LocalDateTime.now(),
-                0L
+                0L,
+                null
         );
 
         when(respuestaService.listarPorTopico(eq(10L), any(Pageable.class)))
@@ -135,7 +137,8 @@ class RespuestaControllerTest {
                 "Otro Usuario",
                 true,
                 LocalDateTime.now(),
-                0L
+                0L,
+                null
         );
 
         when(respuestaService.marcarSolucion(eq(45L), eq(10L))).thenReturn(dto);
@@ -164,7 +167,8 @@ class RespuestaControllerTest {
                 "Otro Usuario",
                 false,
                 LocalDateTime.now(),
-                0L
+                0L,
+                null
         );
 
         when(respuestaService.actualizar(eq(45L), any(DatosActualizarRespuesta.class), eq(10L)))

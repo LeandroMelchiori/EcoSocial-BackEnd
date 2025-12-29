@@ -23,7 +23,8 @@ public class RespuestaHijaMapper {
                 rh.getId(),
                 rh.getMensaje(),
                 rh.getAutor().getNombre(),
-                rh.getFechaCreacion()
+                rh.getFechaCreacion(),
+                rh.getEditado()
         );
     }
 }

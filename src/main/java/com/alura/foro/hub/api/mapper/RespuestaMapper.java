@@ -35,7 +35,8 @@ public class RespuestaMapper {
                 r.getAutor().getNombre(),
                 r.getSolucion(),
                 r.getFechaCreacion(),
-                cantidadHijas
+                cantidadHijas,
+                r.getEditado()
         );
     }
 

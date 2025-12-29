@@ -1,7 +1,6 @@
 package com.alura.foro.hub.api.entity.model;
 
 import com.alura.foro.hub.api.entity.enums.StatusTopico;
-import com.alura.foro.hub.api.dto.topico.DatosActualizarTopico;
 import com.alura.foro.hub.api.dto.topico.DatosRegistroTopico;
 import jakarta.persistence.*;
 import lombok.*;
@@ -11,11 +10,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@Table(name = "topico")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Table(name = "topico")
 public class Topico extends AuditableEntity {
 
     @Id
@@ -39,6 +38,9 @@ public class Topico extends AuditableEntity {
     @JoinColumn(name = "curso_id")
     private Curso curso;
 
+    @Column(nullable = false)
+    private Boolean editado = false;
+
     @OneToMany(mappedBy = "topico", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Respuesta> respuestas = new ArrayList<>();
 
@@ -49,7 +51,6 @@ public class Topico extends AuditableEntity {
         this.fechaCreacion = LocalDateTime.now();
         this.autor = autor;
         this.curso = curso;
-        this.status = StatusTopico.ACTIVO; // o el que quieras por defecto
     }
 
     public void actualizar(String titulo, String mensaje, StatusTopico status) {
@@ -76,5 +77,6 @@ public class Topico extends AuditableEntity {
     void prePersist() {
         if (fechaCreacion == null) fechaCreacion = LocalDateTime.now();
         if (status == null) status = StatusTopico.ACTIVO;
+        if (editado == null) editado = false;
     }
 }

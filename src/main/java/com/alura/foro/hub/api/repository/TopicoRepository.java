@@ -45,7 +45,8 @@ public interface TopicoRepository extends
         cat.nombre,
         t.status,
         count(r.id),
-        max(r.fechaCreacion)
+        max(r.fechaCreacion),
+        coalesce(t.editado, false)
     )
     from Topico t
     join t.autor a
@@ -95,7 +96,8 @@ select new com.alura.foro.hub.api.dto.topico.DatosListadoTopico(
     cat.nombre,
     t.status,
     count(r),
-    max(r.fechaCreacion)
+    max(r.fechaCreacion),
+    coalesce(t.editado, false)
 )
 from Topico t
 join t.autor a

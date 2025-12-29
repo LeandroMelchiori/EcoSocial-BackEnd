@@ -60,7 +60,8 @@ class TopicoControllerTest {
                 "Economía social",
                 StatusTopico.ACTIVO,
                 1L,
-                LocalDateTime.of(2025, 12, 18, 19, 10, 0)
+                LocalDateTime.of(2025, 12, 18, 19, 10, 0),
+                null
         );
 
         when(topicoService.listar(any(Pageable.class)))
@@ -98,6 +99,7 @@ class TopicoControllerTest {
                 2L,
                 "Economía social",
                 StatusTopico.ACTIVO,
+                null,
                 List.of()
         );
 
@@ -132,6 +134,7 @@ class TopicoControllerTest {
                 "Backend",
                 StatusTopico.ACTIVO,
                 0L,
+                null,
                 null
         );
 
@@ -193,6 +196,7 @@ class TopicoControllerTest {
                 2L,
                 "Economía social",
                 StatusTopico.ACTIVO,
+                null,
                 List.of()
         );
 
@@ -252,6 +256,7 @@ class TopicoControllerTest {
                 2L,
                 "Economía social",
                 StatusTopico.ACTIVO,
+                null,
                 List.of()
         );
 
