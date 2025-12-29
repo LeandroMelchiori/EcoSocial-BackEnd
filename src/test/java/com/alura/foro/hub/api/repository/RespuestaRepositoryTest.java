@@ -15,7 +15,6 @@ import org.springframework.test.context.ActiveProfiles;
 
 import jakarta.persistence.EntityManager;
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.*;
@@ -52,37 +51,37 @@ class RespuestaRepositoryTest {
         return u;
     }
 
-    private Categoria crearCategoria(String nombre) {
+    private Categoria crearCategoria() {
         Categoria c = new Categoria();
-        c.setNombre(nombre);
+        c.setNombre("Backend");
         em.persist(c);
         return c;
     }
 
-    private Curso crearCurso(String nombre, Categoria categoria) {
+    private Curso crearCurso(Categoria categoria) {
         Curso c = new Curso();
-        c.setNombre(nombre);
+        c.setNombre("Spring");
         c.setCategoria(categoria);
         em.persist(c);
         return c;
     }
 
     private Topico crearTopico(String titulo, Usuario autor, Curso curso,
-                               StatusTopico status, LocalDateTime fecha) {
+                               LocalDateTime fecha) {
         Topico t = new Topico();
         t.setTitulo(titulo);
         t.setMensaje("mensaje");
         t.setAutor(autor);
         t.setCurso(curso);
-        t.setStatus(status);
+        t.setStatus(StatusTopico.ACTIVO);
         t.setFechaCreacion(fecha);
         em.persist(t);
         return t;
     }
 
-    private Respuesta crearRespuesta(Topico topico, Usuario autor,
-                                     String mensaje, boolean solucion,
-                                     LocalDateTime fecha) {
+    private void crearRespuesta(Topico topico, Usuario autor,
+                                String mensaje, boolean solucion,
+                                LocalDateTime fecha) {
         Respuesta r = new Respuesta();
         r.setTopico(topico);
         r.setAutor(autor);
@@ -90,7 +89,6 @@ class RespuestaRepositoryTest {
         r.setSolucion(solucion);
         r.setFechaCreacion(fecha);
         em.persist(r);
-        return r;
     }
 
     private void flushAndClear() {
@@ -103,14 +101,14 @@ class RespuestaRepositoryTest {
     // =========================
     @Test
     void desmarcarSoluciones_poneFalseTodasLasSolucionesDelTopico() {
-        var cat = crearCategoria("Backend");
-        var curso = crearCurso("Spring", cat);
+        var cat = crearCategoria();
+        var curso = crearCurso(cat);
 
         var autorTopico = crearUsuario("autor", "Autor");
         var autorResp = crearUsuario("resp", "Resp");
 
         var topico = crearTopico("T1", autorTopico, curso,
-                StatusTopico.ACTIVO, LocalDateTime.now());
+                LocalDateTime.now());
 
         crearRespuesta(topico, autorResp, "R1", true,
                 LocalDateTime.of(2025, 12, 10, 10, 0));
@@ -137,14 +135,14 @@ class RespuestaRepositoryTest {
     // =========================
     @Test
     void findByTopicoIdOrderBySolucionDescFechaCreacionDesc_ordenCorrecto() {
-        var cat = crearCategoria("Backend");
-        var curso = crearCurso("Spring", cat);
+        var cat = crearCategoria();
+        var curso = crearCurso(cat);
 
         var autorTopico = crearUsuario("autor", "Autor");
         var autorResp = crearUsuario("resp", "Resp");
 
         var topico = crearTopico("T1", autorTopico, curso,
-                StatusTopico.ACTIVO, LocalDateTime.now());
+                LocalDateTime.now());
 
         crearRespuesta(topico, autorResp, "SOL NUEVA", true,
                 LocalDateTime.of(2025, 12, 20, 10, 0));
@@ -179,16 +177,16 @@ class RespuestaRepositoryTest {
     // =========================
     @Test
     void findByTopicoIdAndSolucionTrue_devuelveSoloSolucionesDeEseTopico() {
-        var cat = crearCategoria("Backend");
-        var curso = crearCurso("Spring", cat);
+        var cat = crearCategoria();
+        var curso = crearCurso(cat);
 
         var autorTopico = crearUsuario("autor", "Autor");
         var autorResp = crearUsuario("resp", "Resp");
 
         var t1 = crearTopico("T1", autorTopico, curso,
-                StatusTopico.ACTIVO, LocalDateTime.now());
+                LocalDateTime.now());
         var t2 = crearTopico("T2", autorTopico, curso,
-                StatusTopico.ACTIVO, LocalDateTime.now());
+                LocalDateTime.now());
 
         crearRespuesta(t1, autorResp, "T1-SOL", true, LocalDateTime.now());
         crearRespuesta(t1, autorResp, "T1-NO", false, LocalDateTime.now());
@@ -208,16 +206,16 @@ class RespuestaRepositoryTest {
     // =========================
     @Test
     void findBySolucionTrue_devuelveTodasLasRespuestasMarcadasComoSolucion() {
-        var cat = crearCategoria("Backend");
-        var curso = crearCurso("Spring", cat);
+        var cat = crearCategoria();
+        var curso = crearCurso(cat);
 
         var autorTopico = crearUsuario("autor", "Autor");
         var autorResp = crearUsuario("resp", "Resp");
 
         var t1 = crearTopico("T1", autorTopico, curso,
-                StatusTopico.ACTIVO, LocalDateTime.now());
+                LocalDateTime.now());
         var t2 = crearTopico("T2", autorTopico, curso,
-                StatusTopico.ACTIVO, LocalDateTime.now());
+                LocalDateTime.now());
 
         crearRespuesta(t1, autorResp, "S1", true, LocalDateTime.now());
         crearRespuesta(t1, autorResp, "N1", false, LocalDateTime.now());

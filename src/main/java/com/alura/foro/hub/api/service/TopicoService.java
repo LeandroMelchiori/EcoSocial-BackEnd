@@ -16,6 +16,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.stereotype.Service;
 
 import java.awt.*;
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -85,6 +87,10 @@ public class TopicoService {
 
         var topico = topicoRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Tópico no encontrado"));
+
+        Duration duracion = Duration.between(topico.getFechaCreacion(), LocalDateTime.now());
+
+        if (duracion.toMinutes() > 1440) {throw new BadRequestException("El tiempo para editar este topico ya expiró");}
 
         if (!topico.getAutor().getId().equals(usuarioId)) {
             throw new ForbiddenException("Solo el autor puede modificar el tópico");

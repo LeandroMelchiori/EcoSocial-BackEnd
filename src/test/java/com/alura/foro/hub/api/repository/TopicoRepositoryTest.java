@@ -1,5 +1,6 @@
 package com.alura.foro.hub.api.repository;
 
+import com.alura.foro.hub.api.dto.topico.DatosListadoTopico;
 import com.alura.foro.hub.api.entity.enums.StatusTopico;
 import com.alura.foro.hub.api.entity.model.Categoria;
 import com.alura.foro.hub.api.entity.model.Curso;
@@ -35,7 +36,6 @@ class TopicoRepositoryTest {
 
     private Usuario autor;
     private Usuario autor2;
-    private Categoria categoria;
     private Curso curso;
     private Curso curso2;
 
@@ -44,7 +44,7 @@ class TopicoRepositoryTest {
         autor = persistUsuario("autor1", "Autor Uno");
         autor2 = persistUsuario("autor2", "Autor Dos");
 
-        categoria = persistCategoria("Programación");
+        Categoria categoria = persistCategoria();
         curso = persistCurso("Java", categoria);
         curso2 = persistCurso("Spring", categoria);
     }
@@ -142,8 +142,8 @@ class TopicoRepositoryTest {
                 PageRequest.of(0, 10)
         );
 
-        assertThat(page.getContent()).extracting(d -> d.id()).contains(match.getId());
-        assertThat(page.getContent()).extracting(d -> d.id()).doesNotContain(viejo.getId());
+        assertThat(page.getContent()).extracting(DatosListadoTopico::id).contains(match.getId());
+        assertThat(page.getContent()).extracting(DatosListadoTopico::id).doesNotContain(viejo.getId());
     }
 
     @Test
@@ -177,9 +177,9 @@ class TopicoRepositoryTest {
         return em.persistAndFlush(u);
     }
 
-    private Categoria persistCategoria(String nombre) {
+    private Categoria persistCategoria() {
         var c = new Categoria();
-        c.setNombre(nombre);
+        c.setNombre("Programación");
         return em.persistAndFlush(c);
     }
 
@@ -201,13 +201,13 @@ class TopicoRepositoryTest {
         return em.persistAndFlush(t);
     }
 
-    private Respuesta persistRespuesta(Topico topico, Usuario autor, String mensaje, LocalDateTime fecha) {
+    private void persistRespuesta(Topico topico, Usuario autor, String mensaje, LocalDateTime fecha) {
         var r = new Respuesta();
         r.setTopico(topico);
         r.setAutor(autor);
         r.setMensaje(mensaje);
         r.setFechaCreacion(fecha);
-        return em.persistAndFlush(r);
+        em.persistAndFlush(r);
     }
 
     @EnableJpaAuditing

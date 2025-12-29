@@ -52,11 +52,10 @@ public class Topico extends AuditableEntity {
         this.status = StatusTopico.ACTIVO; // o el que quieras por defecto
     }
 
-    // Método para actualización (PUT)
-    public void actualizar(DatosActualizarTopico datos) {
-        if (datos.titulo() != null) this.titulo = datos.titulo();
-        if (datos.mensaje() != null) this.mensaje = datos.mensaje();
-        if (datos.status() != null) this.status = datos.status();
+    public void actualizar(String titulo, String mensaje, StatusTopico status) {
+        if (titulo != null) this.titulo = titulo;
+        if (mensaje != null) this.mensaje = mensaje;
+        if (status != null) this.status = status;
     }
 
     // Cerrar topico

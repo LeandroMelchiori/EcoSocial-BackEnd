@@ -1,4 +1,4 @@
-package com.alura.foro.hub.api.controller;
+package com.alura.foro.hub.api.security;
 
 import com.alura.foro.hub.api.entity.model.Usuario;
 import com.alura.foro.hub.api.repository.UsuarioRepository;
