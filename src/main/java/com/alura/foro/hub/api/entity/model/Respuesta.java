@@ -36,6 +36,9 @@ public class Respuesta extends AuditableEntity {
     @Column(nullable = false)
     private Boolean solucion = false;
 
+    @Column(nullable = false)
+    private Boolean editado = false;
+
     @OneToMany(mappedBy = "respuesta", cascade = CascadeType.ALL, orphanRemoval = true)
     @OrderBy("fechaCreacion DESC")
     private List<RespuestaHija> respuestasHijas = new ArrayList<>();
@@ -45,5 +48,6 @@ public class Respuesta extends AuditableEntity {
     void prePersist() {
         if (fechaCreacion == null) fechaCreacion = LocalDateTime.now();
         if (solucion == null) solucion = false;
+        if (editado == null) editado = false;
     }
 }

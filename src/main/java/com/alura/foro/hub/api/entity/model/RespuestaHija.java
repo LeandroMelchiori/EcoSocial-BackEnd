@@ -30,8 +30,12 @@ public class RespuestaHija extends AuditableEntity {
     @Column(name = "fecha_creacion", nullable = false)
     private LocalDateTime fechaCreacion = LocalDateTime.now();
 
+    @Column(nullable = false)
+    private Boolean editado = false;
+
     @PrePersist
     void prePersist() {
         if (fechaCreacion == null) fechaCreacion = LocalDateTime.now();
+        if (editado == null) editado = false;
     }
 }

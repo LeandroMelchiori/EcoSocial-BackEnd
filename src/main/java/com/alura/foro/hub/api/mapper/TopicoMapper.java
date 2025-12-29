@@ -25,6 +25,7 @@ public class TopicoMapper {
                 t.getCurso().getCategoria().getId(),
                 t.getCurso().getCategoria().getNombre(),
                 t.getStatus(),
+                t.getEditado(),
                 respuestas
         );
     }

@@ -3,6 +3,7 @@ package com.alura.foro.hub.api.security.config;
 import com.alura.foro.hub.api.repository.UsuarioRepository;
 import com.alura.foro.hub.api.security.exception.ApiError;
 import com.alura.foro.hub.api.security.filter.RateLimitFilter;
+import com.alura.foro.hub.api.security.filter.RateLimitProperties;
 import com.alura.foro.hub.api.security.filter.SecurityFilter;
 import com.alura.foro.hub.api.security.jwt.TokenService;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -37,9 +38,10 @@ import static org.springframework.security.config.Customizer.withDefaults;
 public class SecurityConfigurations {
 
     @Bean
-    public RateLimitFilter rateLimitFilter() {
-        return new RateLimitFilter();
+    public RateLimitFilter rateLimitFilter(RateLimitProperties props) {
+        return new RateLimitFilter(props);
     }
+
 
     @Bean
     public SecurityFilter securityFilter(TokenService tokenService, UsuarioRepository usuarioRepository) {

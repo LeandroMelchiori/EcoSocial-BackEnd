@@ -1,5 +1,6 @@
 package com.alura.foro.hub.api.security.filter;
 
+import com.alura.foro.hub.api.security.filter.RateLimitProperties;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -17,21 +18,30 @@ public class RateLimitFilter extends OncePerRequestFilter {
     private static final class Window {
         long windowStartEpochSec;
         int count;
-
-        Window(long start, int count) {
-            this.windowStartEpochSec = start;
-            this.count = count;
-        }
+        Window(long start, int count) { this.windowStartEpochSec = start; this.count = count; }
     }
 
-    // key = ip + ":" + bucketName
     private final Map<String, Window> counters = new ConcurrentHashMap<>();
+    private final RateLimitProperties props;
 
-    // Ajustá límites según endpoint
-    private static final int LOGIN_MAX_PER_MIN = 100;         // /auth/login
-    private static final int WRITE_MAX_PER_MIN = 300;         // POST/PUT/PATCH/DELETE
-    private static final int READ_MAX_PER_MIN  = 1200;        // GET
-    private static final long WINDOW_SECONDS = 600;
+    public RateLimitFilter(RateLimitProperties props) {
+        this.props = props;
+    }
+
+    @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) {
+        if (!props.enabled()) return true;
+
+        String path = request.getRequestURI();
+
+        // no limitar swagger/api-docs
+        if (path.startsWith("/swagger-ui") || path.startsWith("/v3/api-docs")) return true;
+
+        // opcional: no limitar actuator (si lo usás)
+        if (path.startsWith("/actuator")) return true;
+
+        return false;
+    }
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,
@@ -40,12 +50,6 @@ public class RateLimitFilter extends OncePerRequestFilter {
 
         String path = request.getRequestURI();
         String method = request.getMethod();
-
-        // No limites swagger/api-docs (si lo usás)
-        if (path.startsWith("/swagger-ui") || path.startsWith("/v3/api-docs")) {
-            filterChain.doFilter(request, response);
-            return;
-        }
 
         String ip = clientIp(request);
         Bucket bucket = classify(path, method);
@@ -64,7 +68,8 @@ public class RateLimitFilter extends OncePerRequestFilter {
 
     private boolean allow(String ip, String bucketName, int limit) {
         long now = Instant.now().getEpochSecond();
-        long currentWindowStart = now - (now % WINDOW_SECONDS);
+        long windowSeconds = props.windowSeconds();
+        long currentWindowStart = now - (now % windowSeconds);
 
         String key = ip + ":" + bucketName;
 
@@ -80,30 +85,33 @@ public class RateLimitFilter extends OncePerRequestFilter {
     }
 
     private String clientIp(HttpServletRequest request) {
-        // Si en algún momento estás detrás de reverse proxy, esto ayuda
         String xff = request.getHeader("X-Forwarded-For");
-        if (xff != null && !xff.isBlank()) {
-            return xff.split(",")[0].trim();
-        }
+        if (xff != null && !xff.isBlank()) return xff.split(",")[0].trim();
         return request.getRemoteAddr();
     }
 
     private enum Bucket {
-        LOGIN("login", LOGIN_MAX_PER_MIN),
-        WRITE("write", WRITE_MAX_PER_MIN),
-        READ("read", READ_MAX_PER_MIN);
+        LOGIN("login"),
+        WRITE("write"),
+        READ("read");
 
         final String name;
-        final int maxRequestsPerWindow;
-        Bucket(String name, int max) { this.name = name; this.maxRequestsPerWindow = max; }
+        int maxRequestsPerWindow;
+        Bucket(String name) { this.name = name; }
     }
 
     private Bucket classify(String path, String method) {
-        if (path.equals("/auth/login")) return Bucket.LOGIN;
+        Bucket b;
+        if (path.equals("/auth/login")) b = Bucket.LOGIN;
+        else if (method.equals("POST") || method.equals("PUT") || method.equals("PATCH") || method.equals("DELETE")) b = Bucket.WRITE;
+        else b = Bucket.READ;
 
-        return switch (method) {
-            case "POST", "PUT", "PATCH", "DELETE" -> Bucket.WRITE;
-            default -> Bucket.READ;
+        b.maxRequestsPerWindow = switch (b) {
+            case LOGIN -> props.loginMax();
+            case WRITE -> props.writeMax();
+            case READ  -> props.readMax();
         };
+
+        return b;
     }
 }
