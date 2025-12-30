@@ -87,8 +87,12 @@ public class RespuestaHijaService {
                     "El tópico está cerrado y no admite edición de respuestas");
         }
 
-        rh.setMensaje(dto.mensaje().trim());
-
+        String nuevoMensaje = dto.mensaje().trim();
+        // Solo si cambia realmente
+        if (!nuevoMensaje.equals(rh.getMensaje())) {
+            rh.setMensaje(nuevoMensaje);
+            rh.setEditado(true);
+        }
         return RespuestaHijaMapper.toListado(rh);
     }
 

@@ -88,10 +88,6 @@ public class TopicoService {
         var topico = topicoRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Tópico no encontrado"));
 
-        Duration duracion = Duration.between(topico.getFechaCreacion(), LocalDateTime.now());
-
-        if (duracion.toMinutes() > 1440) {throw new BadRequestException("El tiempo para editar este topico ya expiró");}
-
         if (!topico.getAutor().getId().equals(usuarioId)) {
             throw new ForbiddenException("Solo el autor puede modificar el tópico");
         }
@@ -101,6 +97,15 @@ public class TopicoService {
             curso = cursoRepository.findById(datos.cursoId())
                     .orElseThrow(() -> new EntityNotFoundException("Curso no encontrado"));
         }
+
+        var fechaCreacion = topico.getFechaCreacion();
+        if (fechaCreacion == null) {
+            throw new BadRequestException("El tópico no tiene fecha de creación válida");
+        }
+
+        Duration duracion = Duration.between(fechaCreacion, LocalDateTime.now());
+
+        if (duracion.toMinutes() > 1440) {throw new BadRequestException("El tiempo para editar este topico ya expiró");}
 
         TopicoMapper.aplicarActualizacion(topico, datos, curso);
 

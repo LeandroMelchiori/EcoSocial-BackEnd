@@ -76,14 +76,15 @@ El proyecto sigue una arquitectura por capas:
 
 ## 📊 Monitoreo
 
-El proyecto utiliza **Spring Boot Actuator** para exponer endpoints de monitoreo básicos.
+El proyecto integra Spring Boot Actuator + Micrometer + Prometheus.
+Se exponen métricas de:
+- Performance HTTP
+- Uso de JVM
+- Pool de conexiones HikariCP
+- Estado de la aplicación
 
-Endpoints disponibles:
-
-- `GET /actuator/health` → Estado de la aplicación
-- `GET /actuator/info` → Información general del proyecto
-
-Estos endpoints permiten verificar que la API esté activa sin exponer información sensible.
+Las métricas están pensadas para ser consumidas por Prometheus
+y visualizadas en Grafana.
 
 ---
 
@@ -304,7 +305,65 @@ Esto garantiza:
 - Facilidad para desplegar el proyecto desde cero
 
 ---
+## ⚙️ Perfiles de ejecución (Spring Profiles)
 
+El proyecto utiliza **Spring Profiles** para adaptar el comportamiento según el entorno (**desarrollo, testing y producción**), manteniendo una configuración limpia, segura y fácil de probar.
+
+### 🧪 Profile `test`
+
+Usado para **tests automáticos** (JUnit / MockMvc).
+
+✅ Características:
+- Base de datos **H2 en memoria**
+- `ddl-auto=create-drop` (se crea y destruye el esquema por test)
+- Flyway deshabilitado
+- Rate limit desactivado (evita errores 429 en tests)
+
+📌 Archivo: `src/test/resources/application-test.properties`
+
+```properties
+spring.datasource.url=jdbc:h2:mem:forohub_test;MODE=MySQL;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+spring.datasource.driverClassName=org.h2.Driver
+spring.datasource.username=sa
+spring.datasource.password=
+
+spring.jpa.hibernate.ddl-auto=create-drop
+spring.jpa.show-sql=false
+spring.jpa.properties.hibernate.format_sql=false
+
+spring.flyway.enabled=false
+
+app.ratelimit.enabled=false
+```
+
+### 🧑‍💻 Profile `dev`
+
+Usado para **desarrollo local** y pruebas manuales (Postman / Swagger).
+
+✅ Características:
+- Mantiene MySQL local
+- Rate limit desactivado para no interferir con Postman Runner
+
+📌 Archivo: `src/main/resources/application-dev.properties`
+
+```properties
+app.ratelimit.enabled=false
+```
+
+### 🚀 Profile `prod` (opcional)
+
+Pensado para producción real, con límites más estrictos.
+
+📌 Archivo: `src/main/resources/application-prod.properties`
+
+```properties
+app.ratelimit.enabled=true
+app.ratelimit.loginMax=50
+app.ratelimit.writeMax=200
+app.ratelimit.readMax=800
+app.ratelimit.windowSeconds=600
+```
+---
 ## 🔒 Seguridad
 
 La API implementa medidas de seguridad orientadas a entornos reales:
