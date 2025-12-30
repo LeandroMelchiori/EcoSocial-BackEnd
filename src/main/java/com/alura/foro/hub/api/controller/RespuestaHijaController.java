@@ -47,7 +47,8 @@ public class RespuestaHijaController {
                           "id": 10,
                           "mensaje": "Estoy de acuerdo, sumo un detalle...",
                           "autorNombre": "Otro Usuario",
-                          "fechaCreacion": "2025-12-18T19:10:00"
+                          "fechaCreacion": "2025-12-18T19:10:00",
+                          "editado": false
                         }
                         """
                     )
@@ -101,7 +102,8 @@ public class RespuestaHijaController {
                                     "id": 10,
                                     "mensaje": "Estoy de acuerdo, sumo un detalle...",
                                     "autorNombre": "Otro Usuario",
-                                    "fechaCreacion": "2025-12-18T19:10:00"
+                                    "fechaCreacion": "2025-12-18T19:10:00",
+                                    "editado": false
                                   }
                                 ]
                                 """
@@ -131,7 +133,7 @@ public class RespuestaHijaController {
 
     @Operation(
             summary = "Actualizar respuesta hija",
-            description = "Permite al autor de la respuesta hija (o autor del tópico / admin) modificar su contenido",
+            description = "Permite al autor de la respuesta hija modificar su contenido",
             security = @SecurityRequirement(name = "bearer-key")
     )
     @ApiResponsesDefault
@@ -148,7 +150,8 @@ public class RespuestaHijaController {
                                   "id": 10,
                                   "mensaje": "Actualicé la respuesta hija con más detalle",
                                   "autorNombre": "Otro Usuario",
-                                  "fechaCreacion": "2025-12-18T19:10:00"
+                                  "fechaCreacion": "2025-12-18T19:10:00",
+                                  "editado": false
                                 }
                                 """
                     )

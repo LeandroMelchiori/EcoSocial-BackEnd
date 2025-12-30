@@ -89,12 +89,12 @@ public class SecurityConfigurations {
                                 .requestMatchers(HttpMethod.GET, "/cursos/**").permitAll()
                                 .requestMatchers(HttpMethod.GET, "/topicos/**" ).permitAll()
                                 .requestMatchers(HttpMethod.GET, "/respuestas/topico/**").permitAll()
-                                .requestMatchers(HttpMethod.GET, "/actuator/**").permitAll()
                                 .requestMatchers(HttpMethod.GET, "/actuator/health/**").permitAll()
-                                .requestMatchers(HttpMethod.GET, "/actuator/info/**").permitAll()
                                 .requestMatchers(HttpMethod.GET, "/actuator/info/**").permitAll()
                                 .requestMatchers(HttpMethod.GET, "/respuestas/*/hijas").permitAll()
                                 .requestMatchers(HttpMethod.GET, "/respuestas/**").permitAll()
+                                .requestMatchers(HttpMethod.GET, "/actuator/metrics/**").permitAll()
+                                .requestMatchers(HttpMethod.GET, "/actuator/prometheus/**").permitAll()
 
                                 // 🔒 C.U.D CATEGORIAS → SOLO ADMIN
                                 .requestMatchers(HttpMethod.POST, "/categorias/**").hasRole("ADMIN")
@@ -106,6 +106,8 @@ public class SecurityConfigurations {
                                 .requestMatchers(HttpMethod.PUT, "/cursos/**").hasRole("ADMIN")
                                 .requestMatchers(HttpMethod.DELETE, "/cursos/**").hasRole("ADMIN")
 
+                                 // 🔒 ACTUATOR FULL → SOLO ADMIN
+                                .requestMatchers("/actuator/**").hasRole("ADMIN")
                                 // Swagger UI y Docs
                                 .requestMatchers(
                                         "/v3/api-docs",
