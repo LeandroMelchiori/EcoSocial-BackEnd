@@ -8,20 +8,21 @@ import com.alura.foro.hub.api.entity.model.Perfil;
 import com.alura.foro.hub.api.entity.model.Respuesta;
 import com.alura.foro.hub.api.entity.model.Topico;
 import com.alura.foro.hub.api.entity.model.Usuario;
+import com.alura.foro.hub.api.repository.RespuestaHijaRepository;
 import com.alura.foro.hub.api.repository.RespuestaRepository;
 import com.alura.foro.hub.api.repository.TopicoRepository;
 import com.alura.foro.hub.api.repository.UsuarioRepository;
+import com.alura.foro.hub.api.security.exception.BadRequestException;
 import com.alura.foro.hub.api.security.exception.ForbiddenException;
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -42,7 +43,9 @@ class RespuestaServiceTest {
     @Mock
     UsuarioRepository usuarioRepository;
 
-    @InjectMocks
+    @Mock
+    RespuestaHijaRepository respuestaHijaRepository;
+
     RespuestaService service;
 
     Usuario autor;
@@ -52,6 +55,14 @@ class RespuestaServiceTest {
 
     @BeforeEach
     void setup() {
+        service = new RespuestaService(
+                respuestaRepository,
+                topicoRepository,
+                usuarioRepository,
+                respuestaHijaRepository,
+                new SimpleMeterRegistry()
+        );
+
         autor = new Usuario();
         autor.setId(1L);
         autor.setNombre("Autor");
@@ -83,7 +94,11 @@ class RespuestaServiceTest {
 
         when(topicoRepository.findById(10L)).thenReturn(Optional.of(topico));
         when(usuarioRepository.findById(1L)).thenReturn(Optional.of(autor));
-        when(respuestaRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
+        when(respuestaRepository.save(any())).thenAnswer(inv -> {
+            Respuesta r = inv.getArgument(0);
+            r.setId(999L);
+            return r;
+        });
 
         DatosListadoRespuesta result = service.crear(dto, 1L);
 
@@ -94,13 +109,12 @@ class RespuestaServiceTest {
     @Test
     void crear_topicoCerrado_lanzaException() {
         topico.setStatus(StatusTopico.CERRADO);
-
         when(topicoRepository.findById(10L)).thenReturn(Optional.of(topico));
 
         var dto = new DatosCrearRespuesta(10L, "x");
 
         assertThatThrownBy(() -> service.crear(dto, 1L))
-                .isInstanceOf(ResponseStatusException.class);
+                .isInstanceOf(BadRequestException.class);
     }
 
     // ─────────────────────────────
@@ -109,6 +123,10 @@ class RespuestaServiceTest {
     @Test
     void listarPorTopico_ok() {
         when(topicoRepository.findById(10L)).thenReturn(Optional.of(topico));
+
+        // para mapCantidadHijas(topicoId)
+        when(respuestaRepository.contarHijasPorRespuestaDeTopico(10L))
+                .thenReturn(java.util.Collections.singletonList(new Object[]{100L, 0L}));
 
         Page<Respuesta> page = new PageImpl<>(List.of(respuesta));
         when(respuestaRepository
@@ -186,7 +204,6 @@ class RespuestaServiceTest {
     void eliminar_sinPermisos_lanzaForbidden() {
         Usuario otro = new Usuario();
         otro.setId(99L);
-        // NO le agregamos perfil ADMIN
 
         when(usuarioRepository.findById(99L)).thenReturn(Optional.of(otro));
         when(respuestaRepository.findById(100L)).thenReturn(Optional.of(respuesta));
@@ -201,7 +218,7 @@ class RespuestaServiceTest {
         admin.setId(50L);
 
         Perfil perfilAdmin = new Perfil();
-        perfilAdmin.setNombre("ADMIN"); // 👈 CLAVE
+        perfilAdmin.setNombre("ADMIN");
         admin.getPerfiles().add(perfilAdmin);
 
         when(usuarioRepository.findById(50L)).thenReturn(Optional.of(admin));
@@ -211,5 +228,5 @@ class RespuestaServiceTest {
 
         verify(respuestaRepository).delete(respuesta);
     }
-
 }
+

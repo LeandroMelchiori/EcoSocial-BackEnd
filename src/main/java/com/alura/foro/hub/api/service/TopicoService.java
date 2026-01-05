@@ -4,18 +4,20 @@ import com.alura.foro.hub.api.dto.topico.*;
 import com.alura.foro.hub.api.entity.model.Curso;
 import com.alura.foro.hub.api.entity.model.Topico;
 import com.alura.foro.hub.api.mapper.TopicoMapper;
+import com.alura.foro.hub.api.repository.CursoRepository;
 import com.alura.foro.hub.api.repository.TopicoRepository;
 import com.alura.foro.hub.api.repository.UsuarioRepository;
-import com.alura.foro.hub.api.repository.CursoRepository;
 import com.alura.foro.hub.api.security.exception.BadRequestException;
 import com.alura.foro.hub.api.security.exception.ForbiddenException;
+import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.Timer;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.awt.*;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -28,14 +30,39 @@ public class TopicoService {
     private final CursoRepository cursoRepository;
     private final RespuestaService respuestaService;
 
+    // Métricas
+    private final Counter topicosCreados;
+    private final Counter topicosActualizados;
+    private final Counter topicosEliminados;
+    private final Timer topicoActualizarTimer;
+
     public TopicoService(TopicoRepository topicoRepository,
                          UsuarioRepository usuarioRepository,
                          CursoRepository cursoRepository,
-                         RespuestaService respuestaService) {
+                         RespuestaService respuestaService,
+                         MeterRegistry meterRegistry) {
+
         this.topicoRepository = topicoRepository;
         this.usuarioRepository = usuarioRepository;
         this.cursoRepository = cursoRepository;
         this.respuestaService = respuestaService;
+
+        this.topicosCreados = Counter.builder("forohub.topicos.creados")
+                .description("Cantidad de tópicos creados")
+                .register(meterRegistry);
+
+        this.topicosActualizados = Counter.builder("forohub.topicos.actualizados")
+                .description("Cantidad de tópicos actualizados")
+                .register(meterRegistry);
+
+        this.topicosEliminados = Counter.builder("forohub.topicos.eliminados")
+                .description("Cantidad de tópicos eliminados")
+                .register(meterRegistry);
+
+        this.topicoActualizarTimer = Timer.builder("forohub.topicos.actualizar.tiempo")
+                .description("Tiempo de actualización de tópico")
+                .publishPercentileHistogram()
+                .register(meterRegistry);
     }
 
     // =========================
@@ -52,10 +79,11 @@ public class TopicoService {
         var topico = new Topico(datos, autor, curso);
         topico = topicoRepository.save(topico);
 
+        // ✅ métrica
+        topicosCreados.increment();
+
         return TopicoMapper.toDetalle(topico, List.of());
     }
-
-
 
     // =========================
     //      LISTAR TÓPICOS
@@ -69,7 +97,6 @@ public class TopicoService {
     // =========================
     @Transactional(readOnly = true)
     public DatosDetalleTopico detallarTopico(Long id) {
-
         Topico topico = topicoRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Tópico no encontrado"));
 
@@ -79,37 +106,46 @@ public class TopicoService {
 
         return TopicoMapper.toDetalle(topico, respuestas);
     }
+
     // =========================
     //      ACTUALIZAR
     // =========================
     @Transactional
     public DatosDetalleTopico actualizarTopico(Long id, DatosActualizarTopico datos, Long usuarioId) {
 
-        var topico = topicoRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Tópico no encontrado"));
+        // ✅ medimos TODO el flujo de actualización
+        return topicoActualizarTimer.record(() -> {
 
-        if (!topico.getAutor().getId().equals(usuarioId)) {
-            throw new ForbiddenException("Solo el autor puede modificar el tópico");
-        }
+            var topico = topicoRepository.findById(id)
+                    .orElseThrow(() -> new EntityNotFoundException("Tópico no encontrado"));
 
-        Curso curso = null;
-        if (datos.cursoId() != null) {
-            curso = cursoRepository.findById(datos.cursoId())
-                    .orElseThrow(() -> new EntityNotFoundException("Curso no encontrado"));
-        }
+            if (!topico.getAutor().getId().equals(usuarioId)) {
+                throw new ForbiddenException("Solo el autor puede modificar el tópico");
+            }
 
-        var fechaCreacion = topico.getFechaCreacion();
-        if (fechaCreacion == null) {
-            throw new BadRequestException("El tópico no tiene fecha de creación válida");
-        }
+            Curso curso = null;
+            if (datos.cursoId() != null) {
+                curso = cursoRepository.findById(datos.cursoId())
+                        .orElseThrow(() -> new EntityNotFoundException("Curso no encontrado"));
+            }
 
-        Duration duracion = Duration.between(fechaCreacion, LocalDateTime.now());
+            var fechaCreacion = topico.getFechaCreacion();
+            if (fechaCreacion == null) {
+                throw new BadRequestException("El tópico no tiene fecha de creación válida");
+            }
 
-        if (duracion.toMinutes() > 1440) {throw new BadRequestException("El tiempo para editar este topico ya expiró");}
+            Duration duracion = Duration.between(fechaCreacion, LocalDateTime.now());
+            if (duracion.toMinutes() > 1440) {
+                throw new BadRequestException("El tiempo para editar este topico ya expiró");
+            }
 
-        TopicoMapper.aplicarActualizacion(topico, datos, curso);
+            TopicoMapper.aplicarActualizacion(topico, datos, curso);
 
-        return TopicoMapper.toDetalle(topico);
+            // ✅ métrica (si llegó hasta acá, se actualizó)
+            topicosActualizados.increment();
+
+            return TopicoMapper.toDetalle(topico);
+        });
     }
 
     // =========================
@@ -127,11 +163,15 @@ public class TopicoService {
             throw new ForbiddenException("Solo el autor del tópico puede eliminarlo");
         }
 
-        // Borrado físico
         topicoRepository.delete(topico);
+
+        // ✅ métrica
+        topicosEliminados.increment();
     }
 
-
+    // =========================
+    //      BUSCAR
+    // =========================
     public Page<DatosListadoTopico> buscar(TopicoFiltro filtro, Pageable pageable) {
         String q = normalizar(filtro.q());
         String nombreCurso = normalizar(filtro.nombreCurso());

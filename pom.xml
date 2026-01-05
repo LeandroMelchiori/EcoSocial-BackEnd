@@ -209,11 +209,11 @@
 								<groupId>org.projectlombok</groupId>
 								<artifactId>lombok</artifactId>
 							</exclude>
+                            <exclude>**/RateLimitFilter$*</exclude>
 						</excludes>
 					</configuration>
 				</plugin>
 			</plugins>
 		</build>
-
 	</project>
 
