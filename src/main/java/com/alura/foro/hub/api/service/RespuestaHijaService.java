@@ -11,11 +11,11 @@ import com.alura.foro.hub.api.repository.RespuestaRepository;
 import com.alura.foro.hub.api.repository.UsuarioRepository;
 import com.alura.foro.hub.api.security.exception.BadRequestException;
 import com.alura.foro.hub.api.security.exception.ForbiddenException;
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.Timer;
 import jakarta.persistence.EntityNotFoundException;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
@@ -27,15 +27,25 @@ public class RespuestaHijaService {
     private final RespuestaHijaRepository respuestaHijaRepository;
     private final RespuestaRepository respuestaRepository;
     private final UsuarioRepository usuarioRepository;
+    private final MeterRegistry meterRegistry;
+
+    private static final String M_RH_ACTIONS = "forohub.respuestas_hijas.acciones";
+    private static final String M_RH_TIME = "forohub.respuestas_hijas.tiempo";
+
 
     public RespuestaHijaService(RespuestaHijaRepository respuestaHijaRepository,
                                 RespuestaRepository respuestaRepository,
-                                UsuarioRepository usuarioRepository) {
+                                UsuarioRepository usuarioRepository,
+                                MeterRegistry meterRegistry) {
         this.respuestaHijaRepository = respuestaHijaRepository;
         this.respuestaRepository = respuestaRepository;
         this.usuarioRepository = usuarioRepository;
+        this.meterRegistry = meterRegistry;
     }
 
+    // =========================
+    //      LISTAR
+    // =========================
     @Transactional(readOnly = true)
     public List<DatosListadoRespuestaHija> listarPorRespuesta(Long respuestaId) {
         // valida que la respuesta exista (para devolver 404 si no existe)
@@ -48,79 +58,159 @@ public class RespuestaHijaService {
                 .toList();
     }
 
-
+    // =========================
+    //      CREAR
+    // =========================
+    // =========================
+    //      CREAR
+    // =========================
     @Transactional
     public DatosListadoRespuestaHija crear(Long respuestaId, DatosCrearRespuestaHija dto, Long autorId) {
-        var respuesta = respuestaRepository.findById(respuestaId)
-                .orElseThrow(() -> new EntityNotFoundException("Respuesta no encontrada"));
+        try {
+            return time(M_RH_TIME, "crear", () -> {
 
-        var topico = respuesta.getTopico();
-        if (topico.getStatus() == StatusTopico.CERRADO) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                    "El tópico está cerrado y no admite respuestas");
+                var respuesta = respuestaRepository.findById(respuestaId)
+                        .orElseThrow(() -> new EntityNotFoundException("Respuesta no encontrada"));
+
+                var topico = respuesta.getTopico();
+                if (topico.getStatus() == StatusTopico.CERRADO) {
+                    throw new BadRequestException("El tópico está cerrado y no admite respuestas");
+                }
+
+                var autor = usuarioRepository.findById(autorId)
+                        .orElseThrow(() -> new EntityNotFoundException("Usuario no encontrado"));
+
+                var hija = RespuestaHijaMapper.fromCrear(dto, respuesta, autor);
+                hija = respuestaHijaRepository.save(hija);
+
+                inc(M_RH_ACTIONS, "crear", "ok");
+                return RespuestaHijaMapper.toListado(hija);
+            });
+        } catch (RuntimeException e) {
+            incError(M_RH_ACTIONS, "crear", e.getClass().getSimpleName());
+            throw e;
         }
-
-        var autor = usuarioRepository.findById(autorId)
-                .orElseThrow(() -> new EntityNotFoundException("Usuario no encontrado"));
-
-        var hija = RespuestaHijaMapper.fromCrear(dto, respuesta, autor);
-        hija = respuestaHijaRepository.save(hija);
-
-        return RespuestaHijaMapper.toListado(hija);
     }
 
+
+    // =========================
+    //      ACTUALIZAR
+    // =========================
     @Transactional
     public DatosListadoRespuestaHija actualizar(Long hijaId, DatosActualizarRespuestaHija dto, Long userId) {
-        RespuestaHija rh = respuestaHijaRepository.findById(hijaId)
-                .orElseThrow(() -> new EntityNotFoundException("Respuesta hija no encontrada"));
+        try {
+            return time(M_RH_TIME, "actualizar", () -> {
 
-        Duration duracion = Duration.between(rh.getFechaCreacion(), LocalDateTime.now());
+                RespuestaHija rh = respuestaHijaRepository.findById(hijaId)
+                        .orElseThrow(() -> new EntityNotFoundException("Respuesta hija no encontrada"));
 
-        if (duracion.toMinutes() > 10) {throw new BadRequestException("El tiempo para editar esta respuesta ya expiró");}
+                // tiempo max edición (igual que tu lógica)
+                Duration duracion = Duration.between(rh.getFechaCreacion(), LocalDateTime.now());
+                if (duracion.toMinutes() > 10) {
+                    throw new BadRequestException("El tiempo para editar esta respuesta ya expiró");
+                }
 
-        if (!rh.getAutor().getId().equals(userId)) {
-            throw new ForbiddenException("Solo el autor puede editar esta respuesta hija");
+                if (!rh.getAutor().getId().equals(userId)) {
+                    throw new ForbiddenException("Solo el autor puede editar esta respuesta hija");
+                }
+
+                if (rh.getRespuesta().getTopico().getStatus() == StatusTopico.CERRADO) {
+                    throw new BadRequestException("El tópico está cerrado y no admite edición de respuestas");
+                }
+
+                String nuevoMensaje = dto.mensaje().trim();
+                if (!nuevoMensaje.equals(rh.getMensaje())) {
+                    rh.setMensaje(nuevoMensaje);
+                    rh.setEditado(true);
+                }
+
+                inc(M_RH_ACTIONS, "actualizar", "ok");
+                return RespuestaHijaMapper.toListado(rh);
+            });
+        } catch (RuntimeException e) {
+            incError(M_RH_ACTIONS, "actualizar", e.getClass().getSimpleName());
+            throw e;
         }
-
-        if (rh.getRespuesta().getTopico().getStatus() == StatusTopico.CERRADO) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                    "El tópico está cerrado y no admite edición de respuestas");
-        }
-
-        String nuevoMensaje = dto.mensaje().trim();
-        // Solo si cambia realmente
-        if (!nuevoMensaje.equals(rh.getMensaje())) {
-            rh.setMensaje(nuevoMensaje);
-            rh.setEditado(true);
-        }
-        return RespuestaHijaMapper.toListado(rh);
     }
 
+    // =========================
+    //      ELIMINAR
+    // =========================
     @Transactional
     public void eliminar(Long hijaId, Long userId) {
-        var user = usuarioRepository.findById(userId)
-                .orElseThrow(() -> new EntityNotFoundException("Usuario no encontrado"));
+        try {
+            timeVoid(M_RH_TIME, "eliminar", () -> {
 
-        RespuestaHija rh = respuestaHijaRepository.findById(hijaId)
-                .orElseThrow(() -> new EntityNotFoundException("Respuesta hija no encontrada"));
+                var user = usuarioRepository.findById(userId)
+                        .orElseThrow(() -> new EntityNotFoundException("Usuario no encontrado"));
 
-        Long autorHijaId = rh.getAutor().getId();
-        Long autorTopicoId = rh.getRespuesta().getTopico().getAutor().getId();
+                var rh = respuestaHijaRepository.findById(hijaId)
+                        .orElseThrow(() -> new EntityNotFoundException("Respuesta hija no encontrada"));
 
-        boolean puedeEliminar =
-                autorHijaId.equals(userId)
-                        || autorTopicoId.equals(userId)
-                        || user.esAdmin();
+                Long autorHijaId = rh.getAutor().getId();
+                Long autorTopicoId = rh.getRespuesta().getTopico().getAutor().getId();
 
-        if (!puedeEliminar) {
-            throw new ForbiddenException("No tenés permisos para eliminar esta respuesta hija");
+                boolean puedeEliminar =
+                        autorHijaId.equals(userId)
+                                || autorTopicoId.equals(userId)
+                                || user.esAdmin();
+
+                if (!puedeEliminar) {
+                    throw new ForbiddenException("No tenés permisos para eliminar esta respuesta hija");
+                }
+
+                respuestaHijaRepository.delete(rh);
+                inc(M_RH_ACTIONS, "eliminar", "ok");
+            });
+        } catch (RuntimeException e) {
+            incError(M_RH_ACTIONS, "eliminar", e.getClass().getSimpleName());
+            throw e;
         }
-
-        if (rh.getRespuesta().getTopico().getStatus() == StatusTopico.CERRADO) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El tópico está cerrado y no admite eliminar respuestas");
-        }
-
-        respuestaHijaRepository.delete(rh);
     }
 
+
+    // =========================
+    //      METRICS HELPERS
+    // =========================
+    private void inc(String name, String accion, String resultado) {
+        meterRegistry.counter(name,
+                "accion", accion,
+                "resultado", resultado
+        ).increment();
+    }
+
+    private void incError(String name, String accion, String error) {
+        meterRegistry.counter(name,
+                "accion", accion,
+                "resultado", "error",
+                "error", error
+        ).increment();
+    }
+
+    private <T> T time(String name, String accion, java.util.concurrent.Callable<T> callable) {
+        Timer timer = Timer.builder(name)
+                .publishPercentileHistogram()
+                .tag("accion", accion)
+                .register(meterRegistry);
+
+        try {
+            return timer.recordCallable(callable);
+        } catch (RuntimeException e) {
+            // mantiene ForbiddenException/BadRequestException tal cual
+            throw e;
+        } catch (Exception e) {
+            // checked exceptions (no debería haber, pero por seguridad)
+            throw new RuntimeException(e);
+        }
+    }
+
+
+    private void timeVoid(String name, String accion, Runnable runnable) {
+        Timer timer = Timer.builder(name)
+                .publishPercentileHistogram()
+                .tag("accion", accion)
+                .register(meterRegistry);
+
+        timer.record(runnable);
+    }
 }

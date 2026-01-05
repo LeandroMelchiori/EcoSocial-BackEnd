@@ -11,11 +11,11 @@ import com.alura.foro.hub.api.repository.TopicoRepository;
 import com.alura.foro.hub.api.repository.UsuarioRepository;
 import com.alura.foro.hub.api.security.exception.BadRequestException;
 import com.alura.foro.hub.api.security.exception.ForbiddenException;
+import io.micrometer.core.instrument.MeterRegistry;
 import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.*;
@@ -36,7 +36,8 @@ class TopicoServiceTest {
     @Mock CursoRepository cursoRepository;
     @Mock RespuestaService respuestaService;
 
-    @InjectMocks TopicoService topicoService;
+    TopicoService topicoService;
+    MeterRegistry meterRegistry;
 
     private Usuario autor;
     private Usuario admin;
@@ -55,6 +56,15 @@ class TopicoServiceTest {
         curso     = mock(Curso.class);
 
         topico    = mock(Topico.class);
+        meterRegistry = new io.micrometer.core.instrument.simple.SimpleMeterRegistry();
+
+        topicoService = new TopicoService(
+                topicoRepository,
+                usuarioRepository,
+                cursoRepository,
+                respuestaService,
+                meterRegistry
+        );
     }
 
     // =========================
