@@ -107,11 +107,7 @@ public class RespuestaService {
     public DatosDetalleRespuesta detalle(Long respuestaId) {
         Respuesta respuesta = respuestaRepository.findById(respuestaId)
                 .orElseThrow(() -> new EntityNotFoundException("Respuesta no encontrada"));
-
-        Duration duracion = Duration.between(respuesta.getFechaCreacion(), LocalDateTime.now());
-
-        if (duracion.toMinutes() > 720) {throw new BadRequestException("El tiempo para editar esta respuesta ya expiró");}
-
+        
         // hijas con autor (sin N+1)
         var hijas = respuestaHijaRepository.buscarPorRespuestaConAutor(respuestaId)
                 .stream()

@@ -49,6 +49,11 @@ cuenta con documentación OpenAPI (Swagger) para referencia.
 - Eliminar respuestas (autor, autor del tópico o administrador)
 - Marcar una respuesta como solución (solo autor del tópico)
 
+### 💬 Respuestas hijas
+- Responder a una respuesta (1 solo nivel)
+- Reglas de edición y permisos propias
+- Test de integración específico
+
 ### 📚 Cursos y categorías
 - Listar categorías
 - Listar cursos por categoría
@@ -377,15 +382,33 @@ La API implementa medidas de seguridad orientadas a entornos reales:
 
 ---
 
-## 🧪 Testing
+## 🧪 Estrategia de Testing
 
-El proyecto cuenta con:
-- Tests de controladores (MockMvc)
-- Tests de seguridad (401 / 403 / 201)
-- Pruebas funcionales end-to-end con Postman
+El proyecto implementa una estrategia de testing por capas:
 
-Durante los tests automatizados se utiliza un perfil `test`
-con base de datos en memoria.
+### 🔹 Tests de Service
+- Validan reglas de negocio
+- Permisos por autor / admin
+- Restricciones temporales
+- Estados del tópico (ABIERTO / CERRADO)
+
+### 🔹 Tests de Controller
+- Prueban contratos HTTP
+- Validan códigos de estado (200 / 201 / 401 / 403 / 404)
+- Uso de MockMvc
+
+### 🔹 Tests de Integración (End-to-End)
+- Login real (`/auth/login`)
+- Generación de JWT
+- Uso del token en endpoints protegidos
+- Persistencia real en base H2
+- Seguridad activa (Spring Security completo)
+
+Casos cubiertos:
+- AuthenticationIntegrationTest
+- Flujo completo de creación de tópico con JWT
+- RespuestaHijaIntegrationTest (caso específico)
+
 
 ### 📬 Colección de Postman
 
@@ -397,6 +420,25 @@ de prueba (registro, login, tópicos, respuestas, cursos y categorías).
 /postman/ForoHub.postman_collection.json
 ```
 ---
+
+## 🧠 Decisiones de diseño
+
+- Las respuestas hijas se limitan a un solo nivel para evitar estructuras recursivas complejas.
+- La autorización se valida en la capa Service para no depender solo del controller.
+- Los tests de integración cubren flujos críticos (auth + endpoint protegido), no todos los endpoints.
+- Se priorizó claridad y seguridad por sobre optimizaciones prematuras.
+
+---
+
+## 🎯 Alcance del proyecto
+
+- Proyecto enfocado en backend
+- No incluye frontend
+- No incluye sistema de notificaciones
+- No incluye moderación automática
+
+---
+
 ## 📌 Notas finales
 
 - El proyecto está diseñado como **API REST**, sin interfaz gráfica
@@ -420,4 +462,7 @@ Como parte de un proceso de aprendizaje y consolidación de conocimientos en
 ---
 
 ⭐ Si este proyecto te resultó útil, ¡no dudes en dejar una estrella!
-=======
+
+![Java](https://img.shields.io/badge/Java-17-red)
+![Spring Boot](https://img.shields.io/badge/Spring_Boot-3-green)
+![Tests](https://img.shields.io/badge/tests-passing-brightgreen)
