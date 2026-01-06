@@ -52,7 +52,7 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(body);
     }
 
-    // ✅ 409 - violación de constraints (unique, FK, etc.)
+    // ✅ 409 - violación de constraints
     @ExceptionHandler(DataIntegrityViolationException.class)
     public ResponseEntity<ApiError> handleDataIntegrity(DataIntegrityViolationException ex, HttpServletRequest req) {
         var body = ApiError.of(
@@ -112,7 +112,7 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(status).body(body);
     }
 
-    // ✅ para ErrorResponseException (Spring 6+ a veces la usa internamente)
+    // ✅ para ErrorResponseException
     @ExceptionHandler(ErrorResponseException.class)
     public ResponseEntity<ApiError> handleErrorResponseException(ErrorResponseException ex, HttpServletRequest req) {
         var status = ex.getStatusCode();
@@ -125,7 +125,7 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(status).body(body);
     }
 
-    // ✅ 400 - IllegalArgumentException (tu caso típico de negocio)
+    // ✅ 400 - IllegalArgumentException
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<ApiError> handleIllegalArgument(IllegalArgumentException ex, HttpServletRequest req) {
         var body = ApiError.of(
@@ -137,7 +137,7 @@ public class GlobalExceptionHandler {
         return ResponseEntity.badRequest().body(body);
     }
 
-    // ✅ 409 - error de negocio (ej: nombre duplicado, reglas del dominio, etc.)
+    // ✅ 409 - error de negocio
     @ExceptionHandler(BusinessException.class)
     public ResponseEntity<ApiError> handleBusiness(BusinessException ex, HttpServletRequest req) {
         var body = ApiError.of(
@@ -150,7 +150,7 @@ public class GlobalExceptionHandler {
     }
 
 
-    // ✅ 500 - fallback (no filtrar detalles internos)
+    // ✅ 500 - fallback
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiError> handleGeneric(Exception ex, HttpServletRequest req) {
         var body = ApiError.of(

@@ -1,4 +1,8 @@
 # 🧠 Foro Hub API
+![Java](https://img.shields.io/badge/Java-17-red)
+![Spring Boot](https://img.shields.io/badge/Spring_Boot-3-green)
+![Build](https://img.shields.io/badge/build-passing-brightgreen)
+![Security](https://img.shields.io/badge/security-JWT-blue)
 
 API REST desarrollada con **Spring Boot** para la gestión de un foro de discusión basado en
 tópicos y respuestas.
@@ -79,20 +83,6 @@ El proyecto sigue una arquitectura por capas:
 
 ---
 
-## 📊 Monitoreo
-
-El proyecto integra Spring Boot Actuator + Micrometer + Prometheus.
-Se exponen métricas de:
-- Performance HTTP
-- Uso de JVM
-- Pool de conexiones HikariCP
-- Estado de la aplicación
-
-Las métricas están pensadas para ser consumidas por Prometheus
-y visualizadas en Grafana.
-
----
-
 ## ⚙️ Requisitos y configuración
 
 ### 📌 Requisitos previos
@@ -104,7 +94,6 @@ Para ejecutar el proyecto es necesario contar con:
 - **Postman** (recomendado para pruebas)
 - IDE compatible con Spring Boot (IntelliJ IDEA recomendado)
 
----
 
 ### 🗄️ Base de datos
 
@@ -125,7 +114,6 @@ spring.datasource.url=jdbc:mysql://localhost/foro_hub
 spring.datasource.username=TU_USUARIO
 spring.datasource.password=TU_PASSWORD
 
-
 api.security.secret=CLAVE_SECRETA_JWT
 ```
 
@@ -138,24 +126,40 @@ No se recomienda subirla a repositorios públicos.
 ### 1. Clonar el repositorio:
 
 ```bash
-git clone https://github.com/tu-usuario/foro-hub-api.git
+  git clone https://github.com/tu-usuario/foro-hub-api.git
 ```
 
 ### 2. Ingresar al directorio del proyecto:
 ```bash
-cd foro-hub-api
+  cd foro-hub-api
 ```
 
 ### 3. Ejecutar la aplicacion con Maven:
 
 ```bash
-mvn spring-boot:run
+  mvn spring-boot:run
 ```
 ### 4. La API quedará disponible en:
 
 ```yaml
 http://localhost:8080/api/v1/
 ```
+---
+
+## 📊 Monitoreo
+
+El proyecto integra Spring Boot Actuator + Micrometer + Prometheus.
+Se exponen métricas de:
+- Performance HTTP
+- Uso de JVM
+- Pool de conexiones HikariCP
+- Estado de la aplicación
+
+Las métricas están pensadas para ser consumidas por Prometheus
+y visualizadas en Grafana.
+
+---
+
 
 ## 📄 Documentación OpenAPI (Swagger)
 
@@ -216,13 +220,15 @@ Requieren autenticación JWT:
 * Marcar respuestas como solución
 * Gestión de cursos y categorías
 * Operaciones de administración de usuarios
+---
+## 🧯 Troubleshooting
 
-### ⚠️ Errores comunes
+- **401 Unauthorized**: token ausente/incorrecto/expirado 
+- **403 Forbidden**: rol insuficiente o no sos autor del recurso
+- **404 Not Found**: recurso inexistente (ej: `cursoId` que no existe)
+- **409 Conflict**: regla de negocio (duplicado / estado inválido / etc.)
 
-* <b> 401 Unauthorized→ </b>  Token ausente, inválido o expirado
-
-* <b>403 Forbidden → </b> El usuario no tiene permisos suficientes
-
+---
 ## 🔑 Roles y permisos
 
 El sistema maneja control de acceso basado en **roles**, definidos a nivel de seguridad
@@ -462,7 +468,3 @@ Como parte de un proceso de aprendizaje y consolidación de conocimientos en
 ---
 
 ⭐ Si este proyecto te resultó útil, ¡no dudes en dejar una estrella!
-
-![Java](https://img.shields.io/badge/Java-17-red)
-![Spring Boot](https://img.shields.io/badge/Spring_Boot-3-green)
-![Tests](https://img.shields.io/badge/tests-passing-brightgreen)

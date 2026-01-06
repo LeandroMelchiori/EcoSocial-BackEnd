@@ -1,4 +1,4 @@
-CREATE TABLE Usuario (
+CREATE TABLE usuario (
                          id BIGINT AUTO_INCREMENT PRIMARY KEY,
                          username VARCHAR(50) NOT NULL UNIQUE,
                          nombre VARCHAR(100) NOT NULL,
@@ -6,7 +6,7 @@ CREATE TABLE Usuario (
                          password VARCHAR(255) NOT NULL
 );
 
-CREATE TABLE Perfil (
+CREATE TABLE perfil (
                         id BIGINT AUTO_INCREMENT PRIMARY KEY,
                         nombre VARCHAR(50) NOT NULL UNIQUE
 );
@@ -16,9 +16,9 @@ CREATE TABLE usuario_perfiles (
                                   perfiles_id BIGINT NOT NULL,
                                   PRIMARY KEY (usuario_id, perfiles_id),
                                   CONSTRAINT fk_usuario_perfiles_usuario
-                                      FOREIGN KEY (usuario_id) REFERENCES Usuario(id),
+                                      FOREIGN KEY (usuario_id) REFERENCES usuario(id),
                                   CONSTRAINT fk_usuario_perfiles_perfil
-                                      FOREIGN KEY (perfiles_id) REFERENCES Perfil(id)
+                                      FOREIGN KEY (perfiles_id) REFERENCES perfil(id)
 );
 
 CREATE TABLE categoria (
@@ -26,7 +26,7 @@ CREATE TABLE categoria (
                            nombre VARCHAR(100) NOT NULL UNIQUE
 );
 
-CREATE TABLE Curso (
+CREATE TABLE curso (
                        id BIGINT AUTO_INCREMENT PRIMARY KEY,
                        nombre VARCHAR(100) NOT NULL UNIQUE,
                        categoria_id BIGINT NOT NULL,
@@ -36,7 +36,7 @@ CREATE TABLE Curso (
                            UNIQUE (nombre, categoria_id)
 );
 
-CREATE TABLE Topico (
+CREATE TABLE topico (
                         id BIGINT AUTO_INCREMENT PRIMARY KEY,
                         titulo VARCHAR(255) NOT NULL,
                         mensaje TEXT NOT NULL,
@@ -44,17 +44,17 @@ CREATE TABLE Topico (
                         status VARCHAR(50) NOT NULL,
                         autor_id BIGINT NOT NULL,
                         curso_id BIGINT NOT NULL,
-                        FOREIGN KEY (autor_id) REFERENCES Usuario(id) ON DELETE CASCADE,
-                        FOREIGN KEY (curso_id) REFERENCES Curso(id) ON DELETE CASCADE
+                        FOREIGN KEY (autor_id) REFERENCES usuario(id) ON DELETE CASCADE,
+                        FOREIGN KEY (curso_id) REFERENCES curso(id) ON DELETE CASCADE
 );
 
-CREATE TABLE Respuesta (
+CREATE TABLE respuesta (
                            id BIGINT AUTO_INCREMENT PRIMARY KEY,
                            mensaje TEXT NOT NULL,
                            fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                            topico_id BIGINT NOT NULL,
                            autor_id BIGINT NOT NULL,
                            solucion BOOLEAN DEFAULT FALSE,
-                           FOREIGN KEY (topico_id) REFERENCES Topico(id) ON DELETE CASCADE,
-                           FOREIGN KEY (autor_id) REFERENCES Usuario(id) ON DELETE CASCADE
+                           FOREIGN KEY (topico_id) REFERENCES topico(id) ON DELETE CASCADE,
+                           FOREIGN KEY (autor_id) REFERENCES usuario(id) ON DELETE CASCADE
 );

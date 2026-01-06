@@ -11,8 +11,8 @@ CREATE TABLE respuesta_hija (
                                 created_by BIGINT NULL,
                                 updated_by BIGINT NULL,
 
-                                FOREIGN KEY (respuesta_id) REFERENCES Respuesta(id) ON DELETE CASCADE,
-                                FOREIGN KEY (autor_id) REFERENCES Usuario(id) ON DELETE CASCADE
+                                FOREIGN KEY (respuesta_id) REFERENCES respuesta(id) ON DELETE CASCADE,
+                                FOREIGN KEY (autor_id) REFERENCES usuario(id) ON DELETE CASCADE
 );
 CREATE INDEX idx_respuesta_hija_respuesta_id ON respuesta_hija(respuesta_id);
 CREATE INDEX idx_respuesta_hija_autor_id ON respuesta_hija(autor_id);
