@@ -1,6 +1,6 @@
 package com.alura.foro.hub.api.security.auth;
 
-import com.alura.foro.hub.api.repository.UsuarioRepository;
+import com.alura.foro.hub.api.user.repository.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;

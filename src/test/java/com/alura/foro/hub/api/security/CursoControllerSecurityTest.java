@@ -1,11 +1,11 @@
 package com.alura.foro.hub.api.security;
 
-import com.alura.foro.hub.api.controller.CursoController;
-import com.alura.foro.hub.api.dto.curso.DatosListadoCurso;
+import com.alura.foro.hub.api.modules.foro.controller.CursoController;
+import com.alura.foro.hub.api.modules.foro.dto.curso.DatosListadoCurso;
 import com.alura.foro.hub.api.security.config.SecurityConfigurations;
 import com.alura.foro.hub.api.security.filter.RateLimitFilter;
 import com.alura.foro.hub.api.security.filter.SecurityFilter;
-import com.alura.foro.hub.api.service.CursoService;
+import com.alura.foro.hub.api.modules.foro.service.CursoService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletRequest;
 import jakarta.servlet.ServletResponse;

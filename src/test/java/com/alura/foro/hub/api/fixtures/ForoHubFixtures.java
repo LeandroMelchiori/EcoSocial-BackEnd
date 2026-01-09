@@ -1,14 +1,14 @@
 package com.alura.foro.hub.api.fixtures;
 
-import com.alura.foro.hub.api.entity.enums.StatusTopico;
-import com.alura.foro.hub.api.entity.model.Respuesta;
-import com.alura.foro.hub.api.entity.model.RespuestaHija;
-import com.alura.foro.hub.api.entity.model.Topico;
-import com.alura.foro.hub.api.entity.model.Usuario;
-import com.alura.foro.hub.api.repository.RespuestaHijaRepository;
-import com.alura.foro.hub.api.repository.RespuestaRepository;
-import com.alura.foro.hub.api.repository.TopicoRepository;
-import com.alura.foro.hub.api.repository.UsuarioRepository;
+import com.alura.foro.hub.api.modules.foro.domain.enums.StatusTopico;
+import com.alura.foro.hub.api.modules.foro.domain.model.Respuesta;
+import com.alura.foro.hub.api.modules.foro.domain.model.RespuestaHija;
+import com.alura.foro.hub.api.modules.foro.domain.model.Topico;
+import com.alura.foro.hub.api.user.domain.Usuario;
+import com.alura.foro.hub.api.modules.foro.repository.RespuestaHijaRepository;
+import com.alura.foro.hub.api.modules.foro.repository.RespuestaRepository;
+import com.alura.foro.hub.api.modules.foro.repository.TopicoRepository;
+import com.alura.foro.hub.api.user.repository.UsuarioRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.time.LocalDateTime;

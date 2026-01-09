@@ -1,9 +1,10 @@
 package com.alura.foro.hub.api.integration;
 
-import com.alura.foro.hub.api.entity.model.Categoria;
-import com.alura.foro.hub.api.entity.model.Curso;
+import com.alura.foro.hub.api.modules.foro.domain.model.Categoria;
+import com.alura.foro.hub.api.modules.foro.domain.model.Curso;
 import com.alura.foro.hub.api.fixtures.ForoHubFixtures;
-import com.alura.foro.hub.api.repository.*;
+import com.alura.foro.hub.api.modules.foro.repository.*;
+import com.alura.foro.hub.api.user.repository.UsuarioRepository;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.transaction.Transactional;
@@ -29,11 +30,16 @@ class ForoFlowIntegrationTest {
     @Autowired MockMvc mockMvc;
     @Autowired ObjectMapper objectMapper;
 
-    @Autowired UsuarioRepository usuarioRepository;
-    @Autowired TopicoRepository topicoRepository;
-    @Autowired RespuestaRepository respuestaRepository;
-    @Autowired RespuestaHijaRepository respuestaHijaRepository;
-    @Autowired CategoriaRepository categoriaRepository;
+    @Autowired
+    UsuarioRepository usuarioRepository;
+    @Autowired
+    TopicoRepository topicoRepository;
+    @Autowired
+    RespuestaRepository respuestaRepository;
+    @Autowired
+    RespuestaHijaRepository respuestaHijaRepository;
+    @Autowired
+    CategoriaRepository categoriaRepository;
     @Autowired CursoRepository cursoRepository;
 
     @Autowired PasswordEncoder passwordEncoder;

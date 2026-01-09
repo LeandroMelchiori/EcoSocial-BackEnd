@@ -1,7 +1,7 @@
 package com.alura.foro.hub.api.security;
 
-import com.alura.foro.hub.api.entity.model.Usuario;
-import com.alura.foro.hub.api.repository.UsuarioRepository;
+import com.alura.foro.hub.api.user.domain.Usuario;
+import com.alura.foro.hub.api.user.repository.UsuarioRepository;
 import com.alura.foro.hub.api.security.auth.UsuarioAuthenticateData;
 import com.alura.foro.hub.api.security.config.SecurityConfigurations;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -16,7 +16,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 

@@ -1,7 +1,9 @@
 package com.alura.foro.hub.api.repository;
 
-import com.alura.foro.hub.api.entity.enums.StatusTopico;
-import com.alura.foro.hub.api.entity.model.*;
+import com.alura.foro.hub.api.modules.foro.domain.enums.StatusTopico;
+import com.alura.foro.hub.api.modules.foro.domain.model.*;
+import com.alura.foro.hub.api.modules.foro.repository.RespuestaRepository;
+import com.alura.foro.hub.api.user.domain.Usuario;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
@@ -25,7 +27,8 @@ import static org.assertj.core.api.Assertions.*;
 class RespuestaRepositoryTest {
 
     @Autowired EntityManager em;
-    @Autowired RespuestaRepository respuestaRepository;
+    @Autowired
+    RespuestaRepository respuestaRepository;
 
     // =========================
     // CONFIG AUDITORÍA TEST

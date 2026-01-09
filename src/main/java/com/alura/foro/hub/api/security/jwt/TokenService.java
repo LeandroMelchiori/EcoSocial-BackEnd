@@ -1,6 +1,6 @@
 package com.alura.foro.hub.api.security.jwt;
 
-import com.alura.foro.hub.api.entity.model.Usuario;
+import com.alura.foro.hub.api.user.domain.Usuario;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.exceptions.JWTCreationException;
@@ -16,7 +16,7 @@ import static com.auth0.jwt.algorithms.Algorithm.HMAC256;
 @Service
 public class TokenService {
 
-    @Value("${api.security.secret}")
+    @Value(value = "${api.security.secret}")
     private String apiSecret;
 
     public String generateToken(Usuario usuario) {

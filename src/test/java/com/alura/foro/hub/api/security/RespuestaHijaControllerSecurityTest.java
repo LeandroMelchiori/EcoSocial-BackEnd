@@ -1,8 +1,8 @@
 package com.alura.foro.hub.api.security;
 
-import com.alura.foro.hub.api.controller.RespuestaHijaController;
+import com.alura.foro.hub.api.modules.foro.controller.RespuestaHijaController;
 import com.alura.foro.hub.api.security.exception.ForbiddenException;
-import com.alura.foro.hub.api.service.RespuestaHijaService;
+import com.alura.foro.hub.api.modules.foro.service.RespuestaHijaService;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;

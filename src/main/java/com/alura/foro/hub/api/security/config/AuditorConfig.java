@@ -1,6 +1,6 @@
 package com.alura.foro.hub.api.security.config;
 
-import com.alura.foro.hub.api.entity.model.Usuario;
+import com.alura.foro.hub.api.user.domain.Usuario;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.domain.AuditorAware;
@@ -24,7 +24,6 @@ public class AuditorConfig {
 
             Object principal = auth.getPrincipal();
 
-            // Caso típico: guardás en el SecurityContext tu entidad Usuario
             if (principal instanceof Usuario usuario) {
                 return Optional.of(usuario.getId());
             }

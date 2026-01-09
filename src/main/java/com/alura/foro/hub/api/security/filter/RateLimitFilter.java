@@ -1,6 +1,5 @@
 package com.alura.foro.hub.api.security.filter;
 
-import com.alura.foro.hub.api.security.filter.RateLimitProperties;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -37,10 +36,8 @@ public class RateLimitFilter extends OncePerRequestFilter {
         // no limitar swagger/api-docs
         if (path.startsWith("/swagger-ui") || path.startsWith("/v3/api-docs")) return true;
 
-        // opcional: no limitar actuator (si lo usás)
-        if (path.startsWith("/actuator")) return true;
-
-        return false;
+        // opcional: no limitar actuator
+        return path.startsWith("/actuator");
     }
 
     @Override

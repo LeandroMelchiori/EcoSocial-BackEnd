@@ -1,6 +1,6 @@
 package com.alura.foro.hub.api.security.filter;
 
-import com.alura.foro.hub.api.repository.UsuarioRepository;
+import com.alura.foro.hub.api.user.repository.UsuarioRepository;
 import com.alura.foro.hub.api.security.exception.ApiError;
 import com.alura.foro.hub.api.security.jwt.TokenService;
 import com.fasterxml.jackson.databind.ObjectMapper;

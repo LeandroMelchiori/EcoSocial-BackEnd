@@ -1,9 +1,10 @@
 package com.alura.foro.hub.api.controller;
 
-import com.alura.foro.hub.api.dto.curso.DatosActualizarCurso;
-import com.alura.foro.hub.api.dto.curso.DatosCrearCurso;
-import com.alura.foro.hub.api.dto.curso.DatosListadoCurso;
-import com.alura.foro.hub.api.service.CursoService;
+import com.alura.foro.hub.api.modules.foro.controller.CursoController;
+import com.alura.foro.hub.api.modules.foro.dto.curso.DatosActualizarCurso;
+import com.alura.foro.hub.api.modules.foro.dto.curso.DatosCrearCurso;
+import com.alura.foro.hub.api.modules.foro.dto.curso.DatosListadoCurso;
+import com.alura.foro.hub.api.modules.foro.service.CursoService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

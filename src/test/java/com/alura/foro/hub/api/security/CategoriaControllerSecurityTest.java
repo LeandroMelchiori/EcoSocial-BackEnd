@@ -1,11 +1,11 @@
 package com.alura.foro.hub.api.security;
 
-import com.alura.foro.hub.api.controller.CategoriaController;
-import com.alura.foro.hub.api.dto.categoria.DatosListadoCategoria;
+import com.alura.foro.hub.api.modules.foro.controller.CategoriaController;
+import com.alura.foro.hub.api.modules.foro.dto.categoria.DatosListadoCategoria;
 import com.alura.foro.hub.api.security.config.SecurityConfigurations;
 import com.alura.foro.hub.api.security.filter.RateLimitFilter;
 import com.alura.foro.hub.api.security.filter.SecurityFilter;
-import com.alura.foro.hub.api.service.CategoriaService;
+import com.alura.foro.hub.api.modules.foro.service.CategoriaService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletRequest;
 import jakarta.servlet.ServletResponse;

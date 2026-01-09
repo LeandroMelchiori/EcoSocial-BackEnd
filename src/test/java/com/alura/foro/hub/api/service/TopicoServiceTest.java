@@ -1,14 +1,19 @@
 package com.alura.foro.hub.api.service;
 
-import com.alura.foro.hub.api.dto.topico.*;
-import com.alura.foro.hub.api.entity.enums.StatusTopico;
-import com.alura.foro.hub.api.entity.model.Categoria;
-import com.alura.foro.hub.api.entity.model.Curso;
-import com.alura.foro.hub.api.entity.model.Topico;
-import com.alura.foro.hub.api.entity.model.Usuario;
-import com.alura.foro.hub.api.repository.CursoRepository;
-import com.alura.foro.hub.api.repository.TopicoRepository;
-import com.alura.foro.hub.api.repository.UsuarioRepository;
+import com.alura.foro.hub.api.modules.foro.dto.topico.DatosActualizarTopico;
+import com.alura.foro.hub.api.modules.foro.dto.topico.DatosListadoTopico;
+import com.alura.foro.hub.api.modules.foro.dto.topico.DatosRegistroTopico;
+import com.alura.foro.hub.api.modules.foro.dto.topico.TopicoFiltro;
+import com.alura.foro.hub.api.modules.foro.domain.enums.StatusTopico;
+import com.alura.foro.hub.api.modules.foro.domain.model.Categoria;
+import com.alura.foro.hub.api.modules.foro.domain.model.Curso;
+import com.alura.foro.hub.api.modules.foro.domain.model.Topico;
+import com.alura.foro.hub.api.user.domain.Usuario;
+import com.alura.foro.hub.api.modules.foro.repository.CursoRepository;
+import com.alura.foro.hub.api.modules.foro.repository.TopicoRepository;
+import com.alura.foro.hub.api.user.repository.UsuarioRepository;
+import com.alura.foro.hub.api.modules.foro.service.RespuestaService;
+import com.alura.foro.hub.api.modules.foro.service.TopicoService;
 import com.alura.foro.hub.api.security.exception.BadRequestException;
 import com.alura.foro.hub.api.security.exception.ForbiddenException;
 import io.micrometer.core.instrument.MeterRegistry;
@@ -34,7 +39,8 @@ class TopicoServiceTest {
     @Mock TopicoRepository topicoRepository;
     @Mock UsuarioRepository usuarioRepository;
     @Mock CursoRepository cursoRepository;
-    @Mock RespuestaService respuestaService;
+    @Mock
+    RespuestaService respuestaService;
 
     TopicoService topicoService;
     MeterRegistry meterRegistry;

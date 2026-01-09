@@ -1,9 +1,10 @@
 package com.alura.foro.hub.api.controller;
 
-import com.alura.foro.hub.api.dto.topico.*;
-import com.alura.foro.hub.api.entity.enums.StatusTopico;
-import com.alura.foro.hub.api.entity.model.Usuario;
-import com.alura.foro.hub.api.service.TopicoService;
+import com.alura.foro.hub.api.modules.foro.controller.TopicoController;
+import com.alura.foro.hub.api.modules.foro.dto.topico.*;
+import com.alura.foro.hub.api.modules.foro.domain.enums.StatusTopico;
+import com.alura.foro.hub.api.user.domain.Usuario;
+import com.alura.foro.hub.api.modules.foro.service.TopicoService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;

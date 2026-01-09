@@ -1,10 +1,11 @@
 package com.alura.foro.hub.api.controller;
 
-import com.alura.foro.hub.api.dto.respuesta.DatosActualizarRespuesta;
-import com.alura.foro.hub.api.dto.respuesta.DatosCrearRespuesta;
-import com.alura.foro.hub.api.dto.respuesta.DatosListadoRespuesta;
-import com.alura.foro.hub.api.entity.model.Usuario;
-import com.alura.foro.hub.api.service.RespuestaService;
+import com.alura.foro.hub.api.modules.foro.controller.RespuestaController;
+import com.alura.foro.hub.api.modules.foro.dto.respuesta.DatosActualizarRespuesta;
+import com.alura.foro.hub.api.modules.foro.dto.respuesta.DatosCrearRespuesta;
+import com.alura.foro.hub.api.modules.foro.dto.respuesta.DatosListadoRespuesta;
+import com.alura.foro.hub.api.user.domain.Usuario;
+import com.alura.foro.hub.api.modules.foro.service.RespuestaService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -1,6 +1,6 @@
 package com.alura.foro.hub.api.security.config;
 
-import com.alura.foro.hub.api.repository.UsuarioRepository;
+import com.alura.foro.hub.api.user.repository.UsuarioRepository;
 import com.alura.foro.hub.api.security.exception.ApiError;
 import com.alura.foro.hub.api.security.filter.RateLimitFilter;
 import com.alura.foro.hub.api.security.filter.RateLimitProperties;
@@ -95,6 +95,11 @@ public class SecurityConfigurations {
                                 .requestMatchers(HttpMethod.GET, "/respuestas/**").permitAll()
                                 .requestMatchers(HttpMethod.GET, "/actuator/metrics/**").permitAll()
                                 .requestMatchers(HttpMethod.GET, "/actuator/prometheus/**").permitAll()
+                                .requestMatchers(HttpMethod.GET, "/catalogo/**").permitAll()
+                                .requestMatchers(HttpMethod.POST, "/catalogo/**").authenticated()
+                                .requestMatchers(HttpMethod.PUT, "/catalogo/**").authenticated()
+                                .requestMatchers(HttpMethod.DELETE, "/catalogo/**").authenticated()
+                                .requestMatchers(HttpMethod.GET, "/productos/**").permitAll()
 
                                 // 🔒 C.U.D CATEGORIAS → SOLO ADMIN
                                 .requestMatchers(HttpMethod.POST, "/categorias/**").hasRole("ADMIN")

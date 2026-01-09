@@ -15,7 +15,7 @@ public class CorsConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
 
-        // 🔒 Orígenes permitidos (poné los tuyos reales)
+        // 🔒 Orígenes permitidos
         config.setAllowedOrigins(List.of(
                 "http://localhost:*",
                 "https://*.tudominio.com"

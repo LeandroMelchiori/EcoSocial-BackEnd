@@ -1,12 +1,13 @@
 package com.alura.foro.hub.api.repository;
 
-import com.alura.foro.hub.api.dto.topico.DatosListadoTopico;
-import com.alura.foro.hub.api.entity.enums.StatusTopico;
-import com.alura.foro.hub.api.entity.model.Categoria;
-import com.alura.foro.hub.api.entity.model.Curso;
-import com.alura.foro.hub.api.entity.model.Respuesta;
-import com.alura.foro.hub.api.entity.model.Topico;
-import com.alura.foro.hub.api.entity.model.Usuario;
+import com.alura.foro.hub.api.modules.foro.dto.topico.DatosListadoTopico;
+import com.alura.foro.hub.api.modules.foro.domain.enums.StatusTopico;
+import com.alura.foro.hub.api.modules.foro.domain.model.Categoria;
+import com.alura.foro.hub.api.modules.foro.domain.model.Curso;
+import com.alura.foro.hub.api.modules.foro.domain.model.Respuesta;
+import com.alura.foro.hub.api.modules.foro.domain.model.Topico;
+import com.alura.foro.hub.api.user.domain.Usuario;
+import com.alura.foro.hub.api.modules.foro.repository.TopicoRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,7 +32,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 @Import(TopicoRepositoryTest.AuditingTestConfig.class)
 class TopicoRepositoryTest {
 
-    @Autowired TopicoRepository topicoRepository;
+    @Autowired
+    TopicoRepository topicoRepository;
     @Autowired TestEntityManager em;
 
     private Usuario autor;
