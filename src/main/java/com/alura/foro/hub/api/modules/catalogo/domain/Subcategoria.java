@@ -6,8 +6,10 @@ import lombok.*;
 @Entity
 @Table(name = "subcategoria_producto",
         uniqueConstraints = @UniqueConstraint(name="uq_subcategoria_producto", columnNames={"categoria_producto_id","nombre"}))
-@Getter @Setter
-@NoArgsConstructor @AllArgsConstructor
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 @EqualsAndHashCode(of = "id")
 public class Subcategoria {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)

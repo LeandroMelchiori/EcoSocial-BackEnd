@@ -6,8 +6,10 @@ import lombok.*;
 @Entity
 @Table(name = "producto_imagenes",
         uniqueConstraints = @UniqueConstraint(name="uq_imagen_orden", columnNames={"producto_id","orden"}))
-@Getter @Setter
-@NoArgsConstructor @AllArgsConstructor
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 @EqualsAndHashCode(of = "id")
 public class ProductoImagen {
 

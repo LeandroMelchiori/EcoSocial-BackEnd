@@ -5,8 +5,10 @@ import lombok.*;
 
 @Entity
 @Table(name = "categoria_producto")
-@Getter @Setter
-@NoArgsConstructor @AllArgsConstructor
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 @EqualsAndHashCode(of = "id")
 public class CategoriaCatalogo {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)

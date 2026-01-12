@@ -39,4 +39,19 @@ public class StorageService {
         if (dot == -1) return "";
         return name.substring(dot + 1).toLowerCase();
     }
+
+    public void deleteProductDir(Long productoId) {
+        try {
+            Path productDir = rootDir.resolve("productos").resolve(productoId.toString());
+            if (!Files.exists(productDir)) return;
+
+            // borra recursivo
+            Files.walk(productDir)
+                    .sorted((a, b) -> b.compareTo(a)) // primero archivos, luego carpetas
+                    .forEach(p -> {
+                        try { Files.deleteIfExists(p); } catch (IOException ignored) {}
+                    });
+        } catch (IOException ignored) {}
+    }
+
 }

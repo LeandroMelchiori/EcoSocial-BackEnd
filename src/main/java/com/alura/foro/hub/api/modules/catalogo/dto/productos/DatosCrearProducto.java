@@ -1,4 +1,4 @@
-package com.alura.foro.hub.api.modules.catalogo.dto;
+package com.alura.foro.hub.api.modules.catalogo.dto.productos;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;

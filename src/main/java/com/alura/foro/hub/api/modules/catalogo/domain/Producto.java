@@ -10,8 +10,10 @@ import java.util.List;
 
 @Entity
 @Table(name = "productos")
-@Getter @Setter
-@NoArgsConstructor @AllArgsConstructor
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 @EqualsAndHashCode(of = "id")
 public class Producto {
 
@@ -23,11 +25,11 @@ public class Producto {
     private Usuario usuario;
 
     @ManyToOne(optional = false, fetch = FetchType.LAZY)
-    @JoinColumn(name = "categoria_id", nullable = false)
+    @JoinColumn(name = "categoria_producto_id", nullable = false)
     private CategoriaCatalogo categoria;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "subcategoria_id")
+    @JoinColumn(name = "subcategoria_producto_id")
     private Subcategoria subcategoria;
 
     @Column(nullable = false, length = 120)
