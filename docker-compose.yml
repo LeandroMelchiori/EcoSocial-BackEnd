@@ -20,6 +20,19 @@ services:
       timeout: 3s
       retries: 20
 
+  minio:
+    image: minio/minio:latest
+    container_name: forohub-minio
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin123
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - minio_data:/data
+
   api:
     build: .
     container_name: forohub-api
@@ -30,8 +43,14 @@ services:
       - .env
     environment:
       SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/${MYSQL_DATABASE}?createDatabaseIfNotExist=true&serverTimezone=UTC
+      SPRING_PROFILES_ACTIVE: docker
+      MINIO_ENDPOINT: http://minio:9000
+      MINIO_ACCESS_KEY: minioadmin
+      MINIO_SECRET_KEY: minioadmin123
+      MINIO_BUCKET: forohub
     ports:
       - "8080:8080"
 
 volumes:
   mysql_data:
+  minio_data:

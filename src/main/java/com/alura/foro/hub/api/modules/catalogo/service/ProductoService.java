@@ -112,7 +112,8 @@ public class ProductoService {
             p = productoRepository.save(p);
         }
 
-        return ProductoMapper.toDetalle(p);
+        return ProductoMapper.toDetalle(p, storageService);
+
     }
 
     // =========================
@@ -122,7 +123,7 @@ public class ProductoService {
     public DatosDetalleProducto detalle(Long id) {
         Producto p = productoRepository.findWithImagenesById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Producto no encontrado"));
-        return ProductoMapper.toDetalle(p);
+        return ProductoMapper.toDetalle(p, storageService);
     }
 
     @Transactional(readOnly = true)
@@ -217,7 +218,8 @@ public class ProductoService {
         }
 
         p = productoRepository.save(p);
-        return ProductoMapper.toDetalle(p);
+        return ProductoMapper.toDetalle(p, storageService);
+
     }
 
     // =========================
