@@ -100,6 +100,8 @@ public class SecurityConfigurations {
                                 .requestMatchers(HttpMethod.PUT, "/catalogo/**").authenticated()
                                 .requestMatchers(HttpMethod.DELETE, "/catalogo/**").authenticated()
                                 .requestMatchers(HttpMethod.GET, "/productos/**").permitAll()
+                                .requestMatchers(HttpMethod.GET, "/catalogo/categorias/**").permitAll()
+                                .requestMatchers(HttpMethod.GET, "/catalogo/*/subcategorias/**").permitAll()
 
                                 // 🔒 C.U.D CATEGORIAS → SOLO ADMIN
                                 .requestMatchers(HttpMethod.POST, "/categorias/**").hasRole("ADMIN")

@@ -8,6 +8,7 @@ public class ProductoMapper {
 
     public static DatosDetalleProducto toDetalle(Producto p) {
         var urls = p.getImagenes().stream().map(ProductoImagen::getUrl).toList();
+
         return new DatosDetalleProducto(
                 p.getId(),
                 p.getUsuario() != null ? p.getUsuario().getId() : null,
@@ -20,5 +21,4 @@ public class ProductoMapper {
                 urls
         );
     }
-
 }

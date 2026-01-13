@@ -6,6 +6,7 @@ import com.alura.foro.hub.api.modules.catalogo.dto.productos.DatosDetalleProduct
 import com.alura.foro.hub.api.modules.catalogo.dto.productos.DatosListadoProducto;
 import com.alura.foro.hub.api.modules.catalogo.service.ProductoService;
 import com.alura.foro.hub.api.user.domain.Usuario;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -22,28 +23,30 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/catalogo/productos")
-public class ProductoController {
+public class    ProductoController {
 
     private final ProductoService productoService;
+    private final ObjectMapper mapper;
 
-    public ProductoController(ProductoService productoService) {
+    public ProductoController(ProductoService productoService, ObjectMapper mapper) {
         this.productoService = productoService;
+        this.mapper = mapper;
     }
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<DatosDetalleProducto> crear(
-            @RequestPart("data") @Valid DatosCrearProducto data,
-            @RequestPart(value = "imagenes", required = false) List<MultipartFile> imagenes,
+    public ResponseEntity<?> crear(
+            @RequestPart("data") String data,
+            @RequestPart(name = "imagenes", required = false) List<MultipartFile> imagenes,
             Authentication auth
     ) throws IOException {
 
+        DatosCrearProducto dto = mapper.readValue(data, DatosCrearProducto.class);
+
         Usuario usuario = (Usuario) auth.getPrincipal();
 
-        DatosDetalleProducto creado =
-                productoService.crear(data, imagenes, usuario.getId());
+        DatosDetalleProducto creado = productoService.crear(dto, imagenes, usuario.getId());
 
         URI location = URI.create("/catalogo/productos/" + creado.id());
-
         return ResponseEntity.created(location).body(creado);
     }
 
