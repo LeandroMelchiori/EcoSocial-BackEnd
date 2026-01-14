@@ -68,30 +68,28 @@ public class    ProductoController {
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> eliminar(@PathVariable Long id, Authentication auth) {
         Usuario usuario = (Usuario) auth.getPrincipal();
-
-        boolean esAdmin = auth.getAuthorities().stream()
-                .anyMatch(a -> a.getAuthority().equals("ADMIN") || a.getAuthority().equals("ROLE_ADMIN"));
-
-        productoService.eliminar(id, usuario.getId(), esAdmin);
-
+        productoService.eliminar(id, usuario.getId());
         return ResponseEntity.noContent().build();
     }
+
 
     @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<DatosDetalleProducto> actualizar(
             @PathVariable Long id,
-            @RequestPart("data") @Valid DatosActualizarProducto data,
+            @RequestPart("data") String data,
             @RequestPart(value = "imagenes", required = false) List<MultipartFile> imagenes,
             Authentication auth
-    ) throws IOException {
-
+    ) {
         Usuario usuario = (Usuario) auth.getPrincipal();
 
-        boolean esAdmin = auth.getAuthorities().stream()
-                .anyMatch(a -> a.getAuthority().equals("ADMIN") || a.getAuthority().equals("ROLE_ADMIN"));
+        DatosActualizarProducto dto;
+        try {
+            dto = mapper.readValue(data, DatosActualizarProducto.class);
+        } catch (IOException e) {
+            throw new IllegalArgumentException("JSON inválido en el campo 'data'");
+        }
 
-        var actualizado = productoService.actualizar(id, data, imagenes, usuario.getId(), esAdmin);
-
+        var actualizado = productoService.actualizar(id, dto, imagenes, usuario.getId());
         return ResponseEntity.ok(actualizado);
     }
 

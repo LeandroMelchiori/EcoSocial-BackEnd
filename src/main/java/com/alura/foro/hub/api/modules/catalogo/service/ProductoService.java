@@ -4,6 +4,8 @@ import com.alura.foro.hub.api.modules.catalogo.dto.productos.DatosActualizarProd
 import com.alura.foro.hub.api.modules.catalogo.dto.productos.DatosDetalleProducto;
 import com.alura.foro.hub.api.modules.catalogo.dto.productos.DatosListadoProducto;
 import com.alura.foro.hub.api.modules.catalogo.mapper.ProductoMapper;
+import com.alura.foro.hub.api.security.exception.BadRequestException;
+import com.alura.foro.hub.api.security.exception.ForbiddenException;
 import com.alura.foro.hub.api.user.domain.Usuario; // ajustá paquete
 import com.alura.foro.hub.api.user.repository.UsuarioRepository; // ajustá paquete
 import com.alura.foro.hub.api.modules.catalogo.domain.*;
@@ -15,6 +17,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -32,17 +36,20 @@ public class ProductoService {
     private final SubCategoriaCatalogoRepository subCategoriaCatalogoRepository;
     private final UsuarioRepository usuarioRepository;
     private final StorageService storageService;
+    private final ProductoImagenRepository productoImagenRepository;
 
     public ProductoService(ProductoRepository productoRepository,
                            CategoriaCatalogoRepository categoriaCatalogoRepository,
                            SubCategoriaCatalogoRepository subCategoriaCatalogoRepository,
                            UsuarioRepository usuarioRepository,
-                           StorageService storageService) {
+                           StorageService storageService,
+                           ProductoImagenRepository productoImagenRepository) {
         this.productoRepository = productoRepository;
         this.categoriaCatalogoRepository = categoriaCatalogoRepository;
         this.subCategoriaCatalogoRepository = subCategoriaCatalogoRepository;
         this.usuarioRepository = usuarioRepository;
         this.storageService = storageService;
+        this.productoImagenRepository = productoImagenRepository;
     }
 
     // =========================
@@ -62,24 +69,22 @@ public class ProductoService {
                     .orElseThrow(() -> new EntityNotFoundException("Subcategoría no encontrada"));
 
             if (!subcategoria.getCategoria().getId().equals(categoria.getId())) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                        "La subcategoría no pertenece a la categoría indicada");
+                throw new BadRequestException("La subcategoría no pertenece a la categoría indicada");
             }
         }
 
         if (imagenes != null) {
             if (imagenes.size() > MAX_IMGS)
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Máximo " + MAX_IMGS + " imágenes");
+                throw new BadRequestException("Máximo " + MAX_IMGS + " imágenes");
 
             for (MultipartFile f : imagenes) {
                 if (f == null || f.isEmpty()) continue;
                 if (f.getSize() > MAX_SIZE)
-                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Imagen supera 5MB");
+                    throw new BadRequestException("Imagen supera 5MB");
 
                 String ct = f.getContentType();
                 if (ct == null || !(ct.equals("image/jpeg") || ct.equals("image/png") || ct.equals("image/webp"))) {
-                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                            "Tipo de imagen no permitido (solo jpg/png/webp)");
+                    throw new BadRequestException("Tipo de imagen no permitido (solo jpg/png/webp)");
                 }
             }
         }
@@ -135,41 +140,64 @@ public class ProductoService {
     //      ELIMINAR
     // =========================
     @Transactional
-    public void eliminar(Long productoId, Long userId, boolean esAdmin) {
-        Producto p = productoRepository.findById(productoId)
+    public void eliminar(Long productoId, Long userId) {
+
+        Producto p = productoRepository.findWithImagenesById(productoId)
                 .orElseThrow(() -> new EntityNotFoundException("Producto no encontrado"));
 
-        Long ownerId = p.getUsuario().getId();
-        if (!esAdmin && !ownerId.equals(userId)) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "No tenés permiso para eliminar este producto");
+        Usuario user = usuarioRepository.findById(userId)
+                .orElseThrow(() -> new EntityNotFoundException("Usuario no encontrado"));
+
+        if (!user.esAdmin() && !p.getUsuario().getId().equals(userId)) {
+            throw new ForbiddenException("No tenés permiso para eliminar este producto");
         }
 
-        productoRepository.delete(p);
+        // 1) mover imágenes a trash (reversible)
+        String opId = java.util.UUID.randomUUID().toString();
+        String trashPrefix = storageService.moveProductDirToTrash(productoId, opId);
 
-        // opcional: borrar archivos físicos del disco
-        storageService.deleteProductDir(productoId);
+        // 2) registrar hooks: si commit -> purga; si rollback -> restaura
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+            @Override
+            public void afterCommit() {
+                // DB OK => borrado definitivo en MinIO
+                storageService.purgeTrash(trashPrefix);
+            }
+
+            @Override
+            public void afterCompletion(int status) {
+                if (status != STATUS_COMMITTED) {
+                    // DB rollback => vuelvo todo atrás en MinIO
+                    storageService.restoreTrashToProductDir(productoId, trashPrefix);
+                }
+            }
+        });
+
+        // 3) borrar en DB (si falla, salta exception => rollback => restore)
+        productoRepository.delete(p);
     }
 
     // =========================
     //      ACTUALIZAR
     // =========================
     @Transactional
-    public DatosDetalleProducto actualizar(Long productoId,
-                                           DatosActualizarProducto dto,
-                                           List<MultipartFile> imagenes,
-                                           Long userId,
-                                           boolean esAdmin) throws IOException {
+    public DatosDetalleProducto actualizar(
+            Long productoId,
+            DatosActualizarProducto dto,
+            List<MultipartFile> imagenes,
+            Long userId
+    ) {
 
         Producto p = productoRepository.findWithImagenesById(productoId)
                 .orElseThrow(() -> new EntityNotFoundException("Producto no encontrado"));
 
-        // permiso
-        Long ownerId = p.getUsuario().getId();
-        if (!esAdmin && !ownerId.equals(userId)) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "No tenés permiso para editar este producto");
+        Usuario user = usuarioRepository.findById(userId)
+                .orElseThrow(() -> new EntityNotFoundException("Usuario no encontrado"));
+
+        if (!user.esAdmin() && !p.getUsuario().getId().equals(userId)) {
+            throw new ForbiddenException("No tenés permiso para editar este producto");
         }
 
-        // validar categoria/subcategoria
         CategoriaCatalogo categoria = categoriaCatalogoRepository.findById(dto.categoriaCatalogoId())
                 .orElseThrow(() -> new EntityNotFoundException("Categoría no encontrada"));
 
@@ -179,47 +207,52 @@ public class ProductoService {
                     .orElseThrow(() -> new EntityNotFoundException("Subcategoría no encontrada"));
 
             if (!subcategoria.getCategoria().getId().equals(categoria.getId())) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                        "La subcategoría no pertenece a la categoría indicada");
+                throw new BadRequestException("La subcategoría no pertenece a la categoría indicada");
             }
         }
 
-        // actualizar campos
+        // actualizar campos simples
         p.setCategoria(categoria);
         p.setSubcategoria(subcategoria);
         p.setTitulo(dto.titulo().trim());
         p.setDescripcion(dto.descripcion().trim());
 
-        // si viene lista de imágenes => REEMPLAZO TOTAL
+        // =========================
+        //  REEMPLAZO DE IMÁGENES
+        // =========================
         if (imagenes != null) {
             validarImagenes(imagenes);
 
-            // 1) borrar archivos viejos
-            storageService.deleteProductDir(p.getId());
+            // Guardá las keys viejas ANTES de tocar DB
+            List<String> keysViejas = p.getImagenes().stream()
+                    .map(ProductoImagen::getUrl)
+                    .toList();
 
-            // 2) borrar imágenes en DB (orphanRemoval=true)
-            p.getImagenes().clear();
+            // 1) BORRADO DB (sí o sí antes de insertar por el unique)
+            productoImagenRepository.deleteByProductoId(productoId);
+            productoImagenRepository.flush(); // <- CLAVE para que se ejecute ya
 
-            // 3) guardar nuevas
+            // 2) SUBIDA nuevas a MinIO + armado de nuevas filas
             int orden = 1;
             for (MultipartFile f : imagenes) {
                 if (f == null || f.isEmpty()) continue;
 
-                String url = storageService.saveProductImage(p.getId(), f, orden);
+                String key = storageService.saveProductImage(productoId, f, orden);
 
                 ProductoImagen img = new ProductoImagen();
                 img.setProducto(p);
                 img.setOrden(orden);
-                img.setUrl(url);
+                img.setUrl(key);
 
                 p.getImagenes().add(img);
                 orden++;
             }
+             
+            storageService.deleteObjects(keysViejas);
         }
 
         p = productoRepository.save(p);
         return ProductoMapper.toDetalle(p, storageService);
-
     }
 
     // =========================
