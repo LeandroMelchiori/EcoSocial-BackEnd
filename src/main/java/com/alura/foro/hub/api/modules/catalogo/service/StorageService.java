@@ -33,38 +33,6 @@ public class StorageService {
         this.bucket = bucket;
     }
 
-    // ==========================
-    //  NUEVO: actualizar DB a keys finales
-    // ==========================
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void updateProductoImagenesToFinalKeys(Long productoId, List<String> finalKeys) {
-        if (finalKeys == null) finalKeys = List.of();
-
-        // traemos imágenes actuales (que están con temp/...)
-        var imgs = em.createQuery("""
-                select pi from ProductoImagen pi
-                where pi.producto.id = :pid
-                order by pi.orden asc
-                """, com.alura.foro.hub.api.modules.catalogo.domain.ProductoImagen.class)
-                .setParameter("pid", productoId)
-                .getResultList();
-
-        // seguridad: si no coincide cantidad, actualizamos por orden hasta donde se pueda
-        int n = Math.min(imgs.size(), finalKeys.size());
-        for (int i = 0; i < n; i++) {
-            imgs.get(i).setUrl(finalKeys.get(i));
-        }
-
-        // si finalKeys trae menos, las sobrantes quedan con temp (raro, pero no rompe)
-        // si finalKeys trae más, sobran keys (tampoco rompe)
-
-        em.flush();
-    }
-
-    // =========================================================
-    // TODO lo demás: dejo tu código tal cual abajo (sin cambios)
-    // =========================================================
-
     public String saveProductImage(Long productoId, MultipartFile file, int orden) {
         try {
             ensureBucket();
@@ -209,6 +177,8 @@ public class StorageService {
     }
 
     public String moveProductDirToTrash(Long productoId, String opId) {
+        ensureBucketRuntime();
+
         String srcPrefix = "productos/" + productoId + "/";
         String trashPrefix = "trash/" + opId + "/productos/" + productoId + "/";
 
@@ -226,6 +196,7 @@ public class StorageService {
                 String fileName = srcObj.substring(srcPrefix.length());
                 String dstObj = trashPrefix + fileName;
 
+                // copy
                 minio.copyObject(
                         CopyObjectArgs.builder()
                                 .bucket(bucket)
@@ -234,6 +205,7 @@ public class StorageService {
                                 .build()
                 );
 
+                // delete original
                 minio.removeObject(RemoveObjectArgs.builder().bucket(bucket).object(srcObj).build());
             }
 
@@ -245,6 +217,8 @@ public class StorageService {
     }
 
     public void restoreTrashToProductDir(Long productoId, String trashPrefix) {
+        ensureBucketRuntime();
+
         String dstPrefix = "productos/" + productoId + "/";
 
         try {
@@ -261,6 +235,7 @@ public class StorageService {
                 String fileName = srcObj.substring(trashPrefix.length());
                 String dstObj = dstPrefix + fileName;
 
+                // copy back
                 minio.copyObject(
                         CopyObjectArgs.builder()
                                 .bucket(bucket)
@@ -269,14 +244,20 @@ public class StorageService {
                                 .build()
                 );
 
+                // delete trash copy
                 minio.removeObject(RemoveObjectArgs.builder().bucket(bucket).object(srcObj).build());
             }
+
+            // opcional: borrar la carpeta del trash por prolijidad
+            // deletePrefixOrThrow(trashPrefix);
+
         } catch (Exception e) {
             throw new RuntimeException("Error restaurando desde trash. productoId=" + productoId, e);
         }
     }
 
     public void purgeTrash(String trashPrefix) {
+        ensureBucketRuntime();
         deletePrefixOrThrow(trashPrefix);
     }
 

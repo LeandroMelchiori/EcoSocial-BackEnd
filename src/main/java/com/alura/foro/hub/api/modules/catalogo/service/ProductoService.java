@@ -146,6 +146,7 @@ public class ProductoService {
     // =========================
     @Transactional
     public void eliminar(Long productoId, Long userId) {
+
         Producto p = productoRepository.findWithImagenesById(productoId)
                 .orElseThrow(() -> new EntityNotFoundException("Producto no encontrado"));
 
@@ -156,27 +157,34 @@ public class ProductoService {
             throw new ForbiddenException("No tenés permiso para eliminar este producto");
         }
 
-        // keys actuales (por si querés borrar directo)
-        // pero como movemos a trash, no las necesitamos
-        String opId = java.util.UUID.randomUUID().toString();
+        // 1) mover carpeta a TRASH (si falla acá, no tocamos DB)
+        String opId = UUID.randomUUID().toString();
         String trashPrefix = storageService.moveProductDirToTrash(productoId, opId);
 
+        // 2) callbacks de transacción
         TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
-            @Override public void afterCommit() {
+            @Override
+            public void afterCommit() {
+                // commit OK => borramos definitivo el trash
                 storageService.purgeTrash(trashPrefix);
             }
-            @Override public void afterCompletion(int status) {
+
+            @Override
+            public void afterCompletion(int status) {
                 if (status != STATUS_COMMITTED) {
+                    // rollback => restauramos lo movido
                     storageService.restoreTrashToProductDir(productoId, trashPrefix);
                 }
             }
         });
 
-        // IMPORTANTE: si Producto tiene orphanRemoval para imagenes,
-        // al borrar producto se borran las filas de producto_imagenes solas.
+        // 3) borrar en DB
+        // importante: delete del producto debería cascader imágenes (orphanRemoval/cascade)
         productoRepository.delete(p);
-    }
 
+        // 4) fuerza el DELETE AHORA. Si hay FK/constraint, explota acá y se ejecuta rollback => restaura MinIO
+        em.flush();
+    }
     // =========================
     //      ACTUALIZAR
     // =========================
