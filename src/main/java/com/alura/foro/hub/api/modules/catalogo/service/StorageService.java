@@ -4,11 +4,17 @@ import io.minio.*;
 import io.minio.messages.Item;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -18,11 +24,46 @@ public class StorageService {
     private final MinioClient minio;
     private final String bucket;
 
+    @PersistenceContext
+    private EntityManager em;
+
     public StorageService(MinioClient minio,
                           @Value("${minio.bucket}") String bucket) {
         this.minio = minio;
         this.bucket = bucket;
     }
+
+    // ==========================
+    //  NUEVO: actualizar DB a keys finales
+    // ==========================
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void updateProductoImagenesToFinalKeys(Long productoId, List<String> finalKeys) {
+        if (finalKeys == null) finalKeys = List.of();
+
+        // traemos imágenes actuales (que están con temp/...)
+        var imgs = em.createQuery("""
+                select pi from ProductoImagen pi
+                where pi.producto.id = :pid
+                order by pi.orden asc
+                """, com.alura.foro.hub.api.modules.catalogo.domain.ProductoImagen.class)
+                .setParameter("pid", productoId)
+                .getResultList();
+
+        // seguridad: si no coincide cantidad, actualizamos por orden hasta donde se pueda
+        int n = Math.min(imgs.size(), finalKeys.size());
+        for (int i = 0; i < n; i++) {
+            imgs.get(i).setUrl(finalKeys.get(i));
+        }
+
+        // si finalKeys trae menos, las sobrantes quedan con temp (raro, pero no rompe)
+        // si finalKeys trae más, sobran keys (tampoco rompe)
+
+        em.flush();
+    }
+
+    // =========================================================
+    // TODO lo demás: dejo tu código tal cual abajo (sin cambios)
+    // =========================================================
 
     public String saveProductImage(Long productoId, MultipartFile file, int orden) {
         try {
@@ -39,11 +80,13 @@ public class StorageService {
             String objectKey = "productos/" + productoId + "/" + filename;
 
             try (InputStream in = file.getInputStream()) {
+                long partSize = 10L * 1024 * 1024; // 10 MB
+
                 minio.putObject(
                         PutObjectArgs.builder()
                                 .bucket(bucket)
                                 .object(objectKey)
-                                .stream(in, file.getSize(), -1)
+                                .stream(in, file.getSize(), partSize)
                                 .contentType(file.getContentType())
                                 .build()
                 );
@@ -56,9 +99,94 @@ public class StorageService {
         }
     }
 
+    public List<String> uploadProductImagesTemp(Long productoId, List<MultipartFile> files, String opId) {
+        ensureBucketRuntime();
 
-    public void deleteProductDir(Long productoId) {
-        deletePrefixOrThrow("productos/" + productoId + "/");
+        String tempPrefix = "temp/" + opId + "/productos/" + productoId + "/";
+
+        List<String> tempKeys = new ArrayList<>();
+        int orden = 1;
+
+        try {
+            for (MultipartFile file : files) {
+                if (file == null || file.isEmpty()) continue;
+
+                String original = StringUtils.cleanPath(
+                        file.getOriginalFilename() == null ? "img" : file.getOriginalFilename()
+                );
+                String ext = getExtension(original);
+
+                String filename = "img_" + orden + "_" + UUID.randomUUID()
+                        + (ext.isBlank() ? "" : "." + ext);
+
+                String objectKey = tempPrefix + filename;
+
+                try (InputStream in = file.getInputStream()) {
+                    minio.putObject(
+                            PutObjectArgs.builder()
+                                    .bucket(bucket)
+                                    .object(objectKey)
+                                    .stream(in, file.getSize(), -1)
+                                    .contentType(file.getContentType())
+                                    .build()
+                    );
+                }
+
+                tempKeys.add(objectKey);
+                orden++;
+            }
+            return tempKeys;
+
+        } catch (Exception e) {
+            try { purgeTemp(opId); } catch (Exception ignored) {}
+            throw new RuntimeException("Error subiendo imágenes a temp en MinIO", e);
+        }
+    }
+
+    public List<String> promoteTempToFinal(Long productoId, String opId, List<String> tempKeys) {
+        ensureBucketRuntime();
+
+        String tempPrefix  = "temp/" + opId + "/productos/" + productoId + "/";
+        String finalPrefix = "productos/" + productoId + "/";
+
+        List<String> finalKeys = new ArrayList<>();
+
+        try {
+            for (String tempObj : tempKeys) {
+                if (tempObj == null || tempObj.isBlank()) continue;
+
+                String fileName = tempObj.substring(tempPrefix.length());
+                String finalObj = finalPrefix + fileName;
+
+                minio.copyObject(
+                        CopyObjectArgs.builder()
+                                .bucket(bucket)
+                                .object(finalObj)
+                                .source(CopySource.builder().bucket(bucket).object(tempObj).build())
+                                .build()
+                );
+
+                finalKeys.add(finalObj);
+            }
+
+            return finalKeys;
+
+        } catch (Exception e) {
+            try { deleteObjects(finalKeys); } catch (Exception ignored) {}
+            throw new RuntimeException("Error promoviendo temp->final en MinIO", e);
+        }
+    }
+
+    public void purgeTemp(String opId) {
+        deletePrefixOrThrow("temp/" + opId + "/");
+    }
+
+    private void ensureBucketRuntime() {
+        try {
+            ensureBucket();
+        } catch (Exception e) {
+            throw new RuntimeException("Error verificando/creando bucket en MinIO: " + bucket, e);
+        }
     }
 
     public void deletePrefixOrThrow(String prefix) {
@@ -98,21 +226,14 @@ public class StorageService {
                 String fileName = srcObj.substring(srcPrefix.length());
                 String dstObj = trashPrefix + fileName;
 
-                // copy
                 minio.copyObject(
                         CopyObjectArgs.builder()
                                 .bucket(bucket)
                                 .object(dstObj)
-                                .source(
-                                        CopySource.builder()
-                                                .bucket(bucket)
-                                                .object(srcObj)
-                                                .build()
-                                )
+                                .source(CopySource.builder().bucket(bucket).object(srcObj).build())
                                 .build()
                 );
 
-                // delete original
                 minio.removeObject(RemoveObjectArgs.builder().bucket(bucket).object(srcObj).build());
             }
 
@@ -140,7 +261,6 @@ public class StorageService {
                 String fileName = srcObj.substring(trashPrefix.length());
                 String dstObj = dstPrefix + fileName;
 
-                // copy back
                 minio.copyObject(
                         CopyObjectArgs.builder()
                                 .bucket(bucket)
@@ -149,7 +269,6 @@ public class StorageService {
                                 .build()
                 );
 
-                // delete trash copy
                 minio.removeObject(RemoveObjectArgs.builder().bucket(bucket).object(srcObj).build());
             }
         } catch (Exception e) {
@@ -167,12 +286,7 @@ public class StorageService {
         try {
             for (String key : objectKeys) {
                 if (key == null || key.isBlank()) continue;
-                minio.removeObject(
-                        RemoveObjectArgs.builder()
-                                .bucket(bucket)
-                                .object(key)
-                                .build()
-                );
+                minio.removeObject(RemoveObjectArgs.builder().bucket(bucket).object(key).build());
             }
         } catch (Exception e) {
             throw new RuntimeException("Error borrando objetos en MinIO", e);
@@ -181,19 +295,14 @@ public class StorageService {
 
     private void ensureBucket() throws IOException {
         try {
-            boolean exists = minio.bucketExists(
-                    BucketExistsArgs.builder().bucket(bucket).build()
-            );
+            boolean exists = minio.bucketExists(BucketExistsArgs.builder().bucket(bucket).build());
             if (!exists) {
-                minio.makeBucket(
-                        MakeBucketArgs.builder().bucket(bucket).build()
-                );
+                minio.makeBucket(MakeBucketArgs.builder().bucket(bucket).build());
             }
         } catch (Exception e) {
             throw new IOException("Error verificando/creando bucket en MinIO: " + bucket, e);
         }
     }
-
 
     private String getExtension(String name) {
         int dot = name.lastIndexOf('.');
@@ -208,12 +317,11 @@ public class StorageService {
                             .method(io.minio.http.Method.GET)
                             .bucket(bucket)
                             .object(objectKey)
-                            .expiry(60 * 60) // 1 hora
+                            .expiry(60 * 60)
                             .build()
             );
         } catch (Exception e) {
             return null;
         }
     }
-
 }

@@ -11,7 +11,9 @@ import com.alura.foro.hub.api.user.repository.UsuarioRepository; // ajustá paqu
 import com.alura.foro.hub.api.modules.catalogo.domain.*;
 import com.alura.foro.hub.api.modules.catalogo.dto.productos.DatosCrearProducto;
 import com.alura.foro.hub.api.modules.catalogo.repository.*;
+import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.persistence.PersistenceContext;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -21,12 +23,15 @@ import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
-
 import java.io.IOException;
 import java.util.List;
+import java.util.UUID;
 
 @Service
 public class ProductoService {
+
+    @PersistenceContext
+    private EntityManager em;
 
     private static final int MAX_IMGS = 5;
     private static final long MAX_SIZE = 5L * 1024 * 1024; // 5MB
@@ -141,7 +146,6 @@ public class ProductoService {
     // =========================
     @Transactional
     public void eliminar(Long productoId, Long userId) {
-
         Producto p = productoRepository.findWithImagenesById(productoId)
                 .orElseThrow(() -> new EntityNotFoundException("Producto no encontrado"));
 
@@ -152,28 +156,24 @@ public class ProductoService {
             throw new ForbiddenException("No tenés permiso para eliminar este producto");
         }
 
-        // 1) mover imágenes a trash (reversible)
+        // keys actuales (por si querés borrar directo)
+        // pero como movemos a trash, no las necesitamos
         String opId = java.util.UUID.randomUUID().toString();
         String trashPrefix = storageService.moveProductDirToTrash(productoId, opId);
 
-        // 2) registrar hooks: si commit -> purga; si rollback -> restaura
         TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
-            @Override
-            public void afterCommit() {
-                // DB OK => borrado definitivo en MinIO
+            @Override public void afterCommit() {
                 storageService.purgeTrash(trashPrefix);
             }
-
-            @Override
-            public void afterCompletion(int status) {
+            @Override public void afterCompletion(int status) {
                 if (status != STATUS_COMMITTED) {
-                    // DB rollback => vuelvo todo atrás en MinIO
                     storageService.restoreTrashToProductDir(productoId, trashPrefix);
                 }
             }
         });
 
-        // 3) borrar en DB (si falla, salta exception => rollback => restore)
+        // IMPORTANTE: si Producto tiene orphanRemoval para imagenes,
+        // al borrar producto se borran las filas de producto_imagenes solas.
         productoRepository.delete(p);
     }
 
@@ -186,7 +186,7 @@ public class ProductoService {
             DatosActualizarProducto dto,
             List<MultipartFile> imagenes,
             Long userId
-    ) {
+    ) throws IOException {
 
         Producto p = productoRepository.findWithImagenesById(productoId)
                 .orElseThrow(() -> new EntityNotFoundException("Producto no encontrado"));
@@ -211,48 +211,67 @@ public class ProductoService {
             }
         }
 
-        // actualizar campos simples
+        // campos simples
         p.setCategoria(categoria);
         p.setSubcategoria(subcategoria);
         p.setTitulo(dto.titulo().trim());
         p.setDescripcion(dto.descripcion().trim());
 
-        // =========================
-        //  REEMPLAZO DE IMÁGENES
-        // =========================
-        if (imagenes != null) {
-            validarImagenes(imagenes);
-
-            // Guardá las keys viejas ANTES de tocar DB
-            List<String> keysViejas = p.getImagenes().stream()
-                    .map(ProductoImagen::getUrl)
-                    .toList();
-
-            // 1) BORRADO DB (sí o sí antes de insertar por el unique)
-            productoImagenRepository.deleteByProductoId(productoId);
-            productoImagenRepository.flush(); // <- CLAVE para que se ejecute ya
-
-            // 2) SUBIDA nuevas a MinIO + armado de nuevas filas
-            int orden = 1;
-            for (MultipartFile f : imagenes) {
-                if (f == null || f.isEmpty()) continue;
-
-                String key = storageService.saveProductImage(productoId, f, orden);
-
-                ProductoImagen img = new ProductoImagen();
-                img.setProducto(p);
-                img.setOrden(orden);
-                img.setUrl(key);
-
-                p.getImagenes().add(img);
-                orden++;
-            }
-             
-            storageService.deleteObjects(keysViejas);
+        // si no mandan imágenes -> solo texto/categoría
+        if (imagenes == null) {
+            Producto guardado = productoRepository.save(p);
+            return ProductoMapper.toDetalle(guardado, storageService);
         }
 
-        p = productoRepository.save(p);
-        return ProductoMapper.toDetalle(p, storageService);
+        validarImagenes(imagenes);
+
+        // keys viejas (para borrar después del commit)
+        List<String> keysViejas = p.getImagenes().stream()
+                .map(ProductoImagen::getUrl)
+                .toList();
+
+        String opId = UUID.randomUUID().toString();
+
+        // 1) subir a TEMP
+        List<String> keysTemp = storageService.uploadProductImagesTemp(productoId, imagenes, opId);
+
+        // 2) copiar TEMP -> FINAL (mismo orden)
+        List<String> keysFinal = storageService.promoteTempToFinal(productoId, opId, keysTemp);
+
+        // 3) DB: reemplazar imágenes SIN bulk delete
+        //    (orphanRemoval + flush para garantizar orden y evitar UNIQUE)
+        p.getImagenes().clear();
+        em.flush(); // <-- CLAVE: ejecuta deletes de orphans antes de inserts
+
+        int orden = 1;
+        for (String keyFinal : keysFinal) {
+            ProductoImagen img = new ProductoImagen();
+            img.setProducto(p);
+            img.setOrden(orden++);
+            img.setUrl(keyFinal);
+            p.getImagenes().add(img);
+        }
+
+        Producto guardado = productoRepository.save(p);
+
+        // 4) afterCommit/rollback coordinando MinIO
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+            @Override
+            public void afterCommit() {
+                storageService.deleteObjects(keysViejas);
+                storageService.purgeTemp(opId);
+            }
+
+            @Override
+            public void afterCompletion(int status) {
+                if (status != STATUS_COMMITTED) {
+                    storageService.deleteObjects(keysFinal);
+                    storageService.purgeTemp(opId);
+                }
+            }
+        });
+
+        return ProductoMapper.toDetalle(guardado, storageService);
     }
 
     // =========================

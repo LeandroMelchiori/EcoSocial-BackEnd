@@ -79,6 +79,7 @@ public class GlobalExceptionHandler {
     }
 
 
+
     @ExceptionHandler(ForbiddenException.class)
     public ResponseEntity<ApiError> handleForbidden(ForbiddenException ex, HttpServletRequest req) {
         var body = ApiError.of(

@@ -72,25 +72,15 @@ public class    ProductoController {
         return ResponseEntity.noContent().build();
     }
 
-
     @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<DatosDetalleProducto> actualizar(
             @PathVariable Long id,
             @RequestPart("data") String data,
             @RequestPart(value = "imagenes", required = false) List<MultipartFile> imagenes,
             Authentication auth
-    ) {
+    ) throws IOException {
+        var dto = mapper.readValue(data, DatosActualizarProducto.class);
         Usuario usuario = (Usuario) auth.getPrincipal();
-
-        DatosActualizarProducto dto;
-        try {
-            dto = mapper.readValue(data, DatosActualizarProducto.class);
-        } catch (IOException e) {
-            throw new IllegalArgumentException("JSON inválido en el campo 'data'");
-        }
-
-        var actualizado = productoService.actualizar(id, dto, imagenes, usuario.getId());
-        return ResponseEntity.ok(actualizado);
+        return ResponseEntity.ok(productoService.actualizar(id, dto, imagenes, usuario.getId()));
     }
-
 }
