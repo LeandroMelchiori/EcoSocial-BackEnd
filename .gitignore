@@ -1,12 +1,20 @@
 HELP.md
-target/
 !.mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
 !**/src/test/**/target/
 
+# Maven
+target/
+
 ### env ###
 .env
+
+# Python venv
 .venv/
+tools/.venv
+
+# Postman workspace metadata
+.postman/
 
 ### STS ###
 .apt_generated
