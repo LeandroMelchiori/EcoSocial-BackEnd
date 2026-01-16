@@ -1,0 +1,2793 @@
+{
+	"info": {
+		"_postman_id": "5027d711-90f3-4436-af30-ee4634ca4776",
+		"name": "Test Foro Hub",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "38883854"
+	},
+	"item": [
+		{
+			"name": "Circuito Prueba topicos",
+			"item": [
+				{
+					"name": "Usuario - Registro",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Registro con exito -> 201\", () => {\r",
+									"  pm.expect([201]).to.include(pm.response.code);\r",
+									"});\r",
+									"pm.test(\"Usuario ya registrado -> 409\", () => {\r",
+									"  pm.expect([409]).to.include(pm.response.code);\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"user1 = \"user1\"\r",
+									"pm.environment.set(\"usuario_tag\", user1);"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "accept",
+								"value": "*/*"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"nombre\": \"{{usuario_tag}}\",\r\n  \"email\": \"{{usuario_tag}}@gmail.com\",\r\n  \"password\": \"{{usuario_tag}}\",\r\n  \"username\": \"{{usuario_tag}}\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/usuarios",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"usuarios"
+							]
+						},
+						"description": "Generated from cURL: curl -X 'POST' \\\r\n  'http://localhost:8080/usuarios' \\\r\n  -H 'accept: */*' \\\r\n  -H 'Content-Type: application/json' \\\r\n  -d '{\r\n  \"nombre\": \"Sacha Melchiori\",\r\n  \"email\": \"leandromelchiori@gmail.com\",\r\n  \"password\": \"sacha122\",\r\n  \"username\": \"eldelfin95\"\r\n}'"
+					},
+					"response": []
+				},
+				{
+					"name": "Login",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const json = pm.response.json();\r",
+									"pm.environment.set(\"token\", json.token);\r",
+									"console.log(\"Token actualizado:\", json.token);\r",
+									"pm.test(\"Login correcto -> 200\", () => {\r",
+									"  pm.expect([200]).to.include(pm.response.code);\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "accept",
+								"value": "*/*"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"username\": \"{{usuario_tag}}\",\r\n    \"password\": \"{{usuario_tag}}\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/auth/login",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"auth",
+								"login"
+							]
+						},
+						"description": "Generated from cURL: curl -X 'POST' \\\r\n  'http://localhost:8080/auth/login' \\\r\n  -H 'accept: */*' \\\r\n  -H 'Content-Type: application/json' \\\r\n  -d '{\r\n    \"username\": \"eldelfin95\",\r\n    \"password\": \"sacha122\"\r\n}'\r\n"
+					},
+					"response": []
+				},
+				{
+					"name": "Topico - Crear",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"// Iteración 1..3 (Runner controla que el request se ejecute 3 veces)\r",
+									"let iter = pm.environment.get(\"iter\");\r",
+									"iter = iter ? Number(iter) : 1;\r",
+									"\r",
+									"// Cursos a usar por iteración (cambiá los IDs a los que vos tengas)\r",
+									"const cursos = [1, 2, 3];\r",
+									"\r",
+									"// si iter se fue de rango, lo reiniciamos (por si corrés varias veces)\r",
+									"if (iter < 1 || iter > cursos.length) iter = 1;\r",
+									"\r",
+									"pm.environment.set(\"iter\", iter);\r",
+									"pm.environment.set(\"cursoId\", cursos[iter - 1]);\r",
+									"\r",
+									"// Inicializar array para guardar IDs creados por este usuario (si no existe)\r",
+									"const key = `topicoIds_${pm.environment.get(\"usuario_tag\") || \"user\"}`;\r",
+									"if (!pm.environment.get(key)) {\r",
+									"  pm.environment.set(key, JSON.stringify([]));\r",
+									"}\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Crear tópico OK (201)\", () => {\r",
+									"  pm.expect(pm.response.code).to.eql(201);\r",
+									"});\r",
+									"\r",
+									"const json = pm.response.json();\r",
+									"const id = json.id ?? json.data?.id;\r",
+									"\r",
+									"\r",
+									"pm.test(\"Devuelve id\", () => {\r",
+									"  pm.expect(id).to.exist;\r",
+									"});\r",
+									"\r",
+									"// Guardar \"último creado\"\r",
+									"pm.environment.set(\"topicoId\", String(id));\r",
+									"\r",
+									"// Guardar lista de IDs por usuario_tag\r",
+									"const usuarioTag = pm.environment.get(\"usuario_tag\") || \"user\";\r",
+									"const key = `topicoIds_${usuarioTag}`;\r",
+									"\r",
+									"let arr = [];\r",
+									"try {\r",
+									"  arr = JSON.parse(pm.environment.get(key) || \"[]\");\r",
+									"} catch (e) {\r",
+									"  arr = [];\r",
+									"}\r",
+									"\r",
+									"arr.push(id);\r",
+									"pm.environment.set(key, JSON.stringify(arr));\r",
+									"\r",
+									"// Avanzar iteración para el próximo request del loop\r",
+									"const iter = Number(pm.environment.get(\"iter\") || 1);\r",
+									"pm.environment.set(\"iter\", iter + 1);\r",
+									"\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "accept",
+								"value": "*/*"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJmb3JvIGh1YiIsInN1YiI6ImxtZWxjaGlvcmkiLCJpZCI6MiwiZXhwIjoxNzY1NDU3NjYzfQ.Dro16PTrk-g68dxbK1n96Z2h4LfofOfBwzWUXHkibJ0"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"titulo\": \"Topico {{usuario_tag}} #{{iter}}\",\n  \"mensaje\": \"Creado por {{usuario_tag}} en iteración {{iter}}\",\n  \"cursoId\": 4\n}\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/topicos",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"topicos"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Topico - Crear 2",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"// Iteración 1..3 (Runner controla que el request se ejecute 3 veces)\r",
+									"let iter = pm.environment.get(\"iter\");\r",
+									"iter = iter ? Number(iter) : 1;\r",
+									"\r",
+									"// Cursos a usar por iteración (cambiá los IDs a los que vos tengas)\r",
+									"const cursos = [1, 2, 3];\r",
+									"\r",
+									"// si iter se fue de rango, lo reiniciamos (por si corrés varias veces)\r",
+									"if (iter < 1 || iter > cursos.length) iter = 1;\r",
+									"\r",
+									"pm.environment.set(\"iter\", iter);\r",
+									"pm.environment.set(\"cursoId\", cursos[iter - 1]);\r",
+									"\r",
+									"// Inicializar array para guardar IDs creados por este usuario (si no existe)\r",
+									"const key = `topicoIds_${pm.environment.get(\"usuario_tag\") || \"user\"}`;\r",
+									"if (!pm.environment.get(key)) {\r",
+									"  pm.environment.set(key, JSON.stringify([]));\r",
+									"}\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Crear segundo tópico OK (201)\", () => {\r",
+									"  pm.expect(pm.response.code).to.eql(201);\r",
+									"});\r",
+									"\r",
+									"const json = pm.response.json();\r",
+									"const id = json.id ?? json.data?.id;\r",
+									"\r",
+									"\r",
+									"pm.test(\"Devuelve segundo id\", () => {\r",
+									"  pm.expect(id).to.exist;\r",
+									"});\r",
+									"\r",
+									"// Guardar \"último creado\"\r",
+									"pm.environment.set(\"topicoId\", id);\r",
+									"\r",
+									"// Guardar lista de IDs por usuario_tag\r",
+									"const usuarioTag = pm.environment.get(\"usuario_tag\") || \"user\";\r",
+									"const key = `topicoIds_${usuarioTag}`;\r",
+									"\r",
+									"let arr = [];\r",
+									"try {\r",
+									"  arr = JSON.parse(pm.environment.get(key) || \"[]\");\r",
+									"} catch (e) {\r",
+									"  arr = [];\r",
+									"}\r",
+									"\r",
+									"arr.push(id);\r",
+									"pm.environment.set(key, JSON.stringify(arr));\r",
+									"\r",
+									"// Avanzar iteración para el próximo request del loop\r",
+									"const iter = Number(pm.environment.get(\"iter\") || 1);\r",
+									"pm.environment.set(\"iter\", iter + 1);\r",
+									"\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "accept",
+								"value": "*/*"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJmb3JvIGh1YiIsInN1YiI6ImxtZWxjaGlvcmkiLCJpZCI6MiwiZXhwIjoxNzY1NDU3NjYzfQ.Dro16PTrk-g68dxbK1n96Z2h4LfofOfBwzWUXHkibJ0"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"titulo\": \"Topico {{usuario_tag}} #{{iter}}\",\n  \"mensaje\": \"Creado por {{usuario_tag}} en iteración {{iter}}\",\n  \"cursoId\": 5\n}\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/topicos",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"topicos"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Topico - Detalle con respuesta",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Detalle topico-> 200\", () => pm.response.to.have.status(200));\r",
+									"\r",
+									"const json = pm.response.json();\r",
+									"pm.test(\"El id coincide\", () => {\r",
+									"  const id = json.id ?? json.data?.id;\r",
+									"  pm.expect(String(id)).to.eql(String(pm.environment.get(\"topicoId\")));\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/topicos/{{topicoId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"topicos",
+								"{{topicoId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Topico - Busqueda por titulo",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Busqueda por titulo -> 200\", () => pm.response.to.have.status(200));\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/topicos/buscar?q=edit",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"topicos",
+								"buscar"
+							],
+							"query": [
+								{
+									"key": "q",
+									"value": "edit"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Topico - Busqueda por curso",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Busqueda por curso -> 200\", () => pm.response.to.have.status(200));\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/topicos/buscar?cursoId=5&status=ACTIVO",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"topicos",
+								"buscar"
+							],
+							"query": [
+								{
+									"key": "cursoId",
+									"value": "5"
+								},
+								{
+									"key": "status",
+									"value": "ACTIVO"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Topico - Busqueda por paginacion Copy",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Busqueda por paginacion -> 200\", () => pm.response.to.have.status(200));\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/topicos/buscar?page=0&size=10&sort=fechaCreacion,desc",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"topicos",
+								"buscar"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "0"
+								},
+								{
+									"key": "size",
+									"value": "10"
+								},
+								{
+									"key": "sort",
+									"value": "fechaCreacion,desc"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Topico - Busqueda por rango",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Busqueda por rango -> 200\", () => pm.response.to.have.status(200));\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/topicos/buscar?desde=2025-12-01T00:00:00&hasta=2025-12-19T23:59:59",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"topicos",
+								"buscar"
+							],
+							"query": [
+								{
+									"key": "desde",
+									"value": "2025-12-01T00:00:00"
+								},
+								{
+									"key": "hasta",
+									"value": "2025-12-19T23:59:59"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Topico - Prueba error fecha",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Busqueda erronea -> 400\", () => pm.response.to.have.status(400));"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/topicos/buscar?desde=2025-12-20T00:00:00&hasta=2025-12-01T00:00:00",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"topicos",
+								"buscar"
+							],
+							"query": [
+								{
+									"key": "desde",
+									"value": "2025-12-20T00:00:00"
+								},
+								{
+									"key": "hasta",
+									"value": "2025-12-01T00:00:00"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Topico - Busqueda nombre curso",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Busqueda por nombreCurso -> 200\", () => pm.response.to.have.status(200));"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/topicos/buscar?nombreCurso=front",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"topicos",
+								"buscar"
+							],
+							"query": [
+								{
+									"key": "nombreCurso",
+									"value": "front"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Topico - Busqueda nombre categoria",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Busqueda por nombreCategoria -> 200\", () => pm.response.to.have.status(200));"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/topicos/buscar?nombreCategoria=front",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"topicos",
+								"buscar"
+							],
+							"query": [
+								{
+									"key": "nombreCategoria",
+									"value": "front"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Topico - Busqueda combinada titulo + curso",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Busqueda por nombreCategoria -> 200\", () => pm.response.to.have.status(200));"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/topicos/buscar?q=user&nombreCurso=front&page=0&size=10&sort=fechaCreacion,desc",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"topicos",
+								"buscar"
+							],
+							"query": [
+								{
+									"key": "q",
+									"value": "user"
+								},
+								{
+									"key": "nombreCurso",
+									"value": "front"
+								},
+								{
+									"key": "page",
+									"value": "0"
+								},
+								{
+									"key": "size",
+									"value": "10"
+								},
+								{
+									"key": "sort",
+									"value": "fechaCreacion,desc"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Topico - Busqueda multiples estados",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Busqueda por nombreCategoria -> 200\", () => pm.response.to.have.status(200));"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/topicos/buscar?q=jwt&nombreCurso=dev&page=0&size=10&sort=fechaCreacion,desc",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"topicos",
+								"buscar"
+							],
+							"query": [
+								{
+									"key": "q",
+									"value": "jwt"
+								},
+								{
+									"key": "nombreCurso",
+									"value": "dev"
+								},
+								{
+									"key": "page",
+									"value": "0"
+								},
+								{
+									"key": "size",
+									"value": "10"
+								},
+								{
+									"key": "sort",
+									"value": "fechaCreacion,desc"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Topico - Busqueda Categoria + rango",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Busqueda por nombreCategoria -> 200\", () => pm.response.to.have.status(200));"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/topicos/buscar?nombreCategoria=backend&desde=2025-01-01T00:00:00&hasta=2025-12-31T23:59:59",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"topicos",
+								"buscar"
+							],
+							"query": [
+								{
+									"key": "nombreCategoria",
+									"value": "backend"
+								},
+								{
+									"key": "desde",
+									"value": "2025-01-01T00:00:00"
+								},
+								{
+									"key": "hasta",
+									"value": "2025-12-31T23:59:59"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Topico - Eliminar por ID",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"topicoId = pm.environment.get(\"topicoId\")\r",
+									"pm.environment.set(\"topicoId\", topicoId - 1)\r",
+									"pm.test(\"Topico eliminado con exito -> 204\", () => pm.response.to.have.status(204));"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/topicos/{{topicoId}}",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"topicos",
+								"{{topicoId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Topico - Actualizar",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Editar dueño -> 200\", () => pm.response.to.have.status(200));\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"titulo\": \"Título editado por {{usuario_tag}}\",\r\n  \"mensaje\": \"Mensaje actualizado por {{usuario_tag}}\",\r\n  \"cursoId\": 5,\r\n  \"status\": \"ACTIVO\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/topicos/{{topicoId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"topicos",
+								"{{topicoId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Usuario - Registro 2",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Registro con exito -> 204/200\", () => {\r",
+									"  pm.expect([200,204]).to.include(pm.response.code);\r",
+									"});\r",
+									"pm.test(\"Usuario ya registrado -> 409\", () => {\r",
+									"  pm.expect([409]).to.include(pm.response.code);\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"user2 = \"user2\"\r",
+									"pm.environment.set(\"usuario_tag\", user2);"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "accept",
+								"value": "*/*"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"nombre\": \"{{usuario_tag}}\",\r\n  \"email\": \"{{usuario_tag}}@gmail.com\",\r\n  \"password\": \"{{usuario_tag}}\",\r\n  \"username\": \"{{usuario_tag}}\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/usuarios",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"usuarios"
+							]
+						},
+						"description": "Generated from cURL: curl -X 'POST' \\\r\n  'http://localhost:8080/usuarios' \\\r\n  -H 'accept: */*' \\\r\n  -H 'Content-Type: application/json' \\\r\n  -d '{\r\n  \"nombre\": \"Sacha Melchiori\",\r\n  \"email\": \"leandromelchiori@gmail.com\",\r\n  \"password\": \"sacha122\",\r\n  \"username\": \"eldelfin95\"\r\n}'"
+					},
+					"response": []
+				},
+				{
+					"name": "Login 2",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const json = pm.response.json();\r",
+									"pm.environment.set(\"token\", json.token);\r",
+									"\r",
+									"console.log(\"Token actualizado:\", json.token);\r",
+									"pm.test(\"Login correcto -> 200\", () => {\r",
+									"  pm.expect([200]).to.include(pm.response.code);\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "accept",
+								"value": "*/*"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"username\": \"{{usuario_tag}}\",\r\n    \"password\": \"{{usuario_tag}}\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/auth/login",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"auth",
+								"login"
+							]
+						},
+						"description": "Generated from cURL: curl -X 'POST' \\\r\n  'http://localhost:8080/auth/login' \\\r\n  -H 'accept: */*' \\\r\n  -H 'Content-Type: application/json' \\\r\n  -d '{\r\n    \"username\": \"eldelfin95\",\r\n    \"password\": \"sacha122\"\r\n}'\r\n"
+					},
+					"response": []
+				},
+				{
+					"name": "Topico - Eliminar 2do user",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Debe fallar por falta de permisos -> 403\", () => pm.response.to.have.status(403));\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"const topicoId = pm.environment.get(\"topicoId\");\r",
+									"pm.environment.set(\"topicoId\", topicoId);\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/topicos/{{topicoId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"topicos",
+								"{{topicoId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Topico - Actualizar 2",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Debe fallar por falta de permisos -> 403\", () => pm.response.to.have.status(403));\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"titulo\": \"Título editado por {{usuario_tag}}\",\r\n  \"mensaje\": \"Mensaje actualizado por {{usuario_tag}}\",\r\n  \"cursoId\": 5,\r\n  \"status\": \"ACTIVO\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/topicos/{{topicoId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"topicos",
+								"{{topicoId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Topicos - Listar",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Listar topicos -> 200\", () => pm.response.to.have.status(200));\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/topicos?token",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"topicos"
+							],
+							"query": [
+								{
+									"key": "token",
+									"value": null
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Respuestas",
+			"item": [
+				{
+					"name": "Usuario - Registro",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Registro con exito -> 201\", () => {\r",
+									"  pm.expect([201]).to.include(pm.response.code);\r",
+									"});\r",
+									"pm.test(\"Usuario ya registrado -> 409\", () => {\r",
+									"  pm.expect([409]).to.include(pm.response.code);\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"userRespuesta1 = \"userRespuesta1\"\r",
+									"pm.environment.set(\"usuario_tag\", userRespuesta1);"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "accept",
+								"value": "*/*"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"nombre\": \"{{usuario_tag}}\",\r\n  \"email\": \"{{usuario_tag}}@gmail.com\",\r\n  \"password\": \"{{usuario_tag}}\",\r\n  \"username\": \"{{usuario_tag}}\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/usuarios",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"usuarios"
+							]
+						},
+						"description": "Generated from cURL: curl -X 'POST' \\\r\n  'http://localhost:8080/usuarios' \\\r\n  -H 'accept: */*' \\\r\n  -H 'Content-Type: application/json' \\\r\n  -d '{\r\n  \"nombre\": \"Sacha Melchiori\",\r\n  \"email\": \"leandromelchiori@gmail.com\",\r\n  \"password\": \"sacha122\",\r\n  \"username\": \"eldelfin95\"\r\n}'"
+					},
+					"response": []
+				},
+				{
+					"name": "Login respuesta1",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const json = pm.response.json();\r",
+									"pm.environment.set(\"token\", json.token);\r",
+									"\r",
+									"console.log(\"Token actualizado:\", json.token);\r",
+									"pm.test(\"Login correcto -> 200\", () => {\r",
+									"  pm.expect([200]).to.include(pm.response.code);\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "accept",
+								"value": "*/*"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"username\": \"{{usuario_tag}}\",\r\n    \"password\": \"{{usuario_tag}}\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/auth/login",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"auth",
+								"login"
+							]
+						},
+						"description": "Generated from cURL: curl -X 'POST' \\\r\n  'http://localhost:8080/auth/login' \\\r\n  -H 'accept: */*' \\\r\n  -H 'Content-Type: application/json' \\\r\n  -d '{\r\n    \"username\": \"eldelfin95\",\r\n    \"password\": \"sacha122\"\r\n}'\r\n"
+					},
+					"response": []
+				},
+				{
+					"name": "Respuesta - Crear",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Crear respuesta OK (201)\", () => {\r",
+									"  pm.expect(pm.response.code).to.eql(201);\r",
+									"});\r",
+									"\r",
+									"const json = pm.response.json();\r",
+									"const id = json.id ?? json.data?.id;\r",
+									"\r",
+									"\r",
+									"pm.test(\"Devuelve id\", () => {\r",
+									"  pm.expect(id).to.exist;\r",
+									"});\r",
+									"\r",
+									"// Guardar \"último creado\"\r",
+									"pm.environment.set(\"respuestaId\", id);\r",
+									"\r",
+									"// Guardar lista de IDs por usuario_tag\r",
+									"const usuarioTag = pm.environment.get(\"usuario_tag\") || \"user\";\r",
+									"const key = `respuestaIds_${usuarioTag}`;\r",
+									"\r",
+									"let arr = [];\r",
+									"try {\r",
+									"  arr = JSON.parse(pm.environment.get(key) || \"[]\");\r",
+									"} catch (e) {\r",
+									"  arr = [];\r",
+									"}\r",
+									"\r",
+									"arr.push(id);\r",
+									"pm.environment.set(key, JSON.stringify(arr));\r",
+									"\r",
+									"// Avanzar iteración para el próximo request del loop\r",
+									"const iter = Number(pm.environment.get(\"iter\") || 1);\r",
+									"pm.environment.set(\"iter\", iter + 1);\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"// Iteración 1..3 (Runner controla que el request se ejecute 3 veces)\r",
+									"let iter = pm.environment.get(\"iter\");\r",
+									"iter = iter ? Number(iter) : 1;\r",
+									"\r",
+									"// Cursos a usar por iteración (cambiá los IDs a los que vos tengas)\r",
+									"const cursos = [1, 2, 3];\r",
+									"\r",
+									"// si iter se fue de rango, lo reiniciamos (por si corrés varias veces)\r",
+									"if (iter < 1 || iter > cursos.length) iter = 1;\r",
+									"\r",
+									"pm.environment.set(\"iter\", iter);\r",
+									"\r",
+									"// Inicializar array para guardar IDs creados por este usuario (si no existe)\r",
+									"const key = `respuestaIds_${pm.environment.get(\"usuario_tag\") || \"user\"}`;\r",
+									"if (!pm.environment.get(key)) {\r",
+									"  pm.environment.set(key, JSON.stringify([]));\r",
+									"}\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"topicoId\": {{topicoId}},\r\n  \"mensaje\": \"Respuesta de {{usuario_tag}}\" \r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/respuestas",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"respuestas"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Respuesta - Crear 2",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Crear respuesta 2 OK (201)\", () => {\r",
+									"  pm.expect(pm.response.code).to.eql(201);\r",
+									"});\r",
+									"\r",
+									"const json = pm.response.json();\r",
+									"const id = json.id ?? json.data?.id;\r",
+									"\r",
+									"\r",
+									"pm.test(\"Devuelve id\", () => {\r",
+									"  pm.expect(id).to.exist;\r",
+									"});\r",
+									"\r",
+									"// Guardar \"último creado\"\r",
+									"pm.environment.set(\"respuestaId\", id);\r",
+									"\r",
+									"// Guardar lista de IDs por usuario_tag\r",
+									"const usuarioTag = pm.environment.get(\"usuario_tag\") || \"user\";\r",
+									"const key = `respuestaIds_${usuarioTag}`;\r",
+									"\r",
+									"let arr = [];\r",
+									"try {\r",
+									"  arr = JSON.parse(pm.environment.get(key) || \"[]\");\r",
+									"} catch (e) {\r",
+									"  arr = [];\r",
+									"}\r",
+									"\r",
+									"arr.push(id);\r",
+									"pm.environment.set(key, JSON.stringify(arr));\r",
+									"\r",
+									"// Avanzar iteración para el próximo request del loop\r",
+									"const iter = Number(pm.environment.get(\"iter\") || 1);\r",
+									"pm.environment.set(\"iter\", iter + 1);\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"// Iteración 1..3 (Runner controla que el request se ejecute 3 veces)\r",
+									"let iter = pm.environment.get(\"iter\");\r",
+									"iter = iter ? Number(iter) : 1;\r",
+									"\r",
+									"// Cursos a usar por iteración (cambiá los IDs a los que vos tengas)\r",
+									"const cursos = [1, 2, 3];\r",
+									"// si iter se fue de rango, lo reiniciamos (por si corrés varias veces)\r",
+									"if (iter < 1 || iter > cursos.length) iter = 1;\r",
+									"\r",
+									"pm.environment.set(\"iter\", iter);\r",
+									"\r",
+									"// Inicializar array para guardar IDs creados por este usuario (si no existe)\r",
+									"const key = `respuestaIds_${pm.environment.get(\"usuario_tag\") || \"user\"}`;\r",
+									"if (!pm.environment.get(key)) {\r",
+									"  pm.environment.set(key, JSON.stringify([]));\r",
+									"}\r",
+									"console.log(\"URL va a usar respuestaId =\", pm.variables.get(\"respuestaId\"));\r",
+									"console.log(\"ENV respuestaId =\", pm.environment.get(\"respuestaId\"));\r",
+									"console.log(\"COL respuestaId =\", pm.collectionVariables.get(\"respuestaId\"));\r",
+									"console.log(\"GLOB respuestaId =\", pm.globals.get(\"respuestaId\"));\r",
+									"\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"topicoId\": {{topicoId}},\r\n  \"mensaje\": \"Respuesta de {{usuario_tag}}\" \r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/respuestas",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"respuestas"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Respuesta - Eliminar por ID",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"respuestaId = pm.environment.get(\"respuestaId\")\r",
+									"pm.environment.set(\"respuestaId\", respuestaId - 1)\r",
+									"pm.test(\"Respuesta eliminada con exito -> 204\", () => pm.response.to.have.status(204));"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/respuestas/{{respuestaId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"respuestas",
+								"{{respuestaId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Respuesta - Editar",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Editar respuesta exitosa -> 200\", () => pm.response.to.have.status(200));"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"mensaje\": \"Respuesta editada por {{usuario_tag}} \"\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/respuestas/{{respuestaId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"respuestas",
+								"{{respuestaId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Respuestas - List por TopicoID",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Listado de respuestas exitosa -> 200\", () => pm.response.to.have.status(200));"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/respuestas/topico/{{topicoId}}",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"respuestas",
+								"topico",
+								"{{topicoId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Usuario - Registro 2",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Registro userResp2 con exito -> 201\", () => {\r",
+									"  pm.expect([201]).to.include(pm.response.code);\r",
+									"});\r",
+									"pm.test(\"Usuario ya registrado -> 409\", () => {\r",
+									"  pm.expect([409]).to.include(pm.response.code);\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"userRespuesta2 = \"userRespuesta2\"\r",
+									"pm.environment.set(\"usuario_tag\", userRespuesta2);"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "accept",
+								"value": "*/*"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"nombre\": \"{{usuario_tag}}\",\r\n  \"email\": \"{{usuario_tag}}@gmail.com\",\r\n  \"password\": \"{{usuario_tag}}\",\r\n  \"username\": \"{{usuario_tag}}\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/usuarios",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"usuarios"
+							]
+						},
+						"description": "Generated from cURL: curl -X 'POST' \\\r\n  'http://localhost:8080/usuarios' \\\r\n  -H 'accept: */*' \\\r\n  -H 'Content-Type: application/json' \\\r\n  -d '{\r\n  \"nombre\": \"Sacha Melchiori\",\r\n  \"email\": \"leandromelchiori@gmail.com\",\r\n  \"password\": \"sacha122\",\r\n  \"username\": \"eldelfin95\"\r\n}'"
+					},
+					"response": []
+				},
+				{
+					"name": "Login 2",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const json = pm.response.json();\r",
+									"pm.environment.set(\"token\", json.token);\r",
+									"\r",
+									"console.log(\"Token actualizado:\", json.token);\r",
+									"pm.test(\"Login correcto -> 200\", () => {\r",
+									"  pm.expect([200]).to.include(pm.response.code);\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "accept",
+								"value": "*/*"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"username\": \"{{usuario_tag}}\",\r\n    \"password\": \"{{usuario_tag}}\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/auth/login",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"auth",
+								"login"
+							]
+						},
+						"description": "Generated from cURL: curl -X 'POST' \\\r\n  'http://localhost:8080/auth/login' \\\r\n  -H 'accept: */*' \\\r\n  -H 'Content-Type: application/json' \\\r\n  -d '{\r\n    \"username\": \"eldelfin95\",\r\n    \"password\": \"sacha122\"\r\n}'\r\n"
+					},
+					"response": []
+				},
+				{
+					"name": "Respuesta - Editar Copy",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Debe fallar por falta de permisos -> 403\", () => pm.response.to.have.status(403));"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"mensaje\": \"Respuesta editada por ${usuarioTag} \"\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/respuestas/{{respuestaId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"respuestas",
+								"{{respuestaId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Respuesta - Eliminar por ID Copy",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Debe fallar por falta de permisos -> 403\", () => pm.response.to.have.status(403));"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"const respuestaId = pm.environment.get(\"respuestaId\");\r",
+									"pm.environment.set(\"respuestaId\", respuestaId);"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/respuestas/{{respuestaId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"respuestas",
+								"{{respuestaId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Login autor",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const json = pm.response.json();\r",
+									"pm.environment.set(\"token\", json.token);\r",
+									"\r",
+									"console.log(\"Token actualizado:\", json.token);\r",
+									"pm.test(\"Login correcto -> 200\", () => {\r",
+									"  pm.expect([200]).to.include(pm.response.code);\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "accept",
+								"value": "*/*"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"username\": \"user1\",\r\n    \"password\": \"user1\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/auth/login",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"auth",
+								"login"
+							]
+						},
+						"description": "Generated from cURL: curl -X 'POST' \\\r\n  'http://localhost:8080/auth/login' \\\r\n  -H 'accept: */*' \\\r\n  -H 'Content-Type: application/json' \\\r\n  -d '{\r\n    \"username\": \"eldelfin95\",\r\n    \"password\": \"sacha122\"\r\n}'\r\n"
+					},
+					"response": []
+				},
+				{
+					"name": "Respuestas - Marcar solucion",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Marcar respuesta correcta -> 200\", () => {\r",
+									"  pm.expect([200]).to.include(pm.response.code);\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PATCH",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/respuestas/{{respuestaId}}/solucion",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"respuestas",
+								"{{respuestaId}}",
+								"solucion"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Respuestas - List por TopicoID Copy",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Listado de topicos correcto -> 200\", () => {\r",
+									"  pm.expect([200]).to.include(pm.response.code);\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/respuestas/topico/{{topicoId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"respuestas",
+								"topico",
+								"{{topicoId}}"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Categorias",
+			"item": [
+				{
+					"name": "Login admin",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const json = pm.response.json();\r",
+									"pm.environment.set(\"token\", json.token);\r",
+									"\r",
+									"console.log(\"Token actualizado:\", json.token);\r",
+									"pm.test(\"Login correcto -> 204/200\", () => {\r",
+									"  pm.expect([200,204]).to.include(pm.response.code);\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "accept",
+								"value": "*/*"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"username\": \"admin\",\r\n    \"password\": \"sacha122\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/auth/login",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"auth",
+								"login"
+							]
+						},
+						"description": "Generated from cURL: curl -X 'POST' \\\r\n  'http://localhost:8080/auth/login' \\\r\n  -H 'accept: */*' \\\r\n  -H 'Content-Type: application/json' \\\r\n  -d '{\r\n    \"username\": \"eldelfin95\",\r\n    \"password\": \"sacha122\"\r\n}'\r\n"
+					},
+					"response": []
+				},
+				{
+					"name": "Categorias - Crear",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Crear categoria Ok (201)\", () => {\r",
+									"  pm.expect(pm.response.code).to.eql(201);\r",
+									"});\r",
+									"pm.test(\"Ya existe ese nombre de categoria\", () => {\r",
+									"  pm.expect(pm.response.code).to.eql(409);\r",
+									"});\r",
+									"\r",
+									"const json = pm.response.json();\r",
+									"const id = json.id ?? json.data?.id;\r",
+									"\r",
+									"// Guardar \"último creado\"\r",
+									"pm.environment.set(\"categoriaId\", id);"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"nombre\":\"Mobile 123123123\"}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/categorias",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"categorias"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Cursos - Crear",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Crear curso Ok (201)\", () => {\r",
+									"  pm.expect(pm.response.code).to.eql(201);\r",
+									"});\r",
+									"pm.test(\"Ya existe ese nombre de curso\", () => {\r",
+									"  pm.expect(pm.response.code).to.eql(409);\r",
+									"});\r",
+									"\r",
+									"const json = pm.response.json();\r",
+									"const id = json.id ?? json.data?.id;\r",
+									"\r",
+									"// Guardar \"último creado\"\r",
+									"pm.environment.set(\"cursoId\", id);"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"nombre\":\"Kotlin desde cero 123123123\",\r\n    \"categoriaId\": 5\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/cursos",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"cursos"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Categorias - Listar",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Listar categoria exitosa -> 200\", () => {\r",
+									"  pm.expect([200,204]).to.include(pm.response.code);\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/categorias",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"categorias"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Cursos - Listar",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Listar cursos exitoso -> 200\", () => {\r",
+									"  pm.expect([200]).to.include(pm.response.code);\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/cursos",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"cursos"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Categorias - Editar por ID",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Editar categoria exitosa -> 200\", () => {\r",
+									"  pm.expect([200]).to.include(pm.response.code);\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"nombre\":\"Categoria editada\"\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/categorias/{{categoriaId}}",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"categorias",
+								"{{categoriaId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Cursos - Editar por ID",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Editar cursos exitosa -> 200\", () => {\r",
+									"  pm.expect([200]).to.include(pm.response.code);\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"nombre\":\"Kotlin edita22do2\",\r\n    \"categoriaId\": 4\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/cursos/{{cursoId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"cursos",
+								"{{cursoId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Categorias - Eliminar",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Categoria eliminada con exito -> 204\", () => pm.response.to.have.status(204));"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/categorias/{{categoriaId}}",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"categorias",
+								"{{categoriaId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Cursos - Eliminar",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Curso eliminado con exito -> 204\", () => pm.response.to.have.status(204));\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"packages": {},
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/cursos/{{cursoId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"cursos",
+								"{{cursoId}}"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "token\n",
+			"value": "",
+			"type": "string"
+		}
+	]
+}
