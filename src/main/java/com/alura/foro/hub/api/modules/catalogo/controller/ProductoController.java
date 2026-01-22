@@ -1,13 +1,11 @@
 package com.alura.foro.hub.api.modules.catalogo.controller;
 
-import com.alura.foro.hub.api.modules.catalogo.dto.productos.DatosCrearProducto;
-import com.alura.foro.hub.api.modules.catalogo.dto.productos.DatosActualizarProducto;
-import com.alura.foro.hub.api.modules.catalogo.dto.productos.DatosDetalleProducto;
-import com.alura.foro.hub.api.modules.catalogo.dto.productos.DatosListadoProducto;
+import com.alura.foro.hub.api.modules.catalogo.dto.productos.*;
 import com.alura.foro.hub.api.modules.catalogo.service.ProductoService;
 import com.alura.foro.hub.api.user.domain.Usuario;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.validation.Valid;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
@@ -83,4 +81,50 @@ public class    ProductoController {
         Usuario usuario = (Usuario) auth.getPrincipal();
         return ResponseEntity.ok(productoService.actualizar(id, dto, imagenes, usuario.getId()));
     }
+
+    @PutMapping("/{id}/imagenes/orden")
+    public ResponseEntity<DatosDetalleProducto> reordenarImagenes(
+            @PathVariable Long id,
+            @RequestBody DatosReordenarImagenes dto,
+            Authentication auth
+    ) {
+        Usuario usuario = (Usuario) auth.getPrincipal();
+        return ResponseEntity.ok(productoService.reordenarImagenes(id, dto, usuario.getId()));
+    }
+
+    // DELETE una imagen
+    @DeleteMapping("/{productoId}/imagenes/{imagenId}")
+    public ResponseEntity<Void> eliminarImagen(
+            @PathVariable Long productoId,
+            @PathVariable Long imagenId,
+            Authentication auth
+    ) {
+        Usuario usuario = (Usuario) auth.getPrincipal();
+        productoService.eliminarImagen(productoId, imagenId, usuario.getId());
+        return ResponseEntity.noContent().build();
+    }
+
+    // REEMPLAZAR una imagen (misma posición/orden)
+    @PutMapping(value = "/{productoId}/imagenes/{imagenId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<DatosDetalleProducto> reemplazarImagen(
+            @PathVariable Long productoId,
+            @PathVariable Long imagenId,
+            @RequestPart("imagen") MultipartFile imagen,
+            Authentication auth
+    ) throws IOException {
+        Usuario usuario = (Usuario) auth.getPrincipal();
+        return ResponseEntity.ok(productoService.reemplazarImagen(productoId, imagenId, imagen, usuario.getId()));
+    }
+
+    // AGREGAR imágenes (sin tocar las existentes)
+    @PostMapping(value = "/{productoId}/imagenes", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<DatosDetalleProducto> agregarImagenes(
+            @PathVariable Long productoId,
+            @RequestPart("imagenes") List<MultipartFile> imagenes,
+            Authentication auth
+    ) throws IOException {
+        Usuario usuario = (Usuario) auth.getPrincipal();
+        return ResponseEntity.ok(productoService.agregarImagenes(productoId, imagenes, usuario.getId()));
+    }
+
 }

@@ -2740,7 +2740,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\r\n    \"username\": \"admin\",\r\n    \"password\": \"userRespuesta2\"\r\n}",
+              "raw": "{\r\n    \"username\": \"admin\",\r\n    \"password\": \"admin724\"\r\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -3562,99 +3562,6 @@
       "name": "Categorias Catalogo",
       "item": [
         {
-          "name": "Categorias - Listar",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "id": "ad2ae056-b3db-427a-ab8b-5ec9ad43c4c5",
-                "exec": [
-                  "pm.test(\"Listar categoria exitosa -> 200\", () => {\r",
-                  "  pm.expect([200,204]).to.include(pm.response.code);\r",
-                  "});"
-                ],
-                "type": "text/javascript",
-                "packages": {},
-                "requests": {}
-              }
-            }
-          ],
-          "id": "8be1734b-8df4-469d-be3d-a5a94e4680c0",
-          "request": {
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{token}}",
-                  "type": "string"
-                }
-              ]
-            },
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/categorias",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "categorias"
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "SubCategorias - Listar",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "id": "a241df94-0e30-4288-b5d2-c94dd7dfd693",
-                "exec": [
-                  "pm.test(\"Listar cursos exitoso -> 200\", () => {\r",
-                  "  pm.expect([200]).to.include(pm.response.code);\r",
-                  "});"
-                ],
-                "type": "text/javascript",
-                "packages": {},
-                "requests": {}
-              }
-            }
-          ],
-          "id": "74bd09da-f99f-46a0-8356-4a0bcb4acb23",
-          "request": {
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{token}}",
-                  "type": "string"
-                }
-              ]
-            },
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "http://localhost:8080/catalogo/categorias/1/subcategorias",
-              "protocol": "http",
-              "host": [
-                "localhost"
-              ],
-              "port": "8080",
-              "path": [
-                "catalogo",
-                "categorias",
-                "1",
-                "subcategorias"
-              ]
-            }
-          },
-          "response": []
-        },
-        {
           "name": "Login admin",
           "event": [
             {
@@ -3707,7 +3614,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\r\n    \"username\": \"admin\",\r\n    \"password\": \"userRespuesta2\"\r\n}",
+              "raw": "{\r\n    \"username\": \"admin\",\r\n    \"password\": \"admin724\"\r\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -3747,7 +3654,19 @@
                   "const id = json.id ?? json.data?.id;\r",
                   "\r",
                   "// Guardar \"último creado\"\r",
-                  "pm.environment.set(\"categoriaId\", id);"
+                  "pm.environment.set(\"categoriaCatalogoId\", id);"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "id": "cf6dd1cb-a92e-4b87-8266-1dbd9b4cdf3f",
+                "exec": [
+                  ""
                 ],
                 "type": "text/javascript",
                 "packages": {},
@@ -3771,7 +3690,7 @@
             "header": [],
             "body": {
               "mode": "raw",
-              "raw": "{\"nombre\":\"Mobile1253\"}",
+              "raw": "{\r\n  \"nombre\": \"Videojuegos2\"\r\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -3779,13 +3698,14 @@
               }
             },
             "url": {
-              "raw": "{{baseUrl}}/catalogo/productos",
+              "raw": "{{baseUrl}}/catalogo/admin/categorias",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
                 "catalogo",
-                "productos"
+                "admin",
+                "categorias"
               ]
             }
           },
@@ -3799,10 +3719,10 @@
               "script": {
                 "id": "e732d99b-20d1-41e1-8097-4fa29546cdac",
                 "exec": [
-                  "pm.test(\"Crear curso Ok (201)\", () => {\r",
+                  "pm.test(\"Crear subCategoria Ok (201)\", () => {\r",
                   "  pm.expect(pm.response.code).to.eql(201);\r",
                   "});\r",
-                  "pm.test(\"Ya existe ese nombre de curso\", () => {\r",
+                  "pm.test(\"Ya existe ese nombre de subCategoria\", () => {\r",
                   "  pm.expect(pm.response.code).to.eql(409);\r",
                   "});\r",
                   "\r",
@@ -3810,7 +3730,19 @@
                   "const id = json.id ?? json.data?.id;\r",
                   "\r",
                   "// Guardar \"último creado\"\r",
-                  "pm.environment.set(\"cursoId\", id);"
+                  "pm.environment.set(\"subcategoriaCatalogoId\", id);"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "id": "a0f44f1a-9033-43a5-b0fc-bda2cd43afd6",
+                "exec": [
+                  ""
                 ],
                 "type": "text/javascript",
                 "packages": {},
@@ -3834,7 +3766,7 @@
             "header": [],
             "body": {
               "mode": "raw",
-              "raw": "{\r\n    \"nombre\":\"Kotlin1234\",\r\n    \"categoriaId\": \"{{categoriaId}}\"\r\n}\r\n",
+              "raw": "{\r\n    \"nombre\":\"Lucha2\",\r\n    \"categoriaId\": \"{{categoriaCatalogoId}}\"\r\n}\r\n",
               "options": {
                 "raw": {
                   "language": "json"
@@ -3842,12 +3774,130 @@
               }
             },
             "url": {
-              "raw": "{{baseUrl}}/cursos",
+              "raw": "{{baseUrl}}/catalogo/admin/subcategorias",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
-                "cursos"
+                "catalogo",
+                "admin",
+                "subcategorias"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Categorias - Listar",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "ad2ae056-b3db-427a-ab8b-5ec9ad43c4c5",
+                "exec": [
+                  "pm.test(\"Listar categoria exitosa -> 200\", () => {\r",
+                  "  pm.expect([200,204]).to.include(pm.response.code);\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "id": "675b1aa3-909a-4ba2-a80b-0829c72ce9e4",
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "id": "8be1734b-8df4-469d-be3d-a5a94e4680c0",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/catalogo/categorias",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "catalogo",
+                "categorias"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "SubCategorias - Listar",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "a241df94-0e30-4288-b5d2-c94dd7dfd693",
+                "exec": [
+                  "pm.test(\"Listar cursos exitoso -> 200\", () => {\r",
+                  "  pm.expect([200]).to.include(pm.response.code);\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "id": "3769316d-2e6f-4232-9388-6c2a144d6635",
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "id": "74bd09da-f99f-46a0-8356-4a0bcb4acb23",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/catalogo/categorias/{{categoriaCatalogoId}}/subcategorias",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "catalogo",
+                "categorias",
+                "{{categoriaCatalogoId}}",
+                "subcategorias"
               ]
             }
           },
@@ -3864,6 +3914,18 @@
                   "pm.test(\"Editar categoria exitosa -> 200\", () => {\r",
                   "  pm.expect([200]).to.include(pm.response.code);\r",
                   "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "id": "c4a5ea41-e2df-48f7-870d-a8c8ba14e414",
+                "exec": [
+                  ""
                 ],
                 "type": "text/javascript",
                 "packages": {},
@@ -3887,7 +3949,7 @@
             "header": [],
             "body": {
               "mode": "raw",
-              "raw": "{\r\n    \"nombre\":\"Categoria editada243\"\r\n}\r\n",
+              "raw": "{\r\n    \"nombre\":\"Videojuego editado2\"\r\n}\r\n",
               "options": {
                 "raw": {
                   "language": "json"
@@ -3895,15 +3957,15 @@
               }
             },
             "url": {
-              "raw": "http://localhost:8080/categorias/{{categoriaId}}",
-              "protocol": "http",
+              "raw": "{{baseUrl}}/catalogo/admin/categorias/{{categoriaCatalogoId}}",
               "host": [
-                "localhost"
+                "{{baseUrl}}"
               ],
-              "port": "8080",
               "path": [
+                "catalogo",
+                "admin",
                 "categorias",
-                "{{categoriaId}}"
+                "{{categoriaCatalogoId}}"
               ]
             }
           },
@@ -3920,6 +3982,18 @@
                   "pm.test(\"Editar cursos exitosa -> 200\", () => {\r",
                   "  pm.expect([200]).to.include(pm.response.code);\r",
                   "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "id": "a4312133-d03c-4200-968e-745f284216ad",
+                "exec": [
+                  ""
                 ],
                 "type": "text/javascript",
                 "packages": {},
@@ -3943,7 +4017,7 @@
             "header": [],
             "body": {
               "mode": "raw",
-              "raw": "{\r\n    \"nombre\":\"Kotlin editaso253\",\r\n    \"categoriaId\": 4\r\n}\r\n",
+              "raw": "{\r\n    \"nombre\":\"Lucha editada2\",\r\n    \"categoriaId\": {{categoriaCatalogoId}}\r\n}\r\n",
               "options": {
                 "raw": {
                   "language": "json"
@@ -3951,13 +4025,15 @@
               }
             },
             "url": {
-              "raw": "{{baseUrl}}/cursos/{{cursoId}}",
+              "raw": "{{baseUrl}}/catalogo/admin/subcategorias/{{subcategoriaCatalogoId}}",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
-                "cursos",
-                "{{cursoId}}"
+                "catalogo",
+                "admin",
+                "subcategorias",
+                "{{subcategoriaCatalogoId}}"
               ]
             }
           },
@@ -4039,7 +4115,7 @@
           "response": []
         },
         {
-          "name": "Cursos - Eliminar sinPermiso",
+          "name": "SubCategoriaCatalogo - Eliminar sinPermiso",
           "event": [
             {
               "listen": "test",
@@ -4079,23 +4155,34 @@
                 }
               ]
             },
-            "method": "DELETE",
+            "method": "PUT",
             "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"nombre\":\"Lucha editada\",\r\n    \"categoriaId\": {{categoriaCatalogoId}}\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
             "url": {
-              "raw": "{{baseUrl}}/cursos/{{cursoId}}",
+              "raw": "{{baseUrl}}/catalogo/admin/subcategorias/{{subcategoriaCatalogoId}}",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
-                "cursos",
-                "{{cursoId}}"
+                "catalogo",
+                "admin",
+                "subcategorias",
+                "{{subcategoriaCatalogoId}}"
               ]
             }
           },
           "response": []
         },
         {
-          "name": "Categorias - Eliminar sinPermiso",
+          "name": "SubcategoriaCatalogo - Eliminar sinPermiso",
           "event": [
             {
               "listen": "test",
@@ -4103,6 +4190,18 @@
                 "id": "01cdc3a3-efe4-4289-a0cd-be6925d7a519",
                 "exec": [
                   "pm.test(\"Eliminar sin permisos -> 403\", () => pm.response.to.have.status(403));"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "id": "4aeb67e5-79f0-421f-9861-801de0add15b",
+                "exec": [
+                  ""
                 ],
                 "type": "text/javascript",
                 "packages": {},
@@ -4125,22 +4224,22 @@
             "method": "DELETE",
             "header": [],
             "url": {
-              "raw": "http://localhost:8080/categorias/{{categoriaId}}",
-              "protocol": "http",
+              "raw": "{{baseUrl}}/catalogo/admin/subcategorias/{{subcategoriaCatalogoId}}",
               "host": [
-                "localhost"
+                "{{baseUrl}}"
               ],
-              "port": "8080",
               "path": [
-                "categorias",
-                "{{categoriaId}}"
+                "catalogo",
+                "admin",
+                "subcategorias",
+                "{{subcategoriaCatalogoId}}"
               ]
             }
           },
           "response": []
         },
         {
-          "name": "Categorias - Editar sinPermiso",
+          "name": "CategoriaCatalogo - Editar sinPermiso",
           "event": [
             {
               "listen": "test",
@@ -4150,6 +4249,18 @@
                   "pm.test(\"Editar sin permisos -> 403\", () => {\r",
                   "  pm.expect([403]).to.include(pm.response.code);\r",
                   "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "id": "ce9d1544-d549-4db9-b66c-800ef792f540",
+                "exec": [
+                  ""
                 ],
                 "type": "text/javascript",
                 "packages": {},
@@ -4173,7 +4284,7 @@
             "header": [],
             "body": {
               "mode": "raw",
-              "raw": "{\r\n    \"nombre\":\"Categoria editada\"\r\n}\r\n",
+              "raw": "{\r\n    \"nombre\":\"Videojuegos editados\"\r\n}\r\n",
               "options": {
                 "raw": {
                   "language": "json"
@@ -4181,22 +4292,22 @@
               }
             },
             "url": {
-              "raw": "http://localhost:8080/categorias/{{categoriaId}}",
-              "protocol": "http",
+              "raw": "{{baseUrl}}/catalogo/admin/categorias/{{categoriaCatalogoId}}",
               "host": [
-                "localhost"
+                "{{baseUrl}}"
               ],
-              "port": "8080",
               "path": [
+                "catalogo",
+                "admin",
                 "categorias",
-                "{{categoriaId}}"
+                "{{categoriaCatalogoId}}"
               ]
             }
           },
           "response": []
         },
         {
-          "name": "Cursos - Editar sinPermiso",
+          "name": "CategoriaCatalogo - Editar sinPermiso",
           "event": [
             {
               "listen": "test",
@@ -4206,6 +4317,18 @@
                   "pm.test(\"Editar sin permisos -> 403\", () => {\r",
                   "  pm.expect([403]).to.include(pm.response.code);\r",
                   "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "id": "8cf2ac4f-a4c9-449c-bf9d-14e99ad72c9e",
+                "exec": [
+                  ""
                 ],
                 "type": "text/javascript",
                 "packages": {},
@@ -4225,11 +4348,11 @@
                 }
               ]
             },
-            "method": "PUT",
+            "method": "DELETE",
             "header": [],
             "body": {
               "mode": "raw",
-              "raw": "{\r\n    \"nombre\":\"Kotlin edita22do2\",\r\n    \"categoriaId\": 4\r\n}\r\n",
+              "raw": "",
               "options": {
                 "raw": {
                   "language": "json"
@@ -4237,13 +4360,15 @@
               }
             },
             "url": {
-              "raw": "{{baseUrl}}/cursos/{{cursoId}}",
+              "raw": "{{baseUrl}}/catalogo/admin/categorias/{{categoriaCatalogoId}}",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
-                "cursos",
-                "{{cursoId}}"
+                "catalogo",
+                "admin",
+                "categorias",
+                "{{categoriaCatalogoId}}"
               ]
             }
           },
@@ -4531,6 +4656,18 @@
                   "pm.test(\"Editar producto OK (200)\", () => {\r",
                   "  pm.expect(pm.response.code).to.eql(200);\r",
                   "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "id": "85b46dcf-4e50-4422-b000-160a6399dc98",
+                "exec": [
+                  ""
                 ],
                 "type": "text/javascript",
                 "packages": {},
@@ -5235,9 +5372,21 @@
               "script": {
                 "id": "71962eb6-14f4-4313-93e2-9e75a1639629",
                 "exec": [
-                  "pm.test(\"No autorizado` (403)\", () => {\r",
-                  "  pm.expect(pm.response.code).to.eql(403);\r",
+                  "pm.test(\"Borrado con exito (204)\", () => {\r",
+                  "  pm.expect(pm.response.code).to.eql(204);\r",
                   "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "id": "dca25a53-7a17-4556-b427-2cb59940d9ca",
+                "exec": [
+                  ""
                 ],
                 "type": "text/javascript",
                 "packages": {},
@@ -5327,7 +5476,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\r\n    \"username\": \"admin\",\r\n    \"password\": \"userRespuesta2\"\r\n}",
+              "raw": "{\r\n    \"username\": \"admin\",\r\n    \"password\": \"admin724\"\r\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -5445,6 +5594,131 @@
           "response": []
         },
         {
+          "name": "SubcategoriaCatalogo - Eliminar sinPermiso Copy",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "01cdc3a3-efe4-4289-a0cd-be6925d7a519",
+                "exec": [
+                  "pm.test(\"Eliminar  -> 204\", () => pm.response.to.have.status(204));"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "id": "4aeb67e5-79f0-421f-9861-801de0add15b",
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "id": "3105857d-7215-4809-9ccc-584e21088033",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/catalogo/admin/subcategorias/{{subcategoriaCatalogoId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "catalogo",
+                "admin",
+                "subcategorias",
+                "{{subcategoriaCatalogoId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "CategoriaCatalogo - Editar sinPermiso Copy",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "e88a350c-a21e-4474-aee9-922382a46001",
+                "exec": [
+                  "pm.test(\"Editar -> 204\", () => {\r",
+                  "  pm.expect([204]).to.include(pm.response.code);\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "id": "8cf2ac4f-a4c9-449c-bf9d-14e99ad72c9e",
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "id": "e69c153f-8fb5-4ab4-b6cd-b5a7ad021192",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "DELETE",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/catalogo/admin/categorias/{{categoriaCatalogoId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "catalogo",
+                "admin",
+                "categorias",
+                "{{categoriaCatalogoId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
           "name": "Login Pruducto 1",
           "event": [
             {
@@ -5519,7 +5793,7 @@
           "response": []
         },
         {
-          "name": "Crear Producto",
+          "name": "Eliminar Producto",
           "event": [
             {
               "listen": "test",
@@ -5529,6 +5803,18 @@
                   "pm.test(\"Producto eliminado OK (204)\", () => {\r",
                   "  pm.expect(pm.response.code).to.eql(204);\r",
                   "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "id": "4b6a5def-5a97-4598-b85b-3eeafba8cfa9",
+                "exec": [
+                  ""
                 ],
                 "type": "text/javascript",
                 "packages": {},
@@ -5585,30 +5871,6 @@
         }
       ],
       "id": "6ddc3330-9a69-426b-8fc1-797283639bc4"
-    }
-  ],
-  "event": [
-    {
-      "listen": "prerequest",
-      "script": {
-        "id": "6e0e9442-8bf5-4750-b6ce-1b0af3f8dd76",
-        "type": "text/javascript",
-        "packages": {},
-        "exec": [
-          ""
-        ]
-      }
-    },
-    {
-      "listen": "test",
-      "script": {
-        "id": "67e83146-5a40-4c62-a277-08827769ff12",
-        "type": "text/javascript",
-        "packages": {},
-        "exec": [
-          ""
-        ]
-      }
     }
   ],
   "variable": [

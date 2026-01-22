@@ -91,5 +91,4 @@ public class UsuarioService {
 
         usuario.getPerfiles().remove(rolAdmin);
     }
-
 }

@@ -12,6 +12,6 @@ public record DatosDetalleProducto(
         String descripcion,
         Boolean activo,
         LocalDateTime fechaCreacion,
-        List<String> imagenes
+        List<DatosImagenProducto> imagenes
 ) {}
 

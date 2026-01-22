@@ -15,7 +15,9 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.server.ResponseStatusException;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Slf4j
@@ -78,6 +80,35 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body(body);
     }
 
+    @ExceptionHandler(org.springframework.web.multipart.support.MissingServletRequestPartException.class)
+    public ResponseEntity<ApiError> handleMissingPart(
+            org.springframework.web.multipart.support.MissingServletRequestPartException ex,
+            HttpServletRequest req
+    ) {
+        var body = ApiError.of(
+                HttpStatus.BAD_REQUEST.value(),
+                "Bad Request",
+                "Falta el part requerido: " + ex.getRequestPartName(),
+                req.getRequestURI(),
+                List.of()
+        );
+        return ResponseEntity.badRequest().body(body);
+    }
+
+    @ExceptionHandler(com.fasterxml.jackson.core.JsonProcessingException.class)
+    public ResponseEntity<ApiError> handleJsonBad(com.fasterxml.jackson.core.JsonProcessingException ex,
+                                                  HttpServletRequest req) {
+
+        var body = ApiError.of(
+                HttpStatus.BAD_REQUEST.value(),
+                "Bad Request",
+                "El part 'data' debe ser un JSON válido.",
+                req.getRequestURI(),
+                List.of()
+        );
+
+        return ResponseEntity.badRequest().body(body);
+    }
 
 
     @ExceptionHandler(ForbiddenException.class)
@@ -104,6 +135,16 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(body);
     }
 
+    @ExceptionHandler(NoResourceFoundException.class)
+    public ResponseEntity<ApiError> handleNoResource(NoResourceFoundException ex, HttpServletRequest req) {
+        var body = ApiError.of(
+                HttpStatus.NOT_FOUND.value(),
+                "Not Found",
+                "No encontrado: " + req.getRequestURI(),
+                req.getRequestURI()
+        );
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(body);
+    }
 
     @ExceptionHandler(ResponseStatusException.class)
     public ResponseEntity<ApiError> handleResponseStatus(ResponseStatusException ex, HttpServletRequest req) {
