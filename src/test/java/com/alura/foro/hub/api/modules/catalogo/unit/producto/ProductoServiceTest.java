@@ -1,4 +1,4 @@
-package com.alura.foro.hub.api.modules.catalogo.producto;
+package com.alura.foro.hub.api.modules.catalogo.unit.producto;
 
 import com.alura.foro.hub.api.modules.catalogo.domain.*;
 import com.alura.foro.hub.api.modules.catalogo.dto.productos.*;
@@ -42,6 +42,7 @@ class ProductoServiceTest {
 
     @InjectMocks
     private ProductoService service;
+
 
     @BeforeEach
     void setUp() {

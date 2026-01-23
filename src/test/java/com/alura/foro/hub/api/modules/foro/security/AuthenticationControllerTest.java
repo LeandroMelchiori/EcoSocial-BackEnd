@@ -1,5 +1,6 @@
 package com.alura.foro.hub.api.modules.foro.security;
 
+import com.alura.foro.hub.api.modules.catalogo.repository.ProductoRepository;
 import com.alura.foro.hub.api.user.domain.Usuario;
 import com.alura.foro.hub.api.user.repository.UsuarioRepository;
 import com.alura.foro.hub.api.security.auth.UsuarioAuthenticateData;
@@ -32,7 +33,8 @@ class AuthenticationControllerTest {
 
     @Autowired
     UsuarioRepository usuarioRepository;
-
+    @Autowired
+    ProductoRepository productoRepository;
     @Autowired
     PasswordEncoder passwordEncoder;
 
@@ -42,6 +44,7 @@ class AuthenticationControllerTest {
     @BeforeEach
     void setup() {
         // Dejamos la DB en un estado conocido para este test
+        productoRepository.deleteAll();
         usuarioRepository.deleteAll();
 
         var usuario = new Usuario();

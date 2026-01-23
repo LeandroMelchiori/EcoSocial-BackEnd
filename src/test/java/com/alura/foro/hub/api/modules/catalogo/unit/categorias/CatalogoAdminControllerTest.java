@@ -1,4 +1,4 @@
-package com.alura.foro.hub.api.modules.catalogo.categorias;
+package com.alura.foro.hub.api.modules.catalogo.unit.categorias;
 
 import com.alura.foro.hub.api.modules.catalogo.controller.CatalogoAdminController;
 import com.alura.foro.hub.api.TestSecurityConfig;

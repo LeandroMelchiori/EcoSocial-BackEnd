@@ -2,6 +2,7 @@ package com.alura.foro.hub.api.modules.catalogo.controller;
 
 import com.alura.foro.hub.api.modules.catalogo.dto.productos.*;
 import com.alura.foro.hub.api.modules.catalogo.service.ProductoService;
+import com.alura.foro.hub.api.security.auth.CurrentUserService;
 import com.alura.foro.hub.api.user.domain.Usuario;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.validation.Valid;
@@ -25,10 +26,12 @@ public class    ProductoController {
 
     private final ProductoService productoService;
     private final ObjectMapper mapper;
+    private final CurrentUserService currentUser;
 
-    public ProductoController(ProductoService productoService, ObjectMapper mapper) {
+    public ProductoController(ProductoService productoService, ObjectMapper mapper, CurrentUserService currentUser) {
         this.productoService = productoService;
         this.mapper = mapper;
+        this.currentUser = currentUser;
     }
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -40,9 +43,9 @@ public class    ProductoController {
 
         DatosCrearProducto dto = mapper.readValue(data, DatosCrearProducto.class);
 
-        Usuario usuario = (Usuario) auth.getPrincipal();
+        Long userId = currentUser.userId(auth);
 
-        DatosDetalleProducto creado = productoService.crear(dto, imagenes, usuario.getId());
+        DatosDetalleProducto creado = productoService.crear(dto, imagenes, userId);
 
         URI location = URI.create("/catalogo/productos/" + creado.id());
         return ResponseEntity.created(location).body(creado);

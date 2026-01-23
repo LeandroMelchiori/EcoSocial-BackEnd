@@ -1,8 +1,9 @@
-package com.alura.foro.hub.api.modules.catalogo.producto;
+package com.alura.foro.hub.api.modules.catalogo.unit.producto;
 
 import com.alura.foro.hub.api.modules.catalogo.controller.ProductoController;
 import com.alura.foro.hub.api.modules.catalogo.dto.productos.*;
 import com.alura.foro.hub.api.modules.catalogo.service.ProductoService;
+import com.alura.foro.hub.api.security.auth.CurrentUserService;
 import com.alura.foro.hub.api.user.domain.Perfil;
 import com.alura.foro.hub.api.user.domain.Usuario;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -40,6 +41,8 @@ class ProductoControllerTest {
     @MockitoBean
     ProductoService productoService;
 
+    @MockitoBean
+    private CurrentUserService currentUserService;
     // -------------------------
     // Helpers
     // -------------------------
@@ -104,6 +107,7 @@ class ProductoControllerTest {
                 "imagenes", "a.png", "image/png", "x".getBytes(StandardCharsets.UTF_8)
         );
 
+        given(currentUserService.userId(any(Authentication.class))).willReturn(1L);
         given(productoService.crear(any(DatosCrearProducto.class), anyList(), eq(1L)))
                 .willReturn(detalleMock());
 
@@ -121,6 +125,7 @@ class ProductoControllerTest {
                 .andExpect(jsonPath("$.subcategoriaId").value(3))
                 .andExpect(jsonPath("$.imagenes.length()").value(2));
 
+        verify(currentUserService).userId(any(Authentication.class));
         verify(productoService).crear(any(DatosCrearProducto.class), anyList(), eq(1L));
     }
 
