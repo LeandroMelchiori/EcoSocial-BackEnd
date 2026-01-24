@@ -1,4 +1,4 @@
-package com.alura.foro.hub.api.modules.foro.controller;
+package com.alura.foro.hub.api.user.controller;
 
 import com.alura.foro.hub.api.user.dto.DatosUsuarioListado;
 import com.alura.foro.hub.api.user.dto.DatosUsuarioRegistro;
