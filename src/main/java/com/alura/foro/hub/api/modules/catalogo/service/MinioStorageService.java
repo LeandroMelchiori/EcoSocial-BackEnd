@@ -92,11 +92,12 @@ public class MinioStorageService implements StorageService {
                 String objectKey = tempPrefix + filename;
 
                 try (InputStream in = file.getInputStream()) {
+                    long partSize = 10L * 1024 * 1024;
                     minio.putObject(
                             PutObjectArgs.builder()
                                     .bucket(bucket)
                                     .object(objectKey)
-                                    .stream(in, file.getSize(), -1)
+                                    .stream(in, file.getSize(), partSize)
                                     .contentType(file.getContentType())
                                     .build()
                     );
@@ -124,8 +125,7 @@ public class MinioStorageService implements StorageService {
 
         try {
             for (String tempObj : tempKeys) {
-                if (tempObj == null || tempObj.isBlank()) continue;
-
+                if (tempObj == null || tempObj.isBlank() || !tempObj.startsWith(tempPrefix)) continue;
                 String fileName = tempObj.substring(tempPrefix.length());
                 String finalObj = finalPrefix + fileName;
 

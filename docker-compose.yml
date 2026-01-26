@@ -32,12 +32,18 @@ services:
       - "9001:9001"
     volumes:
       - minio_data:/data
-
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:9000/minio/health/ready" ]
+      interval: 5s
+      timeout: 3s
+      retries: 20
   api:
     build: .
     container_name: forohub-api
     depends_on:
       db:
+        condition: service_healthy
+      minio:
         condition: service_healthy
     env_file:
       - .env
