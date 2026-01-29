@@ -1,13 +1,21 @@
 package com.alura.foro.hub.api.modules.catalogo.mapper;
 
 import com.alura.foro.hub.api.modules.catalogo.domain.Producto;
-import com.alura.foro.hub.api.modules.catalogo.domain.ProductoImagen;
 import com.alura.foro.hub.api.modules.catalogo.dto.productos.DatosDetalleProducto;
+import com.alura.foro.hub.api.modules.catalogo.dto.productos.DatosImagenProducto;
+import com.alura.foro.hub.api.modules.catalogo.service.MinioStorageService;
+import com.alura.foro.hub.api.modules.catalogo.service.StorageService;
 
 public class ProductoMapper {
 
-    public static DatosDetalleProducto toDetalle(Producto p) {
-        var urls = p.getImagenes().stream().map(ProductoImagen::getUrl).toList();
+    public static DatosDetalleProducto toDetalle(Producto p, StorageService storage) {
+        var imgs = p.getImagenes().stream()
+                .map(img -> new DatosImagenProducto(
+                        img.getId(),
+                        img.getOrden(),
+                        storage.getUrl(img.getUrl()) // url presignada
+                ))
+                .toList();
 
         return new DatosDetalleProducto(
                 p.getId(),
@@ -18,7 +26,8 @@ public class ProductoMapper {
                 p.getDescripcion(),
                 p.getActivo(),
                 p.getFechaCreacion(),
-                urls
+                imgs
         );
     }
+
 }

@@ -24,7 +24,7 @@ public class TokenService {
             Algorithm algorithm = HMAC256(apiSecret);
             return JWT.create()
                     .withIssuer("foro hub")
-                    .withSubject(usuario.getUsername())
+                    .withSubject(usuario.getId().toString()) // ✅ subject = userId
                     .withClaim("id", usuario.getId())
                     .withExpiresAt(generateExpirationTime())
                     .sign(algorithm);
@@ -68,6 +68,4 @@ public class TokenService {
             throw new RuntimeException("Error al verificar el token");
         }
     }
-
-
 }

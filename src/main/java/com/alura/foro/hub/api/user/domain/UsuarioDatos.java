@@ -15,24 +15,25 @@ import java.time.LocalDate;
 public class UsuarioDatos {
 
     @Id
-    private Long id; // mismo ID que Usuario
+    private Long id;
 
     @OneToOne
     @MapsId
     @JoinColumn(name = "usuario_id")
     private Usuario usuario;
 
-    @Column(length = 120)
-    private String direccion;
-
-    @Column(length = 80)
-    private String localidad;
-
     @Column(length = 80)
     private String provincia;
 
-    @Column(length = 20, unique = true)
-    private String dni;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "localidad_id")
+    private Localidad localidad;
+
+    @Column(length = 120)
+    private String direccion;
+
+    @Column(name = "codigo_postal", length = 10)
+    private String codigoPostal;
 
     private LocalDate fechaNacimiento;
 }

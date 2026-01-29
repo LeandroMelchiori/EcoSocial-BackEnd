@@ -10,7 +10,6 @@ import org.springframework.security.core.GrantedAuthority;
 @Setter
 @Table(name = "perfil")
 public class Perfil implements GrantedAuthority {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -22,5 +21,4 @@ public class Perfil implements GrantedAuthority {
     public String getAuthority() {
         return nombre;
     }
-    // getters y setters
 }

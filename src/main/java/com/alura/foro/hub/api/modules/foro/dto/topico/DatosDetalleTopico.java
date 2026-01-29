@@ -41,8 +41,5 @@ public record DatosDetalleTopico(
         @Schema(example = "ACTIVO")
         StatusTopico status,
 
-        @Schema(example = "false")
-        Boolean editado,
-
         List<DatosListadoRespuesta> respuestas
 ) { }

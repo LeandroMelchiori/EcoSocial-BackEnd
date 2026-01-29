@@ -34,23 +34,26 @@ public class UsuarioService {
         if (usuarioRepository.existsByEmail(datos.email())) {
             throw new BusinessException("El email ya está registrado");
         }
-        if (usuarioRepository.existsByUsername(datos.username())) {
-            throw new BusinessException("El nombre de usuario ya está en uso");
+        if (usuarioRepository.existsByDni(datos.dni())) {
+            throw new BusinessException("El DNI ya está registrado");
         }
 
         var usuario = new Usuario();
         usuario.setNombre(datos.nombre());
+        usuario.setApellido(datos.apellido());
+        usuario.setDni(datos.dni());
         usuario.setEmail(datos.email());
-        usuario.setUsername(datos.username());
         usuario.setPassword(passwordEncoder.encode(datos.password()));
+        usuario.setActivo(true);
 
         var rolUser = perfilRepository.findByNombre("USER")
-                .orElseThrow(() -> new IllegalStateException("ROL_USER no exist"));
+                .orElseThrow(() -> new IllegalStateException("No existe el perfil USER"));
 
         usuario.setPerfiles(new ArrayList<>(List.of(rolUser)));
 
         return usuarioRepository.save(usuario);
     }
+
 
     @Transactional
     public void asignarRolAdmin(Long usuarioId) {
@@ -58,8 +61,10 @@ public class UsuarioService {
         var usuario = usuarioRepository.findById(usuarioId)
                 .orElseThrow(() -> new EntityNotFoundException("Usuario no encontrado"));
 
-        var rolAdmin = perfilRepository.findByNombre("admin") // o "ADMIN"
-                .orElseThrow(() -> new IllegalStateException("No existe el perfil admin"));
+        var rolAdmin = perfilRepository.findByNombre("ADMIN")
+                .orElseThrow(() -> new IllegalStateException("No existe el perfil ADMIN"));
+
+        long cantidadAdmins = usuarioRepository.countUsuariosConRol("ADMIN");
 
         if (!usuario.getPerfiles().contains(rolAdmin)) {
             usuario.getPerfiles().add(rolAdmin);
@@ -91,5 +96,4 @@ public class UsuarioService {
 
         usuario.getPerfiles().remove(rolAdmin);
     }
-
 }

@@ -16,8 +16,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "topico")
-public class Topico extends AuditableEntity {
-
+public class Topico extends BaseEntity{
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -38,9 +37,6 @@ public class Topico extends AuditableEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "curso_id")
     private Curso curso;
-
-    @Column(nullable = false)
-    private Boolean editado = false;
 
     @OneToMany(mappedBy = "topico", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Respuesta> respuestas = new ArrayList<>();
@@ -78,6 +74,5 @@ public class Topico extends AuditableEntity {
     void prePersist() {
         if (fechaCreacion == null) fechaCreacion = LocalDateTime.now();
         if (status == null) status = StatusTopico.ACTIVO;
-        if (editado == null) editado = false;
     }
 }

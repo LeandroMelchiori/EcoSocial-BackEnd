@@ -16,8 +16,5 @@ public record DatosListadoRespuestaHija(
         String autorNombre,
 
         @Schema(example = "2025-12-18T19:10:00")
-        LocalDateTime fechaCreacion,
-
-        @Schema(example = "false")
-        Boolean editado
+        LocalDateTime fechaCreacion
 ) {}

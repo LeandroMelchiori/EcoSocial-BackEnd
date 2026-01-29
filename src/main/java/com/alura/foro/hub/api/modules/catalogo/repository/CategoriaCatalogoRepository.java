@@ -14,4 +14,6 @@ public interface CategoriaCatalogoRepository extends JpaRepository<CategoriaCata
 
     List<CategoriaCatalogo> findAllByOrderByNombreAsc();
 
+    boolean existsByIdAndActivoTrue(Long id);
+
 }

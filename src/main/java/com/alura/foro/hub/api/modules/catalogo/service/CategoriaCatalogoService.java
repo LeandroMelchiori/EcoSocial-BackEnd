@@ -32,7 +32,8 @@ public class CategoriaCatalogoService {
 
     @Transactional(readOnly = true)
     public List<DatosDetalleSubcategoriaProducto> listarSubcategoriasActivas(Long categoriaId) {
-        if (!categoriaRepo.existsById(categoriaId)) {
+
+        if (!categoriaRepo.existsByIdAndActivoTrue(categoriaId)) {
             throw new EntityNotFoundException("Categoría no encontrada");
         }
 

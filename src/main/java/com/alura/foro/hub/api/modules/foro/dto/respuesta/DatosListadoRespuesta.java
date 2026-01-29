@@ -24,8 +24,5 @@ public record DatosListadoRespuesta(
         LocalDateTime fechaCreacion,
 
         @Schema(example = "8")
-        Long cantidadHijas,
-
-        @Schema(example = "false")
-        Boolean editado
+        Long cantidadHijas
 ) {}

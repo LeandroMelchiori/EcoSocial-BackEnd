@@ -50,9 +50,11 @@ public class SecurityFilter extends OncePerRequestFilter {
 
         try {
             var subject = tokenService.getSubject(token);
+            Long userId = Long.valueOf(subject);
 
-            var user = usuarioRepository.findByUsername(subject)
+            var user = usuarioRepository.findById(userId)
                     .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado"));
+
 
             var authentication = new org.springframework.security.authentication.UsernamePasswordAuthenticationToken(
                     user, null, user.getAuthorities()

@@ -6,7 +6,6 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -14,7 +13,7 @@ import java.util.List;
 @Getter
 @Setter
 @Table(name = "respuesta")
-public class Respuesta extends AuditableEntity {
+public class Respuesta extends BaseEntity{
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -31,14 +30,8 @@ public class Respuesta extends AuditableEntity {
     @JoinColumn(name = "autor_id", nullable = false)
     private Usuario autor;
 
-    @Column(name = "fecha_creacion", nullable = false)
-    private LocalDateTime fechaCreacion = LocalDateTime.now();
-
     @Column(nullable = false)
     private Boolean solucion = false;
-
-    @Column(nullable = false)
-    private Boolean editado = false;
 
     @OneToMany(mappedBy = "respuesta", cascade = CascadeType.ALL, orphanRemoval = true)
     @OrderBy("fechaCreacion DESC")
@@ -47,8 +40,6 @@ public class Respuesta extends AuditableEntity {
 
     @PrePersist
     void prePersist() {
-        if (fechaCreacion == null) fechaCreacion = LocalDateTime.now();
         if (solucion == null) solucion = false;
-        if (editado == null) editado = false;
     }
 }

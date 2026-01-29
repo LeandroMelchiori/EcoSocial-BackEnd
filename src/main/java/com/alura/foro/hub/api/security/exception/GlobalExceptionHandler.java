@@ -7,6 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.validation.FieldError;
@@ -15,13 +16,29 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.server.ResponseStatusException;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
+    // ✅ 400
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<ApiError> handleNotReadable(HttpMessageNotReadableException ex, HttpServletRequest req) {
+
+        var body = ApiError.of(
+                HttpStatus.BAD_REQUEST.value(),
+                "Bad Request",
+                "El part 'data' debe ser un JSON válido.",
+                req.getRequestURI(),
+                List.of()
+        );
+
+        return ResponseEntity.badRequest().body(body);
+    }
     // ✅ 400 - Validaciones @Valid (body)
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ApiError> handleValidation(MethodArgumentNotValidException ex, HttpServletRequest req) {
@@ -78,6 +95,36 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body(body);
     }
 
+    @ExceptionHandler(org.springframework.web.multipart.support.MissingServletRequestPartException.class)
+    public ResponseEntity<ApiError> handleMissingPart(
+            org.springframework.web.multipart.support.MissingServletRequestPartException ex,
+            HttpServletRequest req
+    ) {
+        var body = ApiError.of(
+                HttpStatus.BAD_REQUEST.value(),
+                "Bad Request",
+                "Falta el part requerido: " + ex.getRequestPartName(),
+                req.getRequestURI(),
+                List.of()
+        );
+        return ResponseEntity.badRequest().body(body);
+    }
+
+    @ExceptionHandler(com.fasterxml.jackson.core.JsonProcessingException.class)
+    public ResponseEntity<ApiError> handleJsonBad(com.fasterxml.jackson.core.JsonProcessingException ex,
+                                                  HttpServletRequest req) {
+
+        var body = ApiError.of(
+                HttpStatus.BAD_REQUEST.value(),
+                "Bad Request",
+                "El part 'data' debe ser un JSON válido.",
+                req.getRequestURI(),
+                List.of()
+        );
+
+        return ResponseEntity.badRequest().body(body);
+    }
+
 
     @ExceptionHandler(ForbiddenException.class)
     public ResponseEntity<ApiError> handleForbidden(ForbiddenException ex, HttpServletRequest req) {
@@ -103,6 +150,16 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(body);
     }
 
+    @ExceptionHandler(NoResourceFoundException.class)
+    public ResponseEntity<ApiError> handleNoResource(NoResourceFoundException ex, HttpServletRequest req) {
+        var body = ApiError.of(
+                HttpStatus.NOT_FOUND.value(),
+                "Not Found",
+                "No encontrado: " + req.getRequestURI(),
+                req.getRequestURI()
+        );
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(body);
+    }
 
     @ExceptionHandler(ResponseStatusException.class)
     public ResponseEntity<ApiError> handleResponseStatus(ResponseStatusException ex, HttpServletRequest req) {

@@ -96,9 +96,6 @@ public class SecurityConfigurations {
                                 .requestMatchers(HttpMethod.GET, "/actuator/metrics/**").permitAll()
                                 .requestMatchers(HttpMethod.GET, "/actuator/prometheus/**").permitAll()
                                 .requestMatchers(HttpMethod.GET, "/catalogo/**").permitAll()
-                                .requestMatchers(HttpMethod.POST, "/catalogo/**").authenticated()
-                                .requestMatchers(HttpMethod.PUT, "/catalogo/**").authenticated()
-                                .requestMatchers(HttpMethod.DELETE, "/catalogo/**").authenticated()
                                 .requestMatchers(HttpMethod.GET, "/productos/**").permitAll()
                                 .requestMatchers(HttpMethod.GET, "/catalogo/categorias/**").permitAll()
                                 .requestMatchers(HttpMethod.GET, "/catalogo/*/subcategorias/**").permitAll()
@@ -107,6 +104,7 @@ public class SecurityConfigurations {
                                 .requestMatchers(HttpMethod.POST, "/categorias/**").hasRole("ADMIN")
                                 .requestMatchers(HttpMethod.PUT, "/categorias/**").hasRole("ADMIN")
                                 .requestMatchers(HttpMethod.DELETE, "/categorias/**").hasRole("ADMIN")
+                                .requestMatchers("/catalogo/admin/**").hasRole("ADMIN")
 
                                 // 🔒 C.U.D CURSOS → SOLO ADMIN
                                 .requestMatchers(HttpMethod.POST, "/cursos/**").hasRole("ADMIN")
@@ -177,7 +175,5 @@ public class SecurityConfigurations {
         response.setCharacterEncoding("UTF-8");
         objectMapper.writeValue(response.getOutputStream(), body);
     }
-
-
 }
 

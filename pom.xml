@@ -73,7 +73,13 @@
 				<optional>true</optional>
 			</dependency>
 
-			<dependency>
+            <dependency>
+                <groupId>io.minio</groupId>
+                <artifactId>minio</artifactId>
+                <version>8.5.12</version>
+            </dependency>
+
+            <dependency>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-starter-test</artifactId>
 				<scope>test</scope>
@@ -114,6 +120,18 @@
 			</dependency>
 
             <dependency>
+                <groupId>org.testcontainers</groupId>
+                <artifactId>junit-jupiter</artifactId>
+                <scope>test</scope>
+            </dependency>
+
+            <dependency>
+                <groupId>org.testcontainers</groupId>
+                <artifactId>minio</artifactId>
+                <scope>test</scope>
+            </dependency>
+
+            <dependency>
                 <groupId>com.h2database</groupId>
                 <artifactId>h2</artifactId>
                 <scope>test</scope>
@@ -134,6 +152,7 @@
 					<groupId>org.graalvm.buildtools</groupId>
 					<artifactId>native-maven-plugin</artifactId>
 				</plugin>
+
 
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
@@ -194,11 +213,28 @@
                         <failOnNoGitDirectory>false</failOnNoGitDirectory>
                     </configuration>
                 </plugin>
-                <plugin>
-                    <groupId>org.springframework.boot</groupId>
-                    <artifactId>spring-boot-maven-plugin</artifactId>
-                </plugin>
             </plugins>
 		</build>
-	</project>
+    <profiles>
+        <profile>
+            <id>minio-test</id>
+            <properties>
+                <spring.profiles.active>minio-test</spring.profiles.active>
+            </properties>
+        </profile>
+    </profiles>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.testcontainers</groupId>
+                <artifactId>testcontainers-bom</artifactId>
+                <version>1.20.4</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+</project>
 
