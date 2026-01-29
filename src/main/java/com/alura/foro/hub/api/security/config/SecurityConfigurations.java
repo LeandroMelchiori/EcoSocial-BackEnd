@@ -111,8 +111,15 @@ public class SecurityConfigurations {
                                 .requestMatchers(HttpMethod.PUT, "/cursos/**").hasRole("ADMIN")
                                 .requestMatchers(HttpMethod.DELETE, "/cursos/**").hasRole("ADMIN")
 
-                                 // 🔒 ACTUATOR FULL → SOLO ADMIN
+                                // ✅ ACTUATOR (público mínimo)
+                                .requestMatchers("/actuator/health", "/actuator/health/**").permitAll()
+                                .requestMatchers("/actuator/info", "/actuator/info/**").permitAll()
+
+                                // 🔒 ACTUATOR FULL → SOLO ADMIN
+                                .requestMatchers("/actuator/prometheus", "/actuator/prometheus/**").hasRole("ADMIN")
+                                .requestMatchers("/actuator/metrics", "/actuator/metrics/**").hasRole("ADMIN")
                                 .requestMatchers("/actuator/**").hasRole("ADMIN")
+
                                 // Swagger UI y Docs
                                 .requestMatchers(
                                         "/v3/api-docs",
