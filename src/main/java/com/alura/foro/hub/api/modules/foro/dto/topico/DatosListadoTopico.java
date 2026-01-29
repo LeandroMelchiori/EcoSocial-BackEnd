@@ -51,15 +51,6 @@ public record DatosListadoTopico(
 
         @Schema(example = "2025-12-18T19:10:00",
                 description = "Fecha de la última respuesta publicada en el tópico")
-        LocalDateTime fechaUltimaRespuesta,
-
-        @Schema(
-                example = "false",
-                description = """
-                        Indica si el contenido original del tópico fue editado luego de su creación.
-                        Si es true, el cliente puede mostrar la leyenda "mensaje editado".
-                        """
-        )
-        Boolean editado
+        LocalDateTime fechaUltimaRespuesta
 ) {}
 

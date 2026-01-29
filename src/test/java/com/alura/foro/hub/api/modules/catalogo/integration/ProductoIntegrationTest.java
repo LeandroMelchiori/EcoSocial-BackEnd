@@ -27,6 +27,7 @@ import jakarta.transaction.Transactional;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
@@ -36,7 +37,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
-@Transactional // <-- CLAVE: habilita transacción para el @BeforeEach
+@Transactional
 class ProductoIntegrationTest {
 
     @Autowired MockMvc mvc;
@@ -64,12 +65,15 @@ class ProductoIntegrationTest {
 
     @BeforeEach
     void setup() {
-        // ----- USUARIO (sin Perfil, tu getAuthorities() devuelve ROLE_USER igual) -----
+        // Usuario
         usuario = new Usuario();
-        usuario.setNombre("Sacha Test");
-        usuario.setEmail("sacha.test@mail.com");
-        usuario.setUsername("sacha_test");
+        usuario.setNombre("User");
+        usuario.setApellido("Test");
+        usuario.setDni(UUID.randomUUID().toString().replaceAll("\\D", "").substring(0, 8));
+
+        usuario.setEmail("user_test_" + UUID.randomUUID() + "@mail.com");
         usuario.setPassword("123456");
+
         usuario = usuarioRepository.save(usuario);
 
         // ----- CATEGORIA -----
@@ -89,7 +93,7 @@ class ProductoIntegrationTest {
     @Test
     void flujo_producto_crear_detalle_listar_eliminar_ok() throws Exception {
 
-        // principal = Usuario real, como espera tu controller
+        // principal = Usuario real
         var auth = new UsernamePasswordAuthenticationToken(usuario, null, usuario.getAuthorities());
 
         // -------- POST multipart --------
@@ -109,7 +113,7 @@ class ProductoIntegrationTest {
                 jsonData.getBytes(StandardCharsets.UTF_8)
         );
 
-        // Imagen fake PNG (tu validador revisa contentType)
+        // Imagen fake PNG
         byte[] fakePng = new byte[] {(byte)0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A};
         MockMultipartFile img1 = new MockMultipartFile(
                 "imagenes",
@@ -163,11 +167,7 @@ class ProductoIntegrationTest {
                 )
                 .andExpect(status().isNoContent());
 
-        // OJO: tu delete mueve a trash y purga AFTER COMMIT.
-        // Como este test está dentro de transacción (rollback al final), el commit no ocurre.
-        // Entonces NO podés afirmar que se borró el storage final acá.
-        // En vez de eso, verificamos que el recurso ya no existe en DB vía GET.
-
+        // verificamos que el recurso ya no existe en DB vía GET.
         mvc.perform(get("/catalogo/productos/{id}", productoId))
                 .andExpect(status().isNotFound());
     }

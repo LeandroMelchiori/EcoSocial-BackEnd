@@ -36,27 +36,28 @@ class AuthenticationControllerTest {
     @Autowired
     PasswordEncoder passwordEncoder;
 
-    private static final String USERNAME = "autor1";
+    private static final String EMAIL = "autor1@test.com";
+    private static final String DNI = "12345678";
     private static final String PASSWORD = "123456";
 
     @BeforeEach
     void setup() {
-        // Dejamos la DB en un estado conocido para este test
         productoRepository.deleteAll();
         usuarioRepository.deleteAll();
 
         var usuario = new Usuario();
-        usuario.setNombre("Autor Test");
-        usuario.setEmail("autor1@test.com");
-        usuario.setUsername(USERNAME);
-        usuario.setPassword(passwordEncoder.encode(PASSWORD)); // clave: guardarla encriptada
+        usuario.setNombre("Autor");
+        usuario.setApellido("Test");
+        usuario.setDni(DNI);
+        usuario.setEmail(EMAIL);
+        usuario.setPassword(passwordEncoder.encode(PASSWORD));
 
         usuarioRepository.save(usuario);
     }
 
     @Test
-    void login_ok_devuelve_token() throws Exception {
-        var body = new UsuarioAuthenticateData(USERNAME, PASSWORD);
+    void login_ok_por_email_devuelve_token() throws Exception {
+        var body = new UsuarioAuthenticateData(EMAIL, PASSWORD);
 
         mvc.perform(post("/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -68,8 +69,19 @@ class AuthenticationControllerTest {
     }
 
     @Test
+    void login_ok_por_dni_devuelve_token() throws Exception {
+        var body = new UsuarioAuthenticateData(DNI, PASSWORD);
+
+        mvc.perform(post("/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(mapper.writeValueAsString(body)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.token").isNotEmpty());
+    }
+
+    @Test
     void login_credenciales_invalidas_devuelve_403_o_401() throws Exception {
-        var body = new UsuarioAuthenticateData(USERNAME, "malPassword");
+        var body = new UsuarioAuthenticateData(EMAIL, "malPassword");
 
         mvc.perform(post("/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)

@@ -35,15 +35,36 @@ public class ForoHubFixtures {
     // ============
     // USUARIOS
     // ============
-    public Usuario usuario(String username) {
+    public Usuario usuario(String login) {
         var u = new Usuario();
-        u.setNombre(capitalizar(username));
-        u.setUsername(username);
-        u.setEmail(username + "@test.com");
+
+        // nombre / apellido obligatorios
+        u.setNombre(capitalizar(login));
+        u.setApellido("Test");
+
+        // dni obligatorio (y único)
+        u.setDni(dniDesde(login));
+
+        // email obligatorio (y único)
+        u.setEmail(emailDesde(login));
+
+        // password obligatorio
         u.setPassword("123");
+
         return usuarioRepository.saveAndFlush(u);
     }
 
+    public Usuario usuarioConPassword(String login, String rawPassword, PasswordEncoder encoder) {
+        var u = new Usuario();
+
+        u.setNombre(capitalizar(login));
+        u.setApellido("Test");
+        u.setDni(dniDesde(login));
+        u.setEmail(emailDesde(login));
+        u.setPassword(encoder.encode(rawPassword));
+
+        return usuarioRepository.saveAndFlush(u);
+    }
     // ============
     // TÓPICOS
     // ============
@@ -107,13 +128,19 @@ public class ForoHubFixtures {
         return respuestaRepository.saveAndFlush(r);
     }
 
-    public Usuario usuarioConPassword(String username, String rawPassword, PasswordEncoder encoder) {
-        var u = new Usuario();
-        u.setNombre(capitalizar(username));
-        u.setUsername(username);
-        u.setEmail(username + "@test.com");
-        u.setPassword(encoder.encode(rawPassword));
-        return usuarioRepository.saveAndFlush(u);
+    // Helpers
+    private String emailDesde(String login) {
+        if (login == null || login.isBlank()) return "user@test.com";
+        return login.contains("@") ? login : login + "@test.com";
     }
 
+    private String dniDesde(String login) {
+        // si ya viene DNI numérico, lo usamos
+        if (login != null && login.matches("\\d{7,20}")) return login;
+
+        // si viene tipo "sacha" o "user1", generamos uno estable (pero numérico)
+        int base = Math.abs((login == null ? "user" : login).hashCode());
+        // 8 dígitos (evita colisiones fáciles)
+        return String.format("%08d", base % 100_000_000);
+    }
 }

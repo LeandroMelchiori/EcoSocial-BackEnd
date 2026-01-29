@@ -49,16 +49,23 @@ class ProductoControllerTest {
     private Usuario user(Long id) {
         Usuario u = new Usuario();
         u.setId(id);
-        u.setUsername("u" + id);
-        u.setEmail("u" + id + "@mail.com");
+
+        // campos mínimos coherentes con tu entidad (aunque acá no pegues DB)
+        u.setNombre("User");
+        u.setApellido("Test");
+        u.setDni(String.format("%08d", id));          // 00000001, etc.
+        u.setEmail("u" + id + "@mail.com");           // <- tu getUsername() devuelve email
+        u.setPassword("x");                           // no se usa, pero queda completo
+
         u.setPerfiles(List.of()); // ROLE_USER por default en getAuthorities()
         return u;
     }
 
+
     private Usuario admin(Long id) {
         Usuario u = user(id);
         Perfil p = new Perfil();
-        p.setNombre("ADMIN"); // tu Usuario.getAuthorities() arma ROLE_ADMIN
+        p.setNombre("ADMIN");
         u.setPerfiles(List.of(p));
         return u;
     }
@@ -100,8 +107,18 @@ class ProductoControllerTest {
         var dto = new DatosCrearProducto(2L, 3L, "Sillón", "Desc");
         var dataJson = mapper.writeValueAsBytes(dto);
 
-        var dataPart = new MockMultipartFile(
-                "data", "data.json", "application/json", dataJson
+        MockMultipartFile dataPart = new MockMultipartFile(
+                "data",
+                "data.json",
+                "application/json",
+                """
+                {
+                  "categoriaCatalogoId": 2,
+                  "subCategoriaCatalogoId": 5,
+                  "titulo": "Pan casero integral",
+                  "descripcion": "Pan artesanal elaborado con masa madre, sin conservantes."
+                }
+                """.getBytes(StandardCharsets.UTF_8)
         );
         var img1 = new MockMultipartFile(
                 "imagenes", "a.png", "image/png", "x".getBytes(StandardCharsets.UTF_8)

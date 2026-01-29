@@ -1,19 +1,23 @@
 -- Categorías
 CREATE TABLE categoria_producto (
-                            id BIGINT AUTO_INCREMENT PRIMARY KEY,
-                            nombre VARCHAR(80) NOT NULL UNIQUE,
-                            activo TINYINT(1) NOT NULL DEFAULT 1
+                                    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+                                    nombre VARCHAR(80) NOT NULL UNIQUE,
+                                    activo TINYINT(1) NOT NULL DEFAULT 1,
+                                    fecha_creacion DATETIME DEFAULT CURRENT_TIMESTAMP,
+                                    fecha_actualizacion DATETIME NULL DEFAULT NULL
 );
 
 -- Subcategorías (pertenecen a una categoría)
 CREATE TABLE subcategoria_producto (
-                               id BIGINT AUTO_INCREMENT PRIMARY KEY,
-                               categoria_producto_id BIGINT NOT NULL,
-                               nombre VARCHAR(80) NOT NULL,
-                               activo TINYINT(1) NOT NULL DEFAULT 1,
-                               CONSTRAINT fk_subcategoria_categoria_producto
-                                   FOREIGN KEY (categoria_producto_id) REFERENCES categoria_producto(id),
-                               CONSTRAINT uq_subcategoria_producto UNIQUE (categoria_producto_id, nombre)
+                                       id BIGINT AUTO_INCREMENT PRIMARY KEY,
+                                       categoria_producto_id BIGINT NOT NULL,
+                                       nombre VARCHAR(80) NOT NULL,
+                                       activo TINYINT(1) NOT NULL DEFAULT 1,
+                                       fecha_creacion DATETIME DEFAULT CURRENT_TIMESTAMP,
+                                       fecha_actualizacion DATETIME NULL DEFAULT NULL,
+                                       CONSTRAINT fk_subcategoria_categoria_producto
+                                           FOREIGN KEY (categoria_producto_id) REFERENCES categoria_producto(id),
+                                       CONSTRAINT uq_subcategoria_producto UNIQUE (categoria_producto_id, nombre)
 );
 -- Productos (publicación)
 CREATE TABLE productos (
@@ -21,12 +25,11 @@ CREATE TABLE productos (
                            usuario_id BIGINT NOT NULL,
                            categoria_producto_id BIGINT NOT NULL,
                            subcategoria_producto_id BIGINT NULL,
-
                            titulo VARCHAR(120) NOT NULL,
                            descripcion TEXT NOT NULL,
                            activo TINYINT(1) NOT NULL DEFAULT 1,
-                           fecha_creacion DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-
+                           fecha_creacion DATETIME DEFAULT CURRENT_TIMESTAMP,
+                           fecha_actualizacion DATETIME NULL DEFAULT NULL,
                            CONSTRAINT fk_producto_usuario
                                FOREIGN KEY (usuario_id) REFERENCES usuario(id),
 
@@ -43,7 +46,8 @@ CREATE TABLE producto_imagenes (
                                    producto_id BIGINT NOT NULL,
                                    url VARCHAR(500) NOT NULL,
                                    orden INT NOT NULL,
-
+                                   fecha_creacion DATETIME DEFAULT CURRENT_TIMESTAMP,
+                                   fecha_actualizacion DATETIME NULL DEFAULT NULL,
                                    CONSTRAINT fk_imagen_producto
                                        FOREIGN KEY (producto_id) REFERENCES productos(id) ON DELETE CASCADE,
 

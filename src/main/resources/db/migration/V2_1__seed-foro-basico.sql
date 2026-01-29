@@ -1,9 +1,3 @@
-
-INSERT INTO perfil (nombre) VALUES
-                                ('USER'),
-                                ('ADMIN');
-
-
 INSERT INTO categoria (nombre)
 VALUES
     ('Programación'),

@@ -149,7 +149,7 @@ class TopicoServiceTest {
                         1L, "T", LocalDateTime.now(),
                         "A", 1L, "C", 2L, "Cat",
                         StatusTopico.ACTIVO,
-                        0L, null, null
+                        0L, null
                 )),
                 pageable,
                 1
@@ -384,7 +384,7 @@ class TopicoServiceTest {
                         1L, "T", LocalDateTime.now(),
                         "A", 1L, "C", 2L, "Cat",
                         StatusTopico.ACTIVO,
-                        0L, null, null
+                        0L, null
                 )),
                 pageable,
                 1

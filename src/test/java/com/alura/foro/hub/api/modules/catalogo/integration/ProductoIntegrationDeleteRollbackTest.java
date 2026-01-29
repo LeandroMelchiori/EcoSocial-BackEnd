@@ -32,9 +32,7 @@ import java.util.stream.Collectors;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest
@@ -50,7 +48,7 @@ class ProductoIntegrationDeleteRollbackTest {
     @Autowired CategoriaCatalogoRepository categoriaRepository;
     @Autowired SubCategoriaCatalogoRepository subcategoriaRepository;
 
-    // 👇 IMPORTANTÍSIMO: Spy para forzar falla DB en el delete
+    // Spy para forzar falla DB en el delete
     @MockitoSpyBean
     ProductoRepository productoRepository;
 
@@ -68,12 +66,14 @@ class ProductoIntegrationDeleteRollbackTest {
         uploadsPath = Paths.get(uploadsRoot).toAbsolutePath().normalize();
         purgeDir(uploadsPath);
 
-        // Usuario
+        // Usuario (NO hace falta username; vamos a autenticar con ID)
         usuario = new Usuario();
-        usuario.setUsername("user_test_" + UUID.randomUUID());
-        usuario.setEmail(usuario.getUsername() + "@mail.com");
-        usuario.setNombre("User Test");
+        usuario.setNombre("User");
+        usuario.setApellido("Test");
+        usuario.setDni(UUID.randomUUID().toString().replaceAll("\\D", "").substring(0, 8));
+        usuario.setEmail("user_test_" + UUID.randomUUID() + "@mail.com");
         usuario.setPassword("123456");
+
         usuario = usuarioRepository.save(usuario);
 
         // Categoria
@@ -84,10 +84,9 @@ class ProductoIntegrationDeleteRollbackTest {
         // Subcategoria
         subcategoria = new Subcategoria();
         subcategoria.setNombre("Celulares");
-        subcategoria.setCategoria(categoria); // ajustá si tu setter se llama distinto
+        subcategoria.setCategoria(categoria);
         subcategoria = subcategoriaRepository.save(subcategoria);
 
-        // Limpio stubs entre tests (por las dudas)
         Mockito.reset(productoRepository);
     }
 
@@ -109,18 +108,17 @@ class ProductoIntegrationDeleteRollbackTest {
         assertThat(imagenesAntes).hasSize(2);
 
         // 2) Forzar falla DB cuando el service intente borrar en repo
-        // (cubrimos deleteById y delete(entity), no sabemos cuál usa tu service)
         Mockito.doThrow(new RuntimeException("FALLA_FORZADA_DB_DELETE"))
                 .when(productoRepository).deleteById(productoId);
 
         Mockito.doThrow(new RuntimeException("FALLA_FORZADA_DB_DELETE"))
                 .when(productoRepository).delete(any());
 
-        // 3) Ejecutar DELETE -> debe dar 5xx (porque explotó adentro)
+        // 3) Ejecutar DELETE -> debe dar 5xx
         mvc.perform(
                         delete("/catalogo/productos/{id}", productoId)
-                                // auth “mock”: importante que getName() sea tu username
-                                .with(user(usuario.getUsername()).roles("ADMIN"))
+                                // IMPORTANTE: autenticamos con el ID como "username" (auth.getName())
+                                .with(user(String.valueOf(usuario.getId())).roles("ADMIN"))
                 )
                 .andExpect(status().is5xxServerError());
 
@@ -129,7 +127,7 @@ class ProductoIntegrationDeleteRollbackTest {
                 .as("Si falla DB, NO debería borrarse el producto")
                 .isTrue();
 
-        // 5) Assert FS: imágenes siguen existiendo (NO se pierden)
+        // 5) Assert FS: imágenes siguen existiendo
         List<Path> imagenesDespues = listarArchivos(productoDir);
         assertThat(imagenesDespues).hasSize(2);
 
@@ -139,7 +137,7 @@ class ProductoIntegrationDeleteRollbackTest {
                     .isTrue();
         }
 
-        // 6) Assert NO quedó basura en temp/trash (si tu implementación usa esos dirs)
+        // 6) Assert NO quedó basura en temp/trash (si existen)
         Path tempDir = uploadsPath.resolve("temp");
         if (Files.exists(tempDir)) {
             List<Path> tempFiles = Files.walk(tempDir)
@@ -156,14 +154,14 @@ class ProductoIntegrationDeleteRollbackTest {
             assertThat(trashFiles).isEmpty();
         }
 
-        // 7) sanity: GET sigue respondiendo OK (el recurso vive)
+        // 7) sanity: GET sigue OK
         mvc.perform(get("/catalogo/productos/{id}", productoId))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(productoId));
     }
 
     // -------------------------
-    // helpers (igual estilo al update test)
+    // helpers
     // -------------------------
 
     private Long crearProductoConImagenes(int cantidadImgs) throws Exception {
@@ -197,8 +195,7 @@ class ProductoIntegrationDeleteRollbackTest {
             ));
         }
 
-        // auth mock
-        builder.with(user(usuario.getUsername()).roles("ADMIN"))
+        builder.with(user(String.valueOf(usuario.getId())).roles("ADMIN"))
                 .contentType(MediaType.MULTIPART_FORM_DATA);
 
         var result = mvc.perform(builder)

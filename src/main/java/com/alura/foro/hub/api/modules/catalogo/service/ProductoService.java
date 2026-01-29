@@ -14,8 +14,6 @@ import jakarta.persistence.PersistenceContext;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionSynchronization;
@@ -77,19 +75,21 @@ public class ProductoService {
             }
         }
 
-        if (imagenes != null) {
-            if (imagenes.size() > MAX_IMGS)
-                throw new BadRequestException("Máximo " + MAX_IMGS + " imágenes");
+        if (imagenes == null || imagenes.stream().allMatch(f -> f == null || f.isEmpty())) {
+            throw new BadRequestException("Debés subir al menos 1 imagen para publicar el producto");
+        }
 
-            for (MultipartFile f : imagenes) {
-                if (f == null || f.isEmpty()) continue;
-                if (f.getSize() > MAX_SIZE)
-                    throw new BadRequestException("Imagen supera 5MB");
+        if (imagenes.size() > MAX_IMGS)
+            throw new BadRequestException("Máximo " + MAX_IMGS + " imágenes");
 
-                String ct = f.getContentType();
-                if (ct == null || !(ct.equals("image/jpeg") || ct.equals("image/png") || ct.equals("image/webp"))) {
-                    throw new BadRequestException("Tipo de imagen no permitido (solo jpg/png/webp)");
-                }
+        for (MultipartFile f : imagenes) {
+            if (f == null || f.isEmpty()) continue;
+            if (f.getSize() > MAX_SIZE)
+                throw new BadRequestException("Imagen supera 5MB");
+
+            String ct = f.getContentType();
+            if (ct == null || !(ct.equals("image/jpeg") || ct.equals("image/png") || ct.equals("image/webp"))) {
+                throw new BadRequestException("Tipo de imagen no permitido (solo jpg/png/webp)");
             }
         }
 
@@ -103,23 +103,21 @@ public class ProductoService {
 
         p = productoRepository.save(p);
 
-        if (imagenes != null) {
-            int orden = 1;
-            for (MultipartFile f : imagenes) {
-                if (f == null || f.isEmpty()) continue;
+        int orden = 1;
+        for (MultipartFile f : imagenes) {
+            if (f == null || f.isEmpty()) continue;
 
-                String url = storageService.saveProductImage(p.getId(), f, orden);
+            String url = storageService.saveProductImage(p.getId(), f, orden);
 
-                ProductoImagen img = new ProductoImagen();
-                img.setProducto(p);
-                img.setOrden(orden);
-                img.setUrl(url);
+            ProductoImagen img = new ProductoImagen();
+            img.setProducto(p);
+            img.setOrden(orden);
+            img.setUrl(url);
 
-                p.getImagenes().add(img);
-                orden++;
-            }
-            p = productoRepository.save(p);
+            p.getImagenes().add(img);
+            orden++;
         }
+        p = productoRepository.save(p);
 
         return ProductoMapper.toDetalle(p, storageService);
 
@@ -138,7 +136,7 @@ public class ProductoService {
         validarPermisoProducto(p, userId);
         validarImagenes(imagenes);
 
-        int existentes = (int) p.getImagenes().stream().count();
+        int existentes = p.getImagenes().size();
         int nuevasValidas = (int) imagenes.stream().filter(f -> f != null && !f.isEmpty()).count();
 
         if (existentes + nuevasValidas > MAX_IMGS) {

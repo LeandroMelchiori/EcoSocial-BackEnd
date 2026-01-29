@@ -71,14 +71,14 @@ class TopicoRepositoryTest {
     }
 
     @Test
-    void findByAutorUsername() {
+    void findByAutorEmail() {
         var t1 = persistTopico("A", "M1", autor, curso, StatusTopico.ACTIVO, LocalDateTime.now());
         persistTopico("B", "M2", autor2, curso, StatusTopico.ACTIVO, LocalDateTime.now());
 
-        var res = topicoRepository.findByAutorUsername("autor1");
+        var res = topicoRepository.findByAutorEmail("autor1@test.com");
 
         assertThat(res).extracting(Topico::getId).contains(t1.getId());
-        assertThat(res).allMatch(t -> t.getAutor().getUsername().equals("autor1"));
+        assertThat(res).allMatch(t -> t.getAutor().getEmail().equals("autor1@test.com"));
     }
 
     @Test
@@ -165,16 +165,20 @@ class TopicoRepositoryTest {
         assertThat(t.getCurso().getNombre()).isNotBlank();
         assertThat(t.getCurso().getCategoria().getNombre()).isNotBlank();
         assertThat(t.getRespuestas()).hasSize(1);
-        assertThat(t.getRespuestas().get(0).getAutor().getUsername()).isEqualTo("autor2");
+
+        // ✅ NO username: el identificador real es email/dni
+        assertThat(t.getRespuestas().get(0).getAutor().getEmail()).isEqualTo(emailDesde("autor2"));
     }
 
     // ------------------ helpers ------------------
 
-    private Usuario persistUsuario(String username, String nombre) {
+    private Usuario persistUsuario(String login, String nombre) {
         var u = new Usuario();
-        u.setUsername(username);
         u.setNombre(nombre);
-        // setear mínimos (email, password, etc.) según tu entidad
+        u.setApellido("Test");
+        u.setDni(dniDesde(login));
+        u.setEmail(emailDesde(login));
+        u.setPassword("123");
         return em.persistAndFlush(u);
     }
 
@@ -217,6 +221,17 @@ class TopicoRepositoryTest {
         AuditorAware<Long> auditorProvider() {
             return () -> Optional.of(1L);
         }
+    }
+
+    private String emailDesde(String login) {
+        if (login == null || login.isBlank()) return "user@test.com";
+        return login.contains("@") ? login : login + "@test.com";
+    }
+
+    private String dniDesde(String login) {
+        if (login != null && login.matches("\\d{7,20}")) return login;
+        int base = Math.abs((login == null ? "user" : login).hashCode());
+        return String.format("%08d", base % 100_000_000);
     }
 }
 

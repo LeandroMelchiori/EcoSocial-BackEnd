@@ -1,0 +1,77 @@
+name: API Tests (Docker Compose + Postman CLI)
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+
+jobs:
+  test-api:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Create .env from GitHub Secrets
+        run: |
+          cat <<'EOF' > .env
+          # ---------- APP ----------
+          SPRING_PROFILES_ACTIVE=docker
+          API_SECURITY_SECRET=${{ secrets.API_SECURITY_SECRET }}
+          APP_RATELIMIT_ENABLED=${{ secrets.APP_RATELIMIT_ENABLED }}
+
+          # ---------- MYSQL ----------
+          MYSQL_DATABASE=${{ secrets.MYSQL_DATABASE }}
+          MYSQL_USER=${{ secrets.MYSQL_USER }}
+          MYSQL_PASSWORD=${{ secrets.MYSQL_PASSWORD }}
+          MYSQL_ROOT_PASSWORD=${{ secrets.MYSQL_ROOT_PASSWORD }}
+
+          # ---------- MinIO ----------
+          MINIO_ROOT_USER=${{ secrets.MINIO_ROOT_USER }}
+          MINIO_ROOT_PASSWORD=${{ secrets.MINIO_ROOT_PASSWORD }}
+          MINIO_ENDPOINT=http://minio:9000
+          MINIO_ACCESS_KEY=${{ secrets.MINIO_ROOT_USER }}
+          MINIO_SECRET_KEY=${{ secrets.MINIO_ROOT_PASSWORD }}
+          MINIO_BUCKET=${{ secrets.MINIO_BUCKET }}
+          EOF
+
+      - name: Start stack
+        run: docker compose up -d --build
+
+      - name: Wait for API (Actuator)
+        run: |
+          echo "Waiting for API..."
+          for i in {1..90}; do
+            if curl -sSf http://localhost:8080/actuator/health > /dev/null; then
+              echo "API is up!"
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "API did not become ready in time"
+          docker compose logs api
+          exit 1
+
+      - name: Install Postman CLI
+        run: |
+          curl -o- "https://dl-cli.pstmn.io/install/unix.sh" | sh
+          postman --version
+
+      - name: Login (API Key)
+        env:
+          POSTMAN_API_KEY: ${{ secrets.POSTMAN_API_KEY }}
+        run: postman login --with-api-key "$POSTMAN_API_KEY"
+
+      - name: Run Postman collection
+        run: |
+          postman collection run 38883854-3d510d9f-20e6-4b36-9ecb-dad5324b831a \
+            -e 38883854-739a5e69-3fc2-45c4-a6b7-05dd2381f298
+
+      - name: Logs on failure
+        if: failure()
+        run: docker compose logs
+
+      - name: Stop stack
+        if: always()
+        run: docker compose down -v

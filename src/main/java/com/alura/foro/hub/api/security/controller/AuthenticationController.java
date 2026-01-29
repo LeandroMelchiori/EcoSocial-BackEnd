@@ -70,17 +70,15 @@ public class AuthenticationController {
     )
     @PostMapping("/login")
     public ResponseEntity<DatosJWTToken> authenticateUser(
-            @RequestBody @Valid UsuarioAuthenticateData userAuthenticateData) {
+            @RequestBody @Valid UsuarioAuthenticateData dto) {
 
         Authentication authToken =
-                new UsernamePasswordAuthenticationToken(
-                        userAuthenticateData.username(),
-                        userAuthenticateData.password()
-                );
+                new UsernamePasswordAuthenticationToken(dto.identificador(), dto.password());
 
         var authenticatedUser = authenticationManager.authenticate(authToken);
         var JWTtoken = tokenService.generateToken((Usuario) authenticatedUser.getPrincipal());
 
         return ResponseEntity.ok(new DatosJWTToken(JWTtoken));
     }
+
 }

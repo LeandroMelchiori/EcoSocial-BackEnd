@@ -62,8 +62,7 @@ class RespuestaHijaControllerTest {
                         10L,
                         "Estoy de acuerdo",
                         "Sacha",
-                        LocalDateTime.parse("2025-12-18T19:10:00"),
-                        false
+                        LocalDateTime.parse("2025-12-18T19:10:00")
                 )
         );
 
@@ -75,8 +74,8 @@ class RespuestaHijaControllerTest {
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$[0].id").value(10))
                 .andExpect(jsonPath("$[0].mensaje").value("Estoy de acuerdo"))
-                .andExpect(jsonPath("$[0].autorNombre").value("Sacha"))
-                .andExpect(jsonPath("$[0].editado").value(false));
+                .andExpect(jsonPath("$[0].autorNombre").value("Sacha"));
+
     }
 
     @Test
@@ -90,8 +89,7 @@ class RespuestaHijaControllerTest {
                 10L,
                 "Estoy de acuerdo",
                 "Sacha",
-                LocalDateTime.parse("2025-12-18T19:10:00"),
-                false
+                LocalDateTime.parse("2025-12-18T19:10:00")
         );
 
         Mockito.when(respuestaHijaService.crear(
@@ -110,8 +108,7 @@ class RespuestaHijaControllerTest {
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.id").value(10))
                 .andExpect(jsonPath("$.mensaje").value("Estoy de acuerdo"))
-                .andExpect(jsonPath("$.autorNombre").value("Sacha"))
-                .andExpect(jsonPath("$.editado").value(false));
+                .andExpect(jsonPath("$.autorNombre").value("Sacha"));
     }
 
     @Test
@@ -125,8 +122,7 @@ class RespuestaHijaControllerTest {
                 hijaId,
                 "Actualizado",
                 "Sacha",
-                LocalDateTime.parse("2025-12-18T19:10:00"),
-                true
+                LocalDateTime.parse("2025-12-18T19:10:00")
         );
 
         Mockito.when(respuestaHijaService.actualizar(
@@ -144,8 +140,7 @@ class RespuestaHijaControllerTest {
                         .principal(auth))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(10))
-                .andExpect(jsonPath("$.mensaje").value("Actualizado"))
-                .andExpect(jsonPath("$.editado").value(true));
+                .andExpect(jsonPath("$.mensaje").value("Actualizado"));
     }
 
     @Test

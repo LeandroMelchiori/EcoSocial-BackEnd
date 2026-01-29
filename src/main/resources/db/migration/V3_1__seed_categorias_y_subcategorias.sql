@@ -1,10 +1,10 @@
 INSERT INTO categoria_producto (nombre, activo) VALUES
-                                                    ('Tecnología', 1),
-                                                    ('Hogar', 1),
-                                                    ('Servicios', 1),
-                                                    ('Indumentaria', 1),
-                                                    ('Artesanías', 1),
-                                                    ('Educación', 1);
+    ('Tecnología', 1),
+    ('Hogar', 1),
+    ('Servicios', 1),
+    ('Indumentaria', 1),
+    ('Artesanías', 1),
+    ('Educación', 1);
 
 INSERT INTO subcategoria_producto (categoria_producto_id, nombre, activo)
 VALUES

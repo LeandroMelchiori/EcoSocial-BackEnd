@@ -5,13 +5,11 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.time.LocalDateTime;
-
 @Entity
 @Getter
 @Setter
 @Table(name = "respuesta_hija")
-public class RespuestaHija extends AuditableEntity {
+public class RespuestaHija extends BaseEntity{
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -27,16 +25,4 @@ public class RespuestaHija extends AuditableEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "autor_id", nullable = false)
     private Usuario autor;
-
-    @Column(name = "fecha_creacion", nullable = false)
-    private LocalDateTime fechaCreacion = LocalDateTime.now();
-
-    @Column(nullable = false)
-    private Boolean editado = false;
-
-    @PrePersist
-    void prePersist() {
-        if (fechaCreacion == null) fechaCreacion = LocalDateTime.now();
-        if (editado == null) editado = false;
-    }
 }

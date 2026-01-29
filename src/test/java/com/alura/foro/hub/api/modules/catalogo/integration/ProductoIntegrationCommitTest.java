@@ -63,9 +63,10 @@ class ProductoIntegrationCommitTest {
     @BeforeEach
     void setup() {
         usuario = new Usuario();
-        usuario.setNombre("Sacha Test");
+        usuario.setNombre("Sacha");
+        usuario.setApellido("Test");
+        usuario.setDni("12345678"); // o uno random, pero que sea numérico y único si corrés varios tests
         usuario.setEmail("sacha.commit@mail.com");
-        usuario.setUsername("sacha_commit");
         usuario.setPassword("123456");
         usuario = usuarioRepository.save(usuario);
 

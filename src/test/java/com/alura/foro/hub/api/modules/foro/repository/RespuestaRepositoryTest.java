@@ -43,11 +43,12 @@ class RespuestaRepositoryTest {
 
     // ========= Helpers =========
 
-    private Usuario crearUsuario(String username, String nombre) {
+    private Usuario crearUsuario(String login, String nombre) {
         Usuario u = new Usuario();
-        u.setUsername(username);
         u.setNombre(nombre);
-        u.setEmail(username + "@mail.com");
+        u.setApellido("Test");
+        u.setDni(dniDesde(login));
+        u.setEmail(emailDesde(login));
         u.setPassword("123456");
         em.persist(u);
         return u;
@@ -232,5 +233,19 @@ class RespuestaRepositoryTest {
         assertThat(
                 sols.stream().map(Respuesta::getMensaje).toList()
         ).containsExactlyInAnyOrder("S1", "S2");
+    }
+
+    // =========================
+    //         HELPERS
+    // =========================
+    private String emailDesde(String login) {
+        if (login == null || login.isBlank()) return "user@test.com";
+        return login.contains("@") ? login : login + "@test.com";
+    }
+
+    private String dniDesde(String login) {
+        if (login != null && login.matches("\\d{7,20}")) return login;
+        int base = Math.abs((login == null ? "user" : login).hashCode());
+        return String.format("%08d", base % 100_000_000);
     }
 }

@@ -48,8 +48,8 @@ class RespuestaHijaIntegrationTest {
     void setup() {
         fx = new ForoHubFixtures(usuarioRepository, topicoRepository, respuestaRepository, respuestaHijaRepository);
 
-        tester = fx.usuario("tester");
-        Usuario intruso = fx.usuario("intruso");
+        tester = nuevoUsuario("Tester", "User", "11111111", "tester@test.com", "123456");
+        var intruso = nuevoUsuario("Intruso", "User", "22222222", "intruso@test.com", "123456");
 
         var topico = fx.topico(tester);
         topicoId = topico.getId();
@@ -61,8 +61,18 @@ class RespuestaHijaIntegrationTest {
         respuestaHijaId = hija.getId();
     }
 
+    private Usuario nuevoUsuario(String nombre, String apellido, String dni, String email, String rawPass) {
+        var u = new Usuario();
+        u.setNombre(nombre);
+        u.setApellido(apellido);
+        u.setDni(dni);
+        u.setEmail(email);
+        u.setPassword(passwordEncoder.encode(rawPass));
+        return usuarioRepository.save(u);
+    }
+
     @WithUserDetails(
-            value = "tester",
+            value = "tester@test.com",
             userDetailsServiceBeanName = "authenticationService",
             setupBefore = TestExecutionEvent.TEST_EXECUTION
     )
@@ -86,7 +96,7 @@ class RespuestaHijaIntegrationTest {
     }
 
     @WithUserDetails(
-            value = "tester",
+            value = "tester@test.com",
             userDetailsServiceBeanName = "authenticationService",
             setupBefore = TestExecutionEvent.TEST_EXECUTION
     )
@@ -125,7 +135,7 @@ class RespuestaHijaIntegrationTest {
 
     @Test
     @WithUserDetails(
-            value = "intruso",
+            value = "intruso@test.com",
             userDetailsServiceBeanName = "authenticationService",
             setupBefore = TestExecutionEvent.TEST_EXECUTION
     )
@@ -141,7 +151,7 @@ class RespuestaHijaIntegrationTest {
 
     @Test
     @WithUserDetails(
-            value = "tester",
+            value = "intruso@test.com",
             userDetailsServiceBeanName = "authenticationService",
             setupBefore = TestExecutionEvent.TEST_EXECUTION
     )

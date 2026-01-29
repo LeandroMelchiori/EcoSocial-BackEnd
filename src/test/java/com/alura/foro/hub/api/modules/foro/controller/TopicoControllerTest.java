@@ -21,6 +21,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import static org.hamcrest.Matchers.hasSize;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
@@ -39,7 +40,14 @@ class TopicoControllerTest {
     private Authentication authConUsuario(Long id) {
         Usuario u = new Usuario();
         u.setId(id);
-        u.setUsername("user" + id);
+
+        // principal que Spring usa internamente (tu getUsername() devuelve email)
+        u.setEmail("user" + id + "@test.com");
+
+        // si en algún punto tu lógica usa DNI, dejalo cargado también
+        u.setDni(String.format("%08d", id)); // 00000010, 00000099, etc.
+
+        // authorities: si no seteás perfiles, tu getAuthorities() devuelve ROLE_USER (por tu código)
         return new UsernamePasswordAuthenticationToken(u, null, u.getAuthorities());
     }
 
@@ -61,8 +69,7 @@ class TopicoControllerTest {
                 "Economía social",
                 StatusTopico.ACTIVO,
                 1L,
-                LocalDateTime.of(2025, 12, 18, 19, 10, 0),
-                null
+                LocalDateTime.of(2025, 12, 18, 19, 10, 0)
         );
 
         when(topicoService.listar(any(Pageable.class)))
@@ -100,7 +107,6 @@ class TopicoControllerTest {
                 2L,
                 "Economía social",
                 StatusTopico.ACTIVO,
-                null,
                 List.of()
         );
 
@@ -135,7 +141,6 @@ class TopicoControllerTest {
                 "Backend",
                 StatusTopico.ACTIVO,
                 0L,
-                null,
                 null
         );
 
@@ -159,18 +164,18 @@ class TopicoControllerTest {
                 .andExpect(jsonPath("$.content[0].titulo").value("JWT en Spring"))
                 .andExpect(jsonPath("$.totalElements").value(1));
 
-        // opcional pero útil: verificar que armó bien el filtro
+        // verificar que armó bien el filtro
         ArgumentCaptor<TopicoFiltro> captor = ArgumentCaptor.forClass(TopicoFiltro.class);
         verify(topicoService).buscar(captor.capture(), any(Pageable.class));
 
         TopicoFiltro f = captor.getValue();
         // si esto falla, el problema está en parámetros / controller, no en service
-        org.junit.jupiter.api.Assertions.assertEquals("jwt", f.q());
-        org.junit.jupiter.api.Assertions.assertEquals(1L, f.cursoId());
-        org.junit.jupiter.api.Assertions.assertEquals(10L, f.autorId());
-        org.junit.jupiter.api.Assertions.assertEquals(StatusTopico.ACTIVO, f.status());
-        org.junit.jupiter.api.Assertions.assertEquals("spring", f.nombreCurso());
-        org.junit.jupiter.api.Assertions.assertEquals("backend", f.nombreCategoria());
+        assertEquals("jwt", f.q());
+        assertEquals(1L, f.cursoId());
+        assertEquals(10L, f.autorId());
+        assertEquals(StatusTopico.ACTIVO, f.status());
+        assertEquals("spring", f.nombreCurso());
+        assertEquals("backend", f.nombreCategoria());
     }
 
 
@@ -197,7 +202,6 @@ class TopicoControllerTest {
                 2L,
                 "Economía social",
                 StatusTopico.ACTIVO,
-                null,
                 List.of()
         );
 
@@ -257,7 +261,6 @@ class TopicoControllerTest {
                 2L,
                 "Economía social",
                 StatusTopico.ACTIVO,
-                null,
                 List.of()
         );
 

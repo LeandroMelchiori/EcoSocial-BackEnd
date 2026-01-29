@@ -6,2052 +6,36 @@
   },
   "item": [
     {
-      "name": "Circuito Prueba topicos",
-      "item": [
-        {
-          "name": "Usuario - Registro 1",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "id": "d9f2bb49-cbac-4b23-9084-9ae51a64a181",
-                "exec": [
-                  "pm.test(\"Registro con exito -> 201\", () => {\r",
-                  "  pm.expect([201]).to.include(pm.response.code);\r",
-                  "});\r",
-                  "pm.test(\"Usuario ya registrado -> 409\", () => {\r",
-                  "  pm.expect([409]).to.include(pm.response.code);\r",
-                  "});\r",
-                  ""
-                ],
-                "type": "text/javascript",
-                "packages": {},
-                "requests": {}
-              }
-            },
-            {
-              "listen": "prerequest",
-              "script": {
-                "id": "39f369fd-1582-49ce-932a-d5846aaa05e0",
-                "exec": [
-                  "user1 = \"user1\"\r",
-                  "pm.environment.set(\"usuario_tag\", user1);"
-                ],
-                "type": "text/javascript",
-                "packages": {},
-                "requests": {}
-              }
-            }
-          ],
-          "id": "18f07dcf-ebcd-4614-8e59-84fbca892d74",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "accept",
-                "value": "*/*"
-              },
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\r\n  \"nombre\": \"{{usuario_tag}}\",\r\n  \"email\": \"{{usuario_tag}}@gmail.com\",\r\n  \"password\": \"{{usuario_tag}}\",\r\n  \"username\": \"{{usuario_tag}}\"\r\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{baseUrl}}/usuarios",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "usuarios"
-              ]
-            },
-            "description": "Generated from cURL: curl -X 'POST' \\\r\n  'http://localhost:8080/usuarios' \\\r\n  -H 'accept: */*' \\\r\n  -H 'Content-Type: application/json' \\\r\n  -d '{\r\n  \"nombre\": \"Sacha Melchiori\",\r\n  \"email\": \"leandromelchiori@gmail.com\",\r\n  \"password\": \"sacha122\",\r\n  \"username\": \"eldelfin95\"\r\n}'"
-          },
-          "response": []
-        },
-        {
-          "name": "Login Topico1",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "id": "1ed1ae0f-c5f2-4f1d-a721-5e7cbade474b",
-                "exec": [
-                  "const json = pm.response.json();\r",
-                  "pm.environment.set(\"token\", json.token);\r",
-                  "console.log(\"Token actualizado:\", json.token);\r",
-                  "pm.test(\"Login correcto -> 200\", () => {\r",
-                  "  pm.expect([200]).to.include(pm.response.code);\r",
-                  "});\r",
-                  ""
-                ],
-                "type": "text/javascript",
-                "packages": {},
-                "requests": {}
-              }
-            },
-            {
-              "listen": "prerequest",
-              "script": {
-                "id": "016b644a-0534-4448-98f4-f2957c30acca",
-                "exec": [
-                  "user1 = \"user1\"\r",
-                  "pm.environment.set(\"usuario_tag\", user1);"
-                ],
-                "type": "text/javascript",
-                "packages": {},
-                "requests": {}
-              }
-            }
-          ],
-          "id": "86b86164-1c1b-4ddf-88e7-f1e258c7cb51",
-          "request": {
-            "auth": {
-              "type": "noauth"
-            },
-            "method": "POST",
-            "header": [
-              {
-                "key": "accept",
-                "value": "*/*"
-              },
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\r\n    \"username\": \"{{usuario_tag}}\",\r\n    \"password\": \"{{usuario_tag}}\"\r\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{baseUrl}}/auth/login",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "auth",
-                "login"
-              ]
-            },
-            "description": "Generated from cURL: curl -X 'POST' \\\r\n  'http://localhost:8080/auth/login' \\\r\n  -H 'accept: */*' \\\r\n  -H 'Content-Type: application/json' \\\r\n  -d '{\r\n    \"username\": \"eldelfin95\",\r\n    \"password\": \"sacha122\"\r\n}'\r\n"
-          },
-          "response": []
-        },
-        {
-          "name": "Topico - Crear",
-          "event": [
-            {
-              "listen": "prerequest",
-              "script": {
-                "id": "58949bd8-60ad-4eab-bc8d-b2c08f2990ea",
-                "exec": [
-                  "// Iteración 1..3 (Runner controla que el request se ejecute 3 veces)\r",
-                  "let iter = pm.environment.get(\"iter\");\r",
-                  "iter = iter ? Number(iter) : 1;\r",
-                  "\r",
-                  "// Cursos a usar por iteración (cambiá los IDs a los que vos tengas)\r",
-                  "const cursos = [1, 2, 3];\r",
-                  "\r",
-                  "// si iter se fue de rango, lo reiniciamos (por si corrés varias veces)\r",
-                  "if (iter < 1 || iter > cursos.length) iter = 1;\r",
-                  "\r",
-                  "pm.environment.set(\"iter\", iter);\r",
-                  "pm.environment.set(\"cursoId\", cursos[iter - 1]);\r",
-                  "\r",
-                  "// Inicializar array para guardar IDs creados por este usuario (si no existe)\r",
-                  "const key = `topicoIds_${pm.environment.get(\"usuario_tag\") || \"user\"}`;\r",
-                  "if (!pm.environment.get(key)) {\r",
-                  "  pm.environment.set(key, JSON.stringify([]));\r",
-                  "}\r",
-                  ""
-                ],
-                "type": "text/javascript",
-                "packages": {},
-                "requests": {}
-              }
-            },
-            {
-              "listen": "test",
-              "script": {
-                "id": "85f65693-c021-4bc0-914d-b8cb526962c2",
-                "exec": [
-                  "pm.test(\"Crear tópico OK (201)\", () => {\r",
-                  "  pm.expect(pm.response.code).to.eql(201);\r",
-                  "});\r",
-                  "\r",
-                  "const json = pm.response.json();\r",
-                  "const id = json.id ?? json.data?.id;\r",
-                  "\r",
-                  "\r",
-                  "pm.test(\"Devuelve id\", () => {\r",
-                  "  pm.expect(id).to.exist;\r",
-                  "});\r",
-                  "\r",
-                  "// Guardar \"último creado\"\r",
-                  "pm.environment.set(\"topicoId\", String(id));\r",
-                  "\r",
-                  "// Guardar lista de IDs por usuario_tag\r",
-                  "const usuarioTag = pm.environment.get(\"usuario_tag\") || \"user\";\r",
-                  "const key = `topicoIds_${usuarioTag}`;\r",
-                  "\r",
-                  "let arr = [];\r",
-                  "try {\r",
-                  "  arr = JSON.parse(pm.environment.get(key) || \"[]\");\r",
-                  "} catch (e) {\r",
-                  "  arr = [];\r",
-                  "}\r",
-                  "\r",
-                  "arr.push(id);\r",
-                  "pm.environment.set(key, JSON.stringify(arr));\r",
-                  "\r",
-                  "// Avanzar iteración para el próximo request del loop\r",
-                  "const iter = Number(pm.environment.get(\"iter\") || 1);\r",
-                  "pm.environment.set(\"iter\", iter + 1);\r",
-                  "\r",
-                  ""
-                ],
-                "type": "text/javascript",
-                "packages": {},
-                "requests": {}
-              }
-            }
-          ],
-          "id": "2166f49b-db09-4b29-8a29-d96f6dd8de1c",
-          "request": {
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{token}}",
-                  "type": "string"
-                }
-              ]
-            },
-            "method": "POST",
-            "header": [
-              {
-                "key": "accept",
-                "value": "*/*"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJmb3JvIGh1YiIsInN1YiI6ImxtZWxjaGlvcmkiLCJpZCI6MiwiZXhwIjoxNzY1NDU3NjYzfQ.Dro16PTrk-g68dxbK1n96Z2h4LfofOfBwzWUXHkibJ0"
-              },
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"titulo\": \"Topico {{usuario_tag}} #{{iter}}\",\n  \"mensaje\": \"Creado por {{usuario_tag}} en iteración {{iter}}\",\n  \"cursoId\": 4\n}\n",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{baseUrl}}/topicos",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "topicos"
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Topico - Detalle con respuesta",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "id": "7529e3a1-9467-4c42-aa3b-fb0cc10a68ed",
-                "exec": [
-                  "pm.test(\"Detalle topico-> 200\", () => pm.response.to.have.status(200));\r",
-                  "\r",
-                  "const json = pm.response.json();\r",
-                  "pm.test(\"El id coincide\", () => {\r",
-                  "  const id = json.id ?? json.data?.id;\r",
-                  "  pm.expect(String(id)).to.eql(String(pm.environment.get(\"topicoId\")));\r",
-                  "});"
-                ],
-                "type": "text/javascript",
-                "packages": {},
-                "requests": {}
-              }
-            }
-          ],
-          "id": "41d54a20-daca-44dd-b2a1-b55ed7eb2d72",
-          "request": {
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{token}}",
-                  "type": "string"
-                }
-              ]
-            },
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/topicos/{{topicoId}}",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "topicos",
-                "{{topicoId}}"
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Topico - Busqueda por titulo",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "id": "7529e3a1-9467-4c42-aa3b-fb0cc10a68ed",
-                "exec": [
-                  "pm.test(\"Busqueda por titulo -> 200\", () => pm.response.to.have.status(200));\r",
-                  ""
-                ],
-                "type": "text/javascript",
-                "packages": {},
-                "requests": {}
-              }
-            }
-          ],
-          "id": "f4d7cd66-8d0f-4ac4-93d2-03313d841222",
-          "request": {
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{token}}",
-                  "type": "string"
-                }
-              ]
-            },
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/topicos/buscar?q=edit",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "topicos",
-                "buscar"
-              ],
-              "query": [
-                {
-                  "key": "q",
-                  "value": "edit"
-                }
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Topico - Busqueda por curso",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "id": "7529e3a1-9467-4c42-aa3b-fb0cc10a68ed",
-                "exec": [
-                  "pm.test(\"Busqueda por curso -> 200\", () => pm.response.to.have.status(200));\r",
-                  ""
-                ],
-                "type": "text/javascript",
-                "packages": {},
-                "requests": {}
-              }
-            }
-          ],
-          "id": "9be8ddad-123b-4d74-88e3-e597f431b743",
-          "request": {
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{token}}",
-                  "type": "string"
-                }
-              ]
-            },
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/topicos/buscar?cursoId=5&status=ACTIVO",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "topicos",
-                "buscar"
-              ],
-              "query": [
-                {
-                  "key": "cursoId",
-                  "value": "5"
-                },
-                {
-                  "key": "status",
-                  "value": "ACTIVO"
-                }
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Topico - Busqueda por paginacion Copy",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "id": "7529e3a1-9467-4c42-aa3b-fb0cc10a68ed",
-                "exec": [
-                  "pm.test(\"Busqueda por paginacion -> 200\", () => pm.response.to.have.status(200));\r",
-                  ""
-                ],
-                "type": "text/javascript",
-                "packages": {},
-                "requests": {}
-              }
-            }
-          ],
-          "id": "d29d9fef-f1e1-4033-9b48-61d940162bbb",
-          "request": {
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{token}}",
-                  "type": "string"
-                }
-              ]
-            },
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/topicos/buscar?page=0&size=10&sort=fechaCreacion,desc",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "topicos",
-                "buscar"
-              ],
-              "query": [
-                {
-                  "key": "page",
-                  "value": "0"
-                },
-                {
-                  "key": "size",
-                  "value": "10"
-                },
-                {
-                  "key": "sort",
-                  "value": "fechaCreacion,desc"
-                }
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Topico - Busqueda por rango",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "id": "7529e3a1-9467-4c42-aa3b-fb0cc10a68ed",
-                "exec": [
-                  "pm.test(\"Busqueda por rango -> 200\", () => pm.response.to.have.status(200));\r",
-                  ""
-                ],
-                "type": "text/javascript",
-                "packages": {},
-                "requests": {}
-              }
-            }
-          ],
-          "id": "435a4cb7-3920-4d7a-ab00-787edf45bcb8",
-          "request": {
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{token}}",
-                  "type": "string"
-                }
-              ]
-            },
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/topicos/buscar?desde=2025-12-01T00:00:00&hasta=2025-12-19T23:59:59",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "topicos",
-                "buscar"
-              ],
-              "query": [
-                {
-                  "key": "desde",
-                  "value": "2025-12-01T00:00:00"
-                },
-                {
-                  "key": "hasta",
-                  "value": "2025-12-19T23:59:59"
-                }
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Topico - Prueba error fecha",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "id": "7529e3a1-9467-4c42-aa3b-fb0cc10a68ed",
-                "exec": [
-                  "pm.test(\"Busqueda erronea -> 400\", () => pm.response.to.have.status(400));"
-                ],
-                "type": "text/javascript",
-                "packages": {},
-                "requests": {}
-              }
-            }
-          ],
-          "id": "6029495b-37c1-4965-96bc-373dd41643ef",
-          "request": {
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{token}}",
-                  "type": "string"
-                }
-              ]
-            },
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/topicos/buscar?desde=2025-12-20T00:00:00&hasta=2025-12-01T00:00:00",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "topicos",
-                "buscar"
-              ],
-              "query": [
-                {
-                  "key": "desde",
-                  "value": "2025-12-20T00:00:00"
-                },
-                {
-                  "key": "hasta",
-                  "value": "2025-12-01T00:00:00"
-                }
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Topico - Busqueda nombre curso",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "id": "7529e3a1-9467-4c42-aa3b-fb0cc10a68ed",
-                "exec": [
-                  "pm.test(\"Busqueda por nombreCurso -> 200\", () => pm.response.to.have.status(200));"
-                ],
-                "type": "text/javascript",
-                "packages": {},
-                "requests": {}
-              }
-            }
-          ],
-          "id": "ce0c9320-709f-49c2-abf4-76c2a0a64925",
-          "request": {
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{token}}",
-                  "type": "string"
-                }
-              ]
-            },
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/topicos/buscar?nombreCurso=front",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "topicos",
-                "buscar"
-              ],
-              "query": [
-                {
-                  "key": "nombreCurso",
-                  "value": "front"
-                }
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Topico - Busqueda nombre categoria",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "id": "7529e3a1-9467-4c42-aa3b-fb0cc10a68ed",
-                "exec": [
-                  "pm.test(\"Busqueda por nombreCategoria -> 200\", () => pm.response.to.have.status(200));"
-                ],
-                "type": "text/javascript",
-                "packages": {},
-                "requests": {}
-              }
-            }
-          ],
-          "id": "2db81518-a3a7-499b-90ea-201ff26bf541",
-          "request": {
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{token}}",
-                  "type": "string"
-                }
-              ]
-            },
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/topicos/buscar?nombreCategoria=front",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "topicos",
-                "buscar"
-              ],
-              "query": [
-                {
-                  "key": "nombreCategoria",
-                  "value": "front"
-                }
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Topico - Busqueda combinada titulo + curso",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "id": "7529e3a1-9467-4c42-aa3b-fb0cc10a68ed",
-                "exec": [
-                  "pm.test(\"Busqueda por nombreCategoria -> 200\", () => pm.response.to.have.status(200));"
-                ],
-                "type": "text/javascript",
-                "packages": {},
-                "requests": {}
-              }
-            }
-          ],
-          "id": "9863ac6a-f250-4949-8f16-35d051971c04",
-          "request": {
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{token}}",
-                  "type": "string"
-                }
-              ]
-            },
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/topicos/buscar?q=user&nombreCurso=front&page=0&size=10&sort=fechaCreacion,desc",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "topicos",
-                "buscar"
-              ],
-              "query": [
-                {
-                  "key": "q",
-                  "value": "user"
-                },
-                {
-                  "key": "nombreCurso",
-                  "value": "front"
-                },
-                {
-                  "key": "page",
-                  "value": "0"
-                },
-                {
-                  "key": "size",
-                  "value": "10"
-                },
-                {
-                  "key": "sort",
-                  "value": "fechaCreacion,desc"
-                }
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Topico - Busqueda multiples estados",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "id": "7529e3a1-9467-4c42-aa3b-fb0cc10a68ed",
-                "exec": [
-                  "pm.test(\"Busqueda por nombreCategoria -> 200\", () => pm.response.to.have.status(200));"
-                ],
-                "type": "text/javascript",
-                "packages": {},
-                "requests": {}
-              }
-            }
-          ],
-          "id": "f441b10a-d6f9-4df0-b83e-e85f02826d8d",
-          "request": {
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{token}}",
-                  "type": "string"
-                }
-              ]
-            },
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/topicos/buscar?q=jwt&nombreCurso=dev&page=0&size=10&sort=fechaCreacion,desc",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "topicos",
-                "buscar"
-              ],
-              "query": [
-                {
-                  "key": "q",
-                  "value": "jwt"
-                },
-                {
-                  "key": "nombreCurso",
-                  "value": "dev"
-                },
-                {
-                  "key": "page",
-                  "value": "0"
-                },
-                {
-                  "key": "size",
-                  "value": "10"
-                },
-                {
-                  "key": "sort",
-                  "value": "fechaCreacion,desc"
-                }
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Topico - Busqueda Categoria + rango",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "id": "7529e3a1-9467-4c42-aa3b-fb0cc10a68ed",
-                "exec": [
-                  "pm.test(\"Busqueda por nombreCategoria -> 200\", () => pm.response.to.have.status(200));"
-                ],
-                "type": "text/javascript",
-                "packages": {},
-                "requests": {}
-              }
-            }
-          ],
-          "id": "a8cfe34c-e24f-4ef7-ba72-44808c0656b3",
-          "request": {
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{token}}",
-                  "type": "string"
-                }
-              ]
-            },
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/topicos/buscar?nombreCategoria=backend&desde=2025-01-01T00:00:00&hasta=2025-12-31T23:59:59",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "topicos",
-                "buscar"
-              ],
-              "query": [
-                {
-                  "key": "nombreCategoria",
-                  "value": "backend"
-                },
-                {
-                  "key": "desde",
-                  "value": "2025-01-01T00:00:00"
-                },
-                {
-                  "key": "hasta",
-                  "value": "2025-12-31T23:59:59"
-                }
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Topico - Actualizar",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "id": "8a47f145-bddc-4191-abf7-656e14c08091",
-                "exec": [
-                  "pm.test(\"Editar dueño -> 200\", () => pm.response.to.have.status(200));\r",
-                  ""
-                ],
-                "type": "text/javascript",
-                "packages": {},
-                "requests": {}
-              }
-            }
-          ],
-          "id": "fdc004d9-c328-468f-b02e-dbdf9d7e5702",
-          "request": {
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{token}}",
-                  "type": "string"
-                }
-              ]
-            },
-            "method": "PUT",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "{\r\n  \"titulo\": \"Título editado por {{usuario_tag}}\",\r\n  \"mensaje\": \"Mensaje actualizado por {{usuario_tag}}\",\r\n  \"cursoId\": 5,\r\n  \"status\": \"ACTIVO\"\r\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{baseUrl}}/topicos/{{topicoId}}",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "topicos",
-                "{{topicoId}}"
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Usuario - Registro 2",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "id": "d9f2bb49-cbac-4b23-9084-9ae51a64a181",
-                "exec": [
-                  "pm.test(\"Registro con exito -> 204/200\", () => {\r",
-                  "  pm.expect([201]).to.include(pm.response.code);\r",
-                  "});\r",
-                  "pm.test(\"Usuario ya registrado -> 409\", () => {\r",
-                  "  pm.expect([409]).to.include(pm.response.code);\r",
-                  "});\r",
-                  ""
-                ],
-                "type": "text/javascript",
-                "packages": {},
-                "requests": {}
-              }
-            },
-            {
-              "listen": "prerequest",
-              "script": {
-                "id": "39f369fd-1582-49ce-932a-d5846aaa05e0",
-                "exec": [
-                  "user2 = \"user2\"\r",
-                  "pm.environment.set(\"usuario_tag\", user2);"
-                ],
-                "type": "text/javascript",
-                "packages": {},
-                "requests": {}
-              }
-            }
-          ],
-          "id": "dc3e2a21-9b07-4e10-93f7-ed08a9a70084",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "accept",
-                "value": "*/*"
-              },
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\r\n  \"nombre\": \"{{usuario_tag}}\",\r\n  \"email\": \"{{usuario_tag}}@gmail.com\",\r\n  \"password\": \"{{usuario_tag}}\",\r\n  \"username\": \"{{usuario_tag}}\"\r\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{baseUrl}}/usuarios",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "usuarios"
-              ]
-            },
-            "description": "Generated from cURL: curl -X 'POST' \\\r\n  'http://localhost:8080/usuarios' \\\r\n  -H 'accept: */*' \\\r\n  -H 'Content-Type: application/json' \\\r\n  -d '{\r\n  \"nombre\": \"Sacha Melchiori\",\r\n  \"email\": \"leandromelchiori@gmail.com\",\r\n  \"password\": \"sacha122\",\r\n  \"username\": \"eldelfin95\"\r\n}'"
-          },
-          "response": []
-        },
-        {
-          "name": "Login Topico 2",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "id": "1ed1ae0f-c5f2-4f1d-a721-5e7cbade474b",
-                "exec": [
-                  "const json = pm.response.json();\r",
-                  "pm.environment.set(\"token\", json.token);\r",
-                  "\r",
-                  "console.log(\"Token actualizado:\", json.token);\r",
-                  "pm.test(\"Login correcto -> 200\", () => {\r",
-                  "  pm.expect([200]).to.include(pm.response.code);\r",
-                  "});\r",
-                  ""
-                ],
-                "type": "text/javascript",
-                "packages": {},
-                "requests": {}
-              }
-            },
-            {
-              "listen": "prerequest",
-              "script": {
-                "id": "016b644a-0534-4448-98f4-f2957c30acca",
-                "exec": [
-                  "user2 = \"user2\"\r",
-                  "pm.environment.set(\"usuario_tag\", user2);"
-                ],
-                "type": "text/javascript",
-                "packages": {},
-                "requests": {}
-              }
-            }
-          ],
-          "id": "74783e00-ef87-43d4-9bd6-5cf2aaf066c9",
-          "request": {
-            "auth": {
-              "type": "noauth"
-            },
-            "method": "POST",
-            "header": [
-              {
-                "key": "accept",
-                "value": "*/*"
-              },
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\r\n    \"username\": \"{{usuario_tag}}\",\r\n    \"password\": \"{{usuario_tag}}\"\r\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{baseUrl}}/auth/login",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "auth",
-                "login"
-              ]
-            },
-            "description": "Generated from cURL: curl -X 'POST' \\\r\n  'http://localhost:8080/auth/login' \\\r\n  -H 'accept: */*' \\\r\n  -H 'Content-Type: application/json' \\\r\n  -d '{\r\n    \"username\": \"eldelfin95\",\r\n    \"password\": \"sacha122\"\r\n}'\r\n"
-          },
-          "response": []
-        },
-        {
-          "name": "Topico - Eliminar 2do user",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "id": "ec0ded61-73fe-431f-861c-2ee51bc28e66",
-                "exec": [
-                  "pm.test(\"Debe fallar por falta de permisos -> 403\", () => pm.response.to.have.status(403));\r",
-                  ""
-                ],
-                "type": "text/javascript",
-                "packages": {},
-                "requests": {}
-              }
-            },
-            {
-              "listen": "prerequest",
-              "script": {
-                "id": "3a696ada-c41b-4250-a556-08b3817fe1bb",
-                "exec": [
-                  "const topicoId = pm.environment.get(\"topicoId\");\r",
-                  "pm.environment.set(\"topicoId\", topicoId);\r",
-                  ""
-                ],
-                "type": "text/javascript",
-                "packages": {},
-                "requests": {}
-              }
-            }
-          ],
-          "id": "404146a8-816f-4458-9aa1-a0c80c79d717",
-          "request": {
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{token}}",
-                  "type": "string"
-                }
-              ]
-            },
-            "method": "DELETE",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/topicos/{{topicoId}}",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "topicos",
-                "{{topicoId}}"
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Topico - Actualizar 2",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "id": "8a47f145-bddc-4191-abf7-656e14c08091",
-                "exec": [
-                  "pm.test(\"Debe fallar por falta de permisos -> 403\", () => pm.response.to.have.status(403));\r",
-                  ""
-                ],
-                "type": "text/javascript",
-                "packages": {},
-                "requests": {}
-              }
-            },
-            {
-              "listen": "prerequest",
-              "script": {
-                "id": "1d3573b4-2886-4f29-a923-4d23f8b0ee88",
-                "exec": [
-                  ""
-                ],
-                "type": "text/javascript",
-                "packages": {},
-                "requests": {}
-              }
-            }
-          ],
-          "id": "b13d2378-ddee-4878-ba0a-15141a40da12",
-          "request": {
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{token}}",
-                  "type": "string"
-                }
-              ]
-            },
-            "method": "PUT",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "{\r\n  \"titulo\": \"Título editado por {{usuario_tag}}\",\r\n  \"mensaje\": \"Mensaje actualizado por {{usuario_tag}}\",\r\n  \"cursoId\": 5,\r\n  \"status\": \"ACTIVO\"\r\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{baseUrl}}/topicos/{{topicoId}}",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "topicos",
-                "{{topicoId}}"
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Topicos - Listar",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "id": "22951c7f-eee9-4725-a465-360f9c196fc7",
-                "exec": [
-                  "pm.test(\"Listar topicos -> 200\", () => pm.response.to.have.status(200));\r",
-                  ""
-                ],
-                "type": "text/javascript",
-                "packages": {},
-                "requests": {}
-              }
-            }
-          ],
-          "id": "8fb36e67-77e0-4586-b683-949b1b2c6ce9",
-          "request": {
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{token}}",
-                  "type": "string"
-                }
-              ]
-            },
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/topicos?token",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "topicos"
-              ],
-              "query": [
-                {
-                  "key": "token",
-                  "value": null
-                }
-              ]
-            }
-          },
-          "response": []
-        }
-      ],
-      "id": "c90a0a7e-56b3-427c-bd5d-34730f4b90cb"
-    },
-    {
-      "name": "Respuestas",
-      "item": [
-        {
-          "name": "UsuarioRespuesta1 - Registro",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "id": "d9f2bb49-cbac-4b23-9084-9ae51a64a181",
-                "exec": [
-                  "pm.test(\"Registro con exito -> 201\", () => {\r",
-                  "  pm.expect([201]).to.include(pm.response.code);\r",
-                  "});\r",
-                  "pm.test(\"Usuario ya registrado -> 409\", () => {\r",
-                  "  pm.expect([409]).to.include(pm.response.code);\r",
-                  "});\r",
-                  ""
-                ],
-                "type": "text/javascript",
-                "packages": {},
-                "requests": {}
-              }
-            },
-            {
-              "listen": "prerequest",
-              "script": {
-                "id": "b89a3abc-9d94-4e87-946b-73119792d599",
-                "exec": [
-                  "userRespuesta1 = \"userRespuesta1\"\r",
-                  "pm.environment.set(\"usuario_tag\", userRespuesta1);"
-                ],
-                "type": "text/javascript",
-                "packages": {},
-                "requests": {}
-              }
-            }
-          ],
-          "id": "8bfdc2fe-0f4f-4e48-a58d-178a2ea15f26",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "accept",
-                "value": "*/*"
-              },
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\r\n  \"nombre\": \"{{usuario_tag}}\",\r\n  \"email\": \"{{usuario_tag}}@gmail.com\",\r\n  \"password\": \"{{usuario_tag}}\",\r\n  \"username\": \"{{usuario_tag}}\"\r\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{baseUrl}}/usuarios",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "usuarios"
-              ]
-            },
-            "description": "Generated from cURL: curl -X 'POST' \\\r\n  'http://localhost:8080/usuarios' \\\r\n  -H 'accept: */*' \\\r\n  -H 'Content-Type: application/json' \\\r\n  -d '{\r\n  \"nombre\": \"Sacha Melchiori\",\r\n  \"email\": \"leandromelchiori@gmail.com\",\r\n  \"password\": \"sacha122\",\r\n  \"username\": \"eldelfin95\"\r\n}'"
-          },
-          "response": []
-        },
-        {
-          "name": "Login respuesta1",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "id": "1ed1ae0f-c5f2-4f1d-a721-5e7cbade474b",
-                "exec": [
-                  "const json = pm.response.json();\r",
-                  "pm.environment.set(\"token\", json.token);\r",
-                  "\r",
-                  "console.log(\"Token actualizado:\", json.token);\r",
-                  "pm.test(\"Login correcto -> 200\", () => {\r",
-                  "  pm.expect([200]).to.include(pm.response.code);\r",
-                  "});\r",
-                  ""
-                ],
-                "type": "text/javascript",
-                "packages": {},
-                "requests": {}
-              }
-            },
-            {
-              "listen": "prerequest",
-              "script": {
-                "id": "016b644a-0534-4448-98f4-f2957c30acca",
-                "exec": [
-                  ""
-                ],
-                "type": "text/javascript",
-                "packages": {},
-                "requests": {}
-              }
-            }
-          ],
-          "id": "3d35ba1d-3d49-492d-8068-820ac5b5f5d8",
-          "request": {
-            "auth": {
-              "type": "noauth"
-            },
-            "method": "POST",
-            "header": [
-              {
-                "key": "accept",
-                "value": "*/*"
-              },
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\r\n    \"username\": \"{{usuario_tag}}\",\r\n    \"password\": \"{{usuario_tag}}\"\r\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{baseUrl}}/auth/login",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "auth",
-                "login"
-              ]
-            },
-            "description": "Generated from cURL: curl -X 'POST' \\\r\n  'http://localhost:8080/auth/login' \\\r\n  -H 'accept: */*' \\\r\n  -H 'Content-Type: application/json' \\\r\n  -d '{\r\n    \"username\": \"eldelfin95\",\r\n    \"password\": \"sacha122\"\r\n}'\r\n"
-          },
-          "response": []
-        },
-        {
-          "name": "Respuesta - Crear",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "id": "9108a68f-783f-4dc4-9065-cf385abf589c",
-                "exec": [
-                  "pm.test(\"Crear respuesta OK (201)\", () => {\r",
-                  "  pm.expect(pm.response.code).to.eql(201);\r",
-                  "});\r",
-                  "\r",
-                  "const json = pm.response.json();\r",
-                  "const id = json.id ?? json.data?.id;\r",
-                  "\r",
-                  "\r",
-                  "pm.test(\"Devuelve id\", () => {\r",
-                  "  pm.expect(id).to.exist;\r",
-                  "});\r",
-                  "\r",
-                  "// Guardar \"último creado\"\r",
-                  "pm.environment.set(\"respuestaId\", id);\r",
-                  "\r",
-                  "// Guardar lista de IDs por usuario_tag\r",
-                  "const usuarioTag = pm.environment.get(\"usuario_tag\") || \"user\";\r",
-                  "const key = `respuestaIds_${usuarioTag}`;\r",
-                  "\r",
-                  "let arr = [];\r",
-                  "try {\r",
-                  "  arr = JSON.parse(pm.environment.get(key) || \"[]\");\r",
-                  "} catch (e) {\r",
-                  "  arr = [];\r",
-                  "}\r",
-                  "\r",
-                  "arr.push(id);\r",
-                  "pm.environment.set(key, JSON.stringify(arr));\r",
-                  "\r",
-                  "// Avanzar iteración para el próximo request del loop\r",
-                  "const iter = Number(pm.environment.get(\"iter\") || 1);\r",
-                  "pm.environment.set(\"iter\", iter + 1);\r",
-                  ""
-                ],
-                "type": "text/javascript",
-                "packages": {},
-                "requests": {}
-              }
-            },
-            {
-              "listen": "prerequest",
-              "script": {
-                "id": "fbbeb3ed-e3ca-4167-8352-fd944a7db696",
-                "exec": [
-                  "// Iteración 1..3 (Runner controla que el request se ejecute 3 veces)\r",
-                  "let iter = pm.environment.get(\"iter\");\r",
-                  "iter = iter ? Number(iter) : 1;\r",
-                  "\r",
-                  "// Cursos a usar por iteración (cambiá los IDs a los que vos tengas)\r",
-                  "const cursos = [1, 2, 3];\r",
-                  "\r",
-                  "// si iter se fue de rango, lo reiniciamos (por si corrés varias veces)\r",
-                  "if (iter < 1 || iter > cursos.length) iter = 1;\r",
-                  "\r",
-                  "pm.environment.set(\"iter\", iter);\r",
-                  "\r",
-                  "// Inicializar array para guardar IDs creados por este usuario (si no existe)\r",
-                  "const key = `respuestaIds_${pm.environment.get(\"usuario_tag\") || \"user\"}`;\r",
-                  "if (!pm.environment.get(key)) {\r",
-                  "  pm.environment.set(key, JSON.stringify([]));\r",
-                  "}\r",
-                  ""
-                ],
-                "type": "text/javascript",
-                "packages": {},
-                "requests": {}
-              }
-            }
-          ],
-          "id": "f89d084e-77ac-4aaf-9b59-94d2e5c1feb8",
-          "request": {
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{token}}",
-                  "type": "string"
-                }
-              ]
-            },
-            "method": "POST",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "{\r\n  \"topicoId\": {{topicoId}},\r\n  \"mensaje\": \"Respuesta de {{usuario_tag}}\" \r\n}\r\n",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{baseUrl}}/respuestas",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "respuestas"
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Respuesta - Editar",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "id": "aa50b1b7-18ed-4264-a050-3d274a9dfe25",
-                "exec": [
-                  "pm.test(\"Editar respuesta exitosa -> 200\", () => pm.response.to.have.status(200));"
-                ],
-                "type": "text/javascript",
-                "packages": {},
-                "requests": {}
-              }
-            }
-          ],
-          "id": "237c46ea-bd3c-4949-9877-f5d994ca5927",
-          "request": {
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{token}}",
-                  "type": "string"
-                }
-              ]
-            },
-            "method": "PUT",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "{\r\n  \"mensaje\": \"Respuesta editada por {{usuario_tag}} \"\r\n}\r\n",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{baseUrl}}/respuestas/{{respuestaId}}",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "respuestas",
-                "{{respuestaId}}"
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Respuestas - List por TopicoID",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "id": "e48025cb-a046-4f3b-bb81-c204b9530850",
-                "exec": [
-                  "pm.test(\"Listado de respuestas exitosa -> 200\", () => pm.response.to.have.status(200));"
-                ],
-                "type": "text/javascript",
-                "packages": {},
-                "requests": {}
-              }
-            }
-          ],
-          "id": "97fe2b6b-b0d0-4c3a-bf40-b8c971095573",
-          "request": {
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{token}}",
-                  "type": "string"
-                }
-              ]
-            },
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "http://localhost:8080/respuestas/topico/{{topicoId}}",
-              "protocol": "http",
-              "host": [
-                "localhost"
-              ],
-              "port": "8080",
-              "path": [
-                "respuestas",
-                "topico",
-                "{{topicoId}}"
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "UsuarioRespuesta2 - Registro 2",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "id": "d9f2bb49-cbac-4b23-9084-9ae51a64a181",
-                "exec": [
-                  "pm.test(\"Registro userResp2 con exito -> 201\", () => {\r",
-                  "  pm.expect([201]).to.include(pm.response.code);\r",
-                  "});\r",
-                  "pm.test(\"Usuario ya registrado -> 409\", () => {\r",
-                  "  pm.expect([409]).to.include(pm.response.code);\r",
-                  "});\r",
-                  ""
-                ],
-                "type": "text/javascript",
-                "packages": {},
-                "requests": {}
-              }
-            },
-            {
-              "listen": "prerequest",
-              "script": {
-                "id": "a672417d-8a6f-4dd6-bdef-6a206b810c20",
-                "exec": [
-                  "userRespuesta2 = \"userRespuesta2\"\r",
-                  "pm.environment.set(\"usuario_tag\", userRespuesta2);"
-                ],
-                "type": "text/javascript",
-                "packages": {},
-                "requests": {}
-              }
-            }
-          ],
-          "id": "29043200-8561-4b5c-81c9-64fa8bb2ad1d",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "accept",
-                "value": "*/*"
-              },
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\r\n  \"nombre\": \"{{usuario_tag}}\",\r\n  \"email\": \"{{usuario_tag}}@gmail.com\",\r\n  \"password\": \"{{usuario_tag}}\",\r\n  \"username\": \"{{usuario_tag}}\"\r\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{baseUrl}}/usuarios",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "usuarios"
-              ]
-            },
-            "description": "Generated from cURL: curl -X 'POST' \\\r\n  'http://localhost:8080/usuarios' \\\r\n  -H 'accept: */*' \\\r\n  -H 'Content-Type: application/json' \\\r\n  -d '{\r\n  \"nombre\": \"Sacha Melchiori\",\r\n  \"email\": \"leandromelchiori@gmail.com\",\r\n  \"password\": \"sacha122\",\r\n  \"username\": \"eldelfin95\"\r\n}'"
-          },
-          "response": []
-        },
-        {
-          "name": "Login  respuesta2",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "id": "1ed1ae0f-c5f2-4f1d-a721-5e7cbade474b",
-                "exec": [
-                  "const json = pm.response.json();\r",
-                  "pm.environment.set(\"token\", json.token);\r",
-                  "\r",
-                  "console.log(\"Token actualizado:\", json.token);\r",
-                  "pm.test(\"Login correcto -> 200\", () => {\r",
-                  "  pm.expect([200]).to.include(pm.response.code);\r",
-                  "});\r",
-                  ""
-                ],
-                "type": "text/javascript",
-                "packages": {},
-                "requests": {}
-              }
-            },
-            {
-              "listen": "prerequest",
-              "script": {
-                "id": "016b644a-0534-4448-98f4-f2957c30acca",
-                "exec": [
-                  "userRespuesta2 = \"userRespuesta2\"\r",
-                  "pm.environment.set(\"usuario_tag\", userRespuesta2);"
-                ],
-                "type": "text/javascript",
-                "packages": {},
-                "requests": {}
-              }
-            }
-          ],
-          "id": "a426cb46-3be7-40c2-a3ff-2f95868e4ff1",
-          "request": {
-            "auth": {
-              "type": "noauth"
-            },
-            "method": "POST",
-            "header": [
-              {
-                "key": "accept",
-                "value": "*/*"
-              },
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\r\n    \"username\": \"{{usuario_tag}}\",\r\n    \"password\": \"{{usuario_tag}}\"\r\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{baseUrl}}/auth/login",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "auth",
-                "login"
-              ]
-            },
-            "description": "Generated from cURL: curl -X 'POST' \\\r\n  'http://localhost:8080/auth/login' \\\r\n  -H 'accept: */*' \\\r\n  -H 'Content-Type: application/json' \\\r\n  -d '{\r\n    \"username\": \"eldelfin95\",\r\n    \"password\": \"sacha122\"\r\n}'\r\n"
-          },
-          "response": []
-        },
-        {
-          "name": "Respuesta - Editar Copy",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "id": "8fa75b44-314f-41e9-a7e8-c4d323667f5a",
-                "exec": [
-                  "pm.test(\"Debe fallar por falta de permisos -> 403\", () => pm.response.to.have.status(403));"
-                ],
-                "type": "text/javascript",
-                "packages": {},
-                "requests": {}
-              }
-            }
-          ],
-          "id": "871b3e5d-b06f-49eb-a6a7-59f8ee0482a8",
-          "request": {
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{token}}",
-                  "type": "string"
-                }
-              ]
-            },
-            "method": "PUT",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "{\r\n  \"mensaje\": \"Respuesta editada por ${usuarioTag} \"\r\n}\r\n",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{baseUrl}}/respuestas/{{respuestaId}}",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "respuestas",
-                "{{respuestaId}}"
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Respuesta - Eliminar por ID Copy",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "id": "8c04c240-f600-4f48-82bc-850720beada4",
-                "exec": [
-                  "pm.test(\"Debe fallar por falta de permisos -> 403\", () => pm.response.to.have.status(403));"
-                ],
-                "type": "text/javascript",
-                "packages": {},
-                "requests": {}
-              }
-            },
-            {
-              "listen": "prerequest",
-              "script": {
-                "id": "63c8d2fb-736f-44c8-97c2-f99837b6e44f",
-                "exec": [
-                  "const respuestaId = pm.environment.get(\"respuestaId\");\r",
-                  "pm.environment.set(\"respuestaId\", respuestaId);"
-                ],
-                "type": "text/javascript",
-                "packages": {},
-                "requests": {}
-              }
-            }
-          ],
-          "id": "c3acedb8-62b6-432c-9fba-a011fbd5a251",
-          "request": {
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{token}}",
-                  "type": "string"
-                }
-              ]
-            },
-            "method": "DELETE",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/respuestas/{{respuestaId}}",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "respuestas",
-                "{{respuestaId}}"
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Login autor",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "id": "1ed1ae0f-c5f2-4f1d-a721-5e7cbade474b",
-                "exec": [
-                  "const json = pm.response.json();\r",
-                  "pm.environment.set(\"token\", json.token);\r",
-                  "\r",
-                  "console.log(\"Token actualizado:\", json.token);\r",
-                  "pm.test(\"Login correcto -> 200\", () => {\r",
-                  "  pm.expect([200]).to.include(pm.response.code);\r",
-                  "});\r",
-                  ""
-                ],
-                "type": "text/javascript",
-                "packages": {},
-                "requests": {}
-              }
-            },
-            {
-              "listen": "prerequest",
-              "script": {
-                "id": "016b644a-0534-4448-98f4-f2957c30acca",
-                "exec": [
-                  ""
-                ],
-                "type": "text/javascript",
-                "packages": {},
-                "requests": {}
-              }
-            }
-          ],
-          "id": "87cc1eef-44d7-46dc-8036-01a092597ee9",
-          "request": {
-            "auth": {
-              "type": "noauth"
-            },
-            "method": "POST",
-            "header": [
-              {
-                "key": "accept",
-                "value": "*/*"
-              },
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\r\n    \"username\": \"user1\",\r\n    \"password\": \"user1\"\r\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{baseUrl}}/auth/login",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "auth",
-                "login"
-              ]
-            },
-            "description": "Generated from cURL: curl -X 'POST' \\\r\n  'http://localhost:8080/auth/login' \\\r\n  -H 'accept: */*' \\\r\n  -H 'Content-Type: application/json' \\\r\n  -d '{\r\n    \"username\": \"eldelfin95\",\r\n    \"password\": \"sacha122\"\r\n}'\r\n"
-          },
-          "response": []
-        },
-        {
-          "name": "Respuestas - Marcar solucion",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "id": "41f914c3-1bea-415b-9b20-6a9f4eb8ce79",
-                "exec": [
-                  "pm.test(\"Marcar respuesta correcta -> 200\", () => {\r",
-                  "  pm.expect([200]).to.include(pm.response.code);\r",
-                  "});\r",
-                  ""
-                ],
-                "type": "text/javascript",
-                "packages": {},
-                "requests": {}
-              }
-            }
-          ],
-          "id": "f954ba4f-5cc0-4590-80c9-0449cd958e30",
-          "request": {
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{token}}",
-                  "type": "string"
-                }
-              ]
-            },
-            "method": "PATCH",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/respuestas/{{respuestaId}}/solucion",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "respuestas",
-                "{{respuestaId}}",
-                "solucion"
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Respuestas - List por TopicoID Copy",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "id": "f7793b6a-e4bb-45d3-9f8d-14385d518530",
-                "exec": [
-                  "pm.test(\"Listado de topicos correcto -> 200\", () => {\r",
-                  "  pm.expect([200]).to.include(pm.response.code);\r",
-                  "});"
-                ],
-                "type": "text/javascript",
-                "packages": {},
-                "requests": {}
-              }
-            }
-          ],
-          "id": "1b3d6e0f-968d-4f92-a835-668bf099cb38",
-          "request": {
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{token}}",
-                  "type": "string"
-                }
-              ]
-            },
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/respuestas/topico/{{topicoId}}",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "respuestas",
-                "topico",
-                "{{topicoId}}"
-              ]
-            }
-          },
-          "response": []
-        }
-      ],
-      "id": "3430a1bc-f307-4d3d-9dfc-a42973b62ff1"
-    },
-    {
       "name": "RespuestasHijas",
       "item": [
         {
-          "name": "Registro respuestaHija1",
+          "name": "RespuestaHija 1 - Registro",
           "event": [
             {
               "listen": "test",
               "script": {
                 "id": "d9f2bb49-cbac-4b23-9084-9ae51a64a181",
                 "exec": [
-                  "pm.test(\"Registro con exito -> 201\", () => {\r",
-                  "  pm.expect([201]).to.include(pm.response.code);\r",
+                  "pm.test(\"Respuesta válida\", function () {\r",
+                  "    pm.expect([201, 409]).to.include(pm.response.code);\r",
                   "});\r",
-                  "pm.test(\"Usuario ya registrado -> 409\", () => {\r",
-                  "  pm.expect([409]).to.include(pm.response.code);\r",
-                  "});\r",
+                  "\r",
+                  "if (pm.response.code === 201) {\r",
+                  "    pm.test(\"Usuario registrado correctamente\", function () {\r",
+                  "        pm.expect(pm.response.code).to.eql(201);\r",
+                  "    });\r",
+                  "}\r",
+                  "\r",
+                  "if (pm.response.code === 409) {\r",
+                  "    pm.test(\"Usuario ya existente\", function () {\r",
+                  "        pm.expect(pm.response.code).to.eql(409);\r",
+                  "    });\r",
+                  "}\r",
+                  "if (pm.response.code === 201) {\r",
+                  "    const json = pm.response.json();\r",
+                  "    pm.expect(json).to.have.property(\"id\");\r",
+                  "    pm.expect(json.email).to.include(\"@\");\r",
+                  "}\r",
                   ""
                 ],
                 "type": "text/javascript",
@@ -2064,8 +48,11 @@
               "script": {
                 "id": "b89a3abc-9d94-4e87-946b-73119792d599",
                 "exec": [
-                  "userRespuesta1 = \"userRespuestaHija1\"\r",
-                  "pm.environment.set(\"usuario_tag\", userRespuesta1);"
+                  "pm.environment.set(\"nombre\", \"belen\");\r",
+                  "pm.environment.set(\"apellido\", \"white\");\r",
+                  "pm.environment.set(\"dni\", \"40297030\");\r",
+                  "pm.environment.set(\"email\", `belenwhite@gmail.com`);\r",
+                  "pm.environment.set(\"password\", \"40297010\");"
                 ],
                 "type": "text/javascript",
                 "packages": {},
@@ -2073,7 +60,7 @@
               }
             }
           ],
-          "id": "d39a02bb-dcb4-441c-b39d-b3e456e2cdaa",
+          "id": "8e6d3bc9-3a48-4424-89fa-8437320c2ba2",
           "request": {
             "method": "POST",
             "header": [
@@ -2088,7 +75,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\r\n  \"nombre\": \"{{usuario_tag}}\",\r\n  \"email\": \"{{usuario_tag}}@gmail.com\",\r\n  \"password\": \"{{usuario_tag}}\",\r\n  \"username\": \"{{usuario_tag}}\"\r\n}",
+              "raw": "{\r\n  \"nombre\": \"{{nombre}}\",\r\n  \"apellido\": \"{{apellido}}\",\r\n  \"dni\": \"{{dni}}\",\r\n  \"email\": \"{{email}}\",\r\n  \"password\": \"{{password}}\"\r\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -2109,7 +96,7 @@
           "response": []
         },
         {
-          "name": "Login respuestaHija1",
+          "name": "RespuestaHija 1 - Login",
           "event": [
             {
               "listen": "test",
@@ -2118,7 +105,6 @@
                 "exec": [
                   "const json = pm.response.json();\r",
                   "pm.environment.set(\"token\", json.token);\r",
-                  "\r",
                   "console.log(\"Token actualizado:\", json.token);\r",
                   "pm.test(\"Login correcto -> 200\", () => {\r",
                   "  pm.expect([200]).to.include(pm.response.code);\r",
@@ -2135,8 +121,11 @@
               "script": {
                 "id": "016b644a-0534-4448-98f4-f2957c30acca",
                 "exec": [
-                  "userRespuesta1 = \"userRespuestaHija1\"\r",
-                  "pm.environment.set(\"usuario_tag\", userRespuesta1);"
+                  "pm.environment.set(\"nombre\", \"belen\");\r",
+                  "pm.environment.set(\"apellido\", \"white\");\r",
+                  "pm.environment.set(\"dni\", \"40297030\");\r",
+                  "pm.environment.set(\"email\", `belenwhite@gmail.com`);\r",
+                  "pm.environment.set(\"password\", \"40297010\");"
                 ],
                 "type": "text/javascript",
                 "packages": {},
@@ -2144,7 +133,7 @@
               }
             }
           ],
-          "id": "88b3cff5-098a-4e50-9843-ed7bd2da7322",
+          "id": "538f721a-2ace-4391-9498-4ecfe7cb5b9c",
           "request": {
             "auth": {
               "type": "noauth"
@@ -2162,7 +151,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\r\n    \"username\": \"{{usuario_tag}}\",\r\n    \"password\": \"{{usuario_tag}}\"\r\n}",
+              "raw": "{\r\n  \"identificador\": \"{{email}}\",\r\n  \"password\": \"{{password}}\"\r\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -2184,7 +173,7 @@
           "response": []
         },
         {
-          "name": "RespuestaHija - Crear",
+          "name": "Respuesta Hija - Crear",
           "event": [
             {
               "listen": "test",
@@ -2440,19 +429,33 @@
           "response": []
         },
         {
-          "name": "Registro respuestaHija2",
+          "name": "RespuestaHija 2 - Registro",
           "event": [
             {
               "listen": "test",
               "script": {
                 "id": "d9f2bb49-cbac-4b23-9084-9ae51a64a181",
                 "exec": [
-                  "pm.test(\"Registro con exito -> 201\", () => {\r",
-                  "  pm.expect([201]).to.include(pm.response.code);\r",
+                  "pm.test(\"Respuesta válida\", function () {\r",
+                  "    pm.expect([201, 409]).to.include(pm.response.code);\r",
                   "});\r",
-                  "pm.test(\"Usuario ya registrado -> 409\", () => {\r",
-                  "  pm.expect([409]).to.include(pm.response.code);\r",
-                  "});\r",
+                  "\r",
+                  "if (pm.response.code === 201) {\r",
+                  "    pm.test(\"Usuario registrado correctamente\", function () {\r",
+                  "        pm.expect(pm.response.code).to.eql(201);\r",
+                  "    });\r",
+                  "}\r",
+                  "\r",
+                  "if (pm.response.code === 409) {\r",
+                  "    pm.test(\"Usuario ya existente\", function () {\r",
+                  "        pm.expect(pm.response.code).to.eql(409);\r",
+                  "    });\r",
+                  "}\r",
+                  "if (pm.response.code === 201) {\r",
+                  "    const json = pm.response.json();\r",
+                  "    pm.expect(json).to.have.property(\"id\");\r",
+                  "    pm.expect(json.email).to.include(\"@\");\r",
+                  "}\r",
                   ""
                 ],
                 "type": "text/javascript",
@@ -2465,8 +468,11 @@
               "script": {
                 "id": "b89a3abc-9d94-4e87-946b-73119792d599",
                 "exec": [
-                  "userRespuesta1 = \"userRespuestaHija2\"\r",
-                  "pm.environment.set(\"usuario_tag\", userRespuesta1);"
+                  "pm.environment.set(\"nombre\", \"max\");\r",
+                  "pm.environment.set(\"apellido\", \"verstappen\");\r",
+                  "pm.environment.set(\"dni\", \"40297040\");\r",
+                  "pm.environment.set(\"email\", `maxverstappen@gmail.com`);\r",
+                  "pm.environment.set(\"password\", \"40297010\");"
                 ],
                 "type": "text/javascript",
                 "packages": {},
@@ -2474,7 +480,7 @@
               }
             }
           ],
-          "id": "8df0ccea-61a5-4ec0-8ebb-077c7e850738",
+          "id": "93600439-3988-4262-bb73-d0b688385120",
           "request": {
             "method": "POST",
             "header": [
@@ -2489,7 +495,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\r\n  \"nombre\": \"{{usuario_tag}}\",\r\n  \"email\": \"{{usuario_tag}}@gmail.com\",\r\n  \"password\": \"{{usuario_tag}}\",\r\n  \"username\": \"{{usuario_tag}}\"\r\n}",
+              "raw": "{\r\n  \"nombre\": \"{{nombre}}\",\r\n  \"apellido\": \"{{apellido}}\",\r\n  \"dni\": \"{{dni}}\",\r\n  \"email\": \"{{email}}\",\r\n  \"password\": \"{{password}}\"\r\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -2510,7 +516,7 @@
           "response": []
         },
         {
-          "name": "Login respHija 2",
+          "name": "RespuestaHija 2 - Logi",
           "event": [
             {
               "listen": "test",
@@ -2519,7 +525,6 @@
                 "exec": [
                   "const json = pm.response.json();\r",
                   "pm.environment.set(\"token\", json.token);\r",
-                  "\r",
                   "console.log(\"Token actualizado:\", json.token);\r",
                   "pm.test(\"Login correcto -> 200\", () => {\r",
                   "  pm.expect([200]).to.include(pm.response.code);\r",
@@ -2536,8 +541,11 @@
               "script": {
                 "id": "016b644a-0534-4448-98f4-f2957c30acca",
                 "exec": [
-                  "userRespuesta2 = \"userRespuestaHija2\"\r",
-                  "pm.environment.set(\"usuario_tag\", userRespuesta2);"
+                  "pm.environment.set(\"nombre\", \"max\");\r",
+                  "pm.environment.set(\"apellido\", \"verstappen\");\r",
+                  "pm.environment.set(\"dni\", \"40297040\");\r",
+                  "pm.environment.set(\"email\", `maxverstappen@gmail.com`);\r",
+                  "pm.environment.set(\"password\", \"40297010\");"
                 ],
                 "type": "text/javascript",
                 "packages": {},
@@ -2545,7 +553,7 @@
               }
             }
           ],
-          "id": "d5c22db4-533e-4e90-bc3a-aff8ccec20ce",
+          "id": "f5cb4228-c722-40ab-8c5b-e98999e1de13",
           "request": {
             "auth": {
               "type": "noauth"
@@ -2563,7 +571,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\r\n    \"username\": \"{{usuario_tag}}\",\r\n    \"password\": \"{{usuario_tag}}\"\r\n}",
+              "raw": "{\r\n  \"identificador\": \"{{email}}\",\r\n  \"password\": \"{{password}}\"\r\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -5047,10 +3055,10 @@
       "id": "2ec01fa7-9cd5-4fad-9309-d31daf16a23d"
     },
     {
-      "name": "Limpiar test",
+      "name": "limpiador foro",
       "item": [
         {
-          "name": "Login respuestaHija1 Copy",
+          "name": "RespuestaHija 1 - Login",
           "event": [
             {
               "listen": "test",
@@ -5059,7 +3067,6 @@
                 "exec": [
                   "const json = pm.response.json();\r",
                   "pm.environment.set(\"token\", json.token);\r",
-                  "\r",
                   "console.log(\"Token actualizado:\", json.token);\r",
                   "pm.test(\"Login correcto -> 200\", () => {\r",
                   "  pm.expect([200]).to.include(pm.response.code);\r",
@@ -5076,8 +3083,11 @@
               "script": {
                 "id": "016b644a-0534-4448-98f4-f2957c30acca",
                 "exec": [
-                  "userRespuesta1 = \"userRespuestaHija1\"\r",
-                  "pm.environment.set(\"usuario_tag\", userRespuesta1);"
+                  "pm.environment.set(\"nombre\", \"belen\");\r",
+                  "pm.environment.set(\"apellido\", \"white\");\r",
+                  "pm.environment.set(\"dni\", \"40297030\");\r",
+                  "pm.environment.set(\"email\", `belenwhite@gmail.com`);\r",
+                  "pm.environment.set(\"password\", \"40297010\");"
                 ],
                 "type": "text/javascript",
                 "packages": {},
@@ -5085,7 +3095,7 @@
               }
             }
           ],
-          "id": "ffba09e3-1cd8-42c9-8a2f-d280e6daf7d6",
+          "id": "97e98b0a-c613-47be-a921-72e7e6676053",
           "request": {
             "auth": {
               "type": "noauth"
@@ -5103,7 +3113,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\r\n    \"username\": \"{{usuario_tag}}\",\r\n    \"password\": \"{{usuario_tag}}\"\r\n}",
+              "raw": "{\r\n  \"identificador\": \"{{email}}\",\r\n  \"password\": \"{{password}}\"\r\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -5132,9 +3142,7 @@
               "script": {
                 "id": "4f2529eb-0f4c-4fca-9627-4128cdd5f65c",
                 "exec": [
-                  "respuestaId = pm.environment.get(\"hijaId\")\r",
-                  "pm.environment.set(\"hijaId\", respuestaId - 1)\r",
-                  "pm.test(\"RespuestaHija eliminada con exito -> 204\", () => pm.response.to.have.status(204));"
+                  "pm.test(\"Sin permisos -> 403\", () => pm.response.to.have.status(403));"
                 ],
                 "type": "text/javascript",
                 "packages": {},
@@ -5142,7 +3150,7 @@
               }
             }
           ],
-          "id": "889bf1cb-8b2d-4382-a84f-affa7a6a8f5e",
+          "id": "a5e3715f-d111-4a3a-84ab-22b2d9989213",
           "request": {
             "auth": {
               "type": "bearer",
@@ -5171,7 +3179,7 @@
           "response": []
         },
         {
-          "name": "Login respuesta1 Copy",
+          "name": "Login respuesta 1",
           "event": [
             {
               "listen": "test",
@@ -5180,7 +3188,6 @@
                 "exec": [
                   "const json = pm.response.json();\r",
                   "pm.environment.set(\"token\", json.token);\r",
-                  "\r",
                   "console.log(\"Token actualizado:\", json.token);\r",
                   "pm.test(\"Login correcto -> 200\", () => {\r",
                   "  pm.expect([200]).to.include(pm.response.code);\r",
@@ -5197,8 +3204,11 @@
               "script": {
                 "id": "016b644a-0534-4448-98f4-f2957c30acca",
                 "exec": [
-                  "userRespuesta1 = \"userRespuesta1\"\r",
-                  "pm.environment.set(\"usuario_tag\", userRespuesta1);"
+                  "pm.environment.set(\"nombre\", \"Javier\");\r",
+                  "pm.environment.set(\"apellido\", \"Gomez\");\r",
+                  "pm.environment.set(\"dni\", \"40297019\");\r",
+                  "pm.environment.set(\"email\", `javiergomez@gmail.com`);\r",
+                  "pm.environment.set(\"password\", \"40297010\");"
                 ],
                 "type": "text/javascript",
                 "packages": {},
@@ -5206,7 +3216,7 @@
               }
             }
           ],
-          "id": "bcae0308-cbc5-463d-a08c-1d1223d9b6e8",
+          "id": "7e762df1-009d-45a5-9e85-b1ac24905342",
           "request": {
             "auth": {
               "type": "noauth"
@@ -5224,7 +3234,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\r\n    \"username\": \"{{usuario_tag}}\",\r\n    \"password\": \"{{usuario_tag}}\"\r\n}",
+              "raw": "{\r\n  \"identificador\": \"{{email}}\",\r\n  \"password\": \"{{password}}\"\r\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -5251,11 +3261,22 @@
             {
               "listen": "test",
               "script": {
-                "id": "dc111b28-a719-4daf-b8c0-94055396e3ab",
+                "id": "8c04c240-f600-4f48-82bc-850720beada4",
                 "exec": [
-                  "respuestaId = pm.environment.get(\"respuestaId\")\r",
-                  "pm.environment.set(\"respuestaId\", respuestaId - 1)\r",
-                  "pm.test(\"Respuesta eliminada con exito -> 204\", () => pm.response.to.have.status(204));"
+                  "pm.test(\"Eliminado con exito --> 204\", () => pm.response.to.have.status(204));"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "id": "63c8d2fb-736f-44c8-97c2-f99837b6e44f",
+                "exec": [
+                  "const respuestaId = pm.environment.get(\"respuestaId\");\r",
+                  "pm.environment.set(\"respuestaId\", respuestaId);"
                 ],
                 "type": "text/javascript",
                 "packages": {},
@@ -5263,7 +3284,7 @@
               }
             }
           ],
-          "id": "3682ddab-6148-4394-8ed6-2fddaed7bfed",
+          "id": "0be2d820-afd1-4f25-bd68-b9007948e570",
           "request": {
             "auth": {
               "type": "bearer",
@@ -5291,7 +3312,7 @@
           "response": []
         },
         {
-          "name": "Login Topico1 Copy",
+          "name": "Login Topico",
           "event": [
             {
               "listen": "test",
@@ -5316,8 +3337,11 @@
               "script": {
                 "id": "016b644a-0534-4448-98f4-f2957c30acca",
                 "exec": [
-                  "user1 = \"user1\"\r",
-                  "pm.environment.set(\"usuario_tag\", user1);"
+                  "pm.environment.set(\"nombre\", \"leandro\");\r",
+                  "pm.environment.set(\"apellido\", \"Melchiori\");\r",
+                  "pm.environment.set(\"dni\", \"40297010\");\r",
+                  "pm.environment.set(\"email\", `leandromelchiori@gmail.com`);\r",
+                  "pm.environment.set(\"password\", \"40297010\");"
                 ],
                 "type": "text/javascript",
                 "packages": {},
@@ -5325,7 +3349,7 @@
               }
             }
           ],
-          "id": "5f7df621-4afb-44d6-aeae-44840bc9b32c",
+          "id": "241261c2-2fb3-498d-be5d-43c6c673efa1",
           "request": {
             "auth": {
               "type": "noauth"
@@ -5343,7 +3367,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\r\n    \"username\": \"{{usuario_tag}}\",\r\n    \"password\": \"{{usuario_tag}}\"\r\n}",
+              "raw": "{\r\n  \"identificador\": \"{{email}}\",\r\n  \"password\": \"{{password}}\"\r\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -5365,16 +3389,15 @@
           "response": []
         },
         {
-          "name": "Topico - Eliminar por ID",
+          "name": "Topico - Eliminar",
           "event": [
             {
               "listen": "test",
               "script": {
-                "id": "71962eb6-14f4-4313-93e2-9e75a1639629",
+                "id": "ec0ded61-73fe-431f-861c-2ee51bc28e66",
                 "exec": [
-                  "pm.test(\"Borrado con exito (204)\", () => {\r",
-                  "  pm.expect(pm.response.code).to.eql(204);\r",
-                  "});"
+                  "pm.test(\"Eliminado con exito -> 204\", () => pm.response.to.have.status(204));\r",
+                  ""
                 ],
                 "type": "text/javascript",
                 "packages": {},
@@ -5384,8 +3407,10 @@
             {
               "listen": "prerequest",
               "script": {
-                "id": "dca25a53-7a17-4556-b427-2cb59940d9ca",
+                "id": "3a696ada-c41b-4250-a556-08b3817fe1bb",
                 "exec": [
+                  "const topicoId = pm.environment.get(\"topicoId\");\r",
+                  "pm.environment.set(\"topicoId\", topicoId);\r",
                   ""
                 ],
                 "type": "text/javascript",
@@ -5394,7 +3419,7 @@
               }
             }
           ],
-          "id": "e7815de9-1776-4747-9d27-e2f93437df44",
+          "id": "43ffbd19-3979-409f-b995-8a80f2b0f574",
           "request": {
             "auth": {
               "type": "bearer",
@@ -5409,12 +3434,10 @@
             "method": "DELETE",
             "header": [],
             "url": {
-              "raw": "http://localhost:8080/topicos/{{topicoId}}",
-              "protocol": "http",
+              "raw": "{{baseUrl}}/topicos/{{topicoId}}",
               "host": [
-                "localhost"
+                "{{baseUrl}}"
               ],
-              "port": "8080",
               "path": [
                 "topicos",
                 "{{topicoId}}"
@@ -5422,455 +3445,9 @@
             }
           },
           "response": []
-        },
-        {
-          "name": "Login admin Copy",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "id": "1ed1ae0f-c5f2-4f1d-a721-5e7cbade474b",
-                "exec": [
-                  "const json = pm.response.json();\r",
-                  "pm.environment.set(\"token\", json.token);\r",
-                  "\r",
-                  "console.log(\"Token actualizado:\", json.token);\r",
-                  "pm.test(\"Login correcto -> 204/200\", () => {\r",
-                  "  pm.expect([200,204]).to.include(pm.response.code);\r",
-                  "});\r",
-                  ""
-                ],
-                "type": "text/javascript",
-                "packages": {},
-                "requests": {}
-              }
-            },
-            {
-              "listen": "prerequest",
-              "script": {
-                "id": "016b644a-0534-4448-98f4-f2957c30acca",
-                "exec": [
-                  ""
-                ],
-                "type": "text/javascript",
-                "packages": {},
-                "requests": {}
-              }
-            }
-          ],
-          "id": "5387cfc2-aaa1-4dfa-9c37-1d8e27e73a07",
-          "request": {
-            "auth": {
-              "type": "noauth"
-            },
-            "method": "POST",
-            "header": [
-              {
-                "key": "accept",
-                "value": "*/*"
-              },
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\r\n    \"username\": \"admin\",\r\n    \"password\": \"admin724\"\r\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{baseUrl}}/auth/login",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "auth",
-                "login"
-              ]
-            },
-            "description": "Generated from cURL: curl -X 'POST' \\\r\n  'http://localhost:8080/auth/login' \\\r\n  -H 'accept: */*' \\\r\n  -H 'Content-Type: application/json' \\\r\n  -d '{\r\n    \"username\": \"eldelfin95\",\r\n    \"password\": \"sacha122\"\r\n}'\r\n"
-          },
-          "response": []
-        },
-        {
-          "name": "Cursos - Eliminar",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "id": "9ccf24b0-6a52-4032-9122-858b2c1db23c",
-                "exec": [
-                  "pm.test(\"Curso eliminado con exito -> 204\", () => pm.response.to.have.status(204));\r",
-                  ""
-                ],
-                "type": "text/javascript",
-                "packages": {},
-                "requests": {}
-              }
-            },
-            {
-              "listen": "prerequest",
-              "script": {
-                "packages": {},
-                "type": "text/javascript"
-              }
-            }
-          ],
-          "id": "89f967a3-c3c7-461c-b65b-6e5947967338",
-          "request": {
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{token}}",
-                  "type": "string"
-                }
-              ]
-            },
-            "method": "DELETE",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/cursos/{{cursoId}}",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "cursos",
-                "{{cursoId}}"
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Categorias - Eliminar",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "id": "01cdc3a3-efe4-4289-a0cd-be6925d7a519",
-                "exec": [
-                  "pm.test(\"Categoria eliminada con exito -> 204\", () => pm.response.to.have.status(204));"
-                ],
-                "type": "text/javascript",
-                "packages": {},
-                "requests": {}
-              }
-            }
-          ],
-          "id": "03cbba78-3053-4600-82bd-38b64f4a335a",
-          "request": {
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{token}}",
-                  "type": "string"
-                }
-              ]
-            },
-            "method": "DELETE",
-            "header": [],
-            "url": {
-              "raw": "http://localhost:8080/categorias/{{categoriaId}}",
-              "protocol": "http",
-              "host": [
-                "localhost"
-              ],
-              "port": "8080",
-              "path": [
-                "categorias",
-                "{{categoriaId}}"
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "SubcategoriaCatalogo - Eliminar sinPermiso Copy",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "id": "01cdc3a3-efe4-4289-a0cd-be6925d7a519",
-                "exec": [
-                  "pm.test(\"Eliminar  -> 204\", () => pm.response.to.have.status(204));"
-                ],
-                "type": "text/javascript",
-                "packages": {},
-                "requests": {}
-              }
-            },
-            {
-              "listen": "prerequest",
-              "script": {
-                "id": "4aeb67e5-79f0-421f-9861-801de0add15b",
-                "exec": [
-                  ""
-                ],
-                "type": "text/javascript",
-                "packages": {},
-                "requests": {}
-              }
-            }
-          ],
-          "id": "3105857d-7215-4809-9ccc-584e21088033",
-          "request": {
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{token}}",
-                  "type": "string"
-                }
-              ]
-            },
-            "method": "DELETE",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/catalogo/admin/subcategorias/{{subcategoriaCatalogoId}}",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "catalogo",
-                "admin",
-                "subcategorias",
-                "{{subcategoriaCatalogoId}}"
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "CategoriaCatalogo - Editar sinPermiso Copy",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "id": "e88a350c-a21e-4474-aee9-922382a46001",
-                "exec": [
-                  "pm.test(\"Editar -> 204\", () => {\r",
-                  "  pm.expect([204]).to.include(pm.response.code);\r",
-                  "});"
-                ],
-                "type": "text/javascript",
-                "packages": {},
-                "requests": {}
-              }
-            },
-            {
-              "listen": "prerequest",
-              "script": {
-                "id": "8cf2ac4f-a4c9-449c-bf9d-14e99ad72c9e",
-                "exec": [
-                  ""
-                ],
-                "type": "text/javascript",
-                "packages": {},
-                "requests": {}
-              }
-            }
-          ],
-          "id": "e69c153f-8fb5-4ab4-b6cd-b5a7ad021192",
-          "request": {
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{token}}",
-                  "type": "string"
-                }
-              ]
-            },
-            "method": "DELETE",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{baseUrl}}/catalogo/admin/categorias/{{categoriaCatalogoId}}",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "catalogo",
-                "admin",
-                "categorias",
-                "{{categoriaCatalogoId}}"
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Login Pruducto 1",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "id": "1ed1ae0f-c5f2-4f1d-a721-5e7cbade474b",
-                "exec": [
-                  "const json = pm.response.json();\r",
-                  "pm.environment.set(\"token\", json.token);\r",
-                  "console.log(\"Token actualizado:\", json.token);\r",
-                  "pm.test(\"Login correcto -> 200\", () => {\r",
-                  "  pm.expect([200]).to.include(pm.response.code);\r",
-                  "});\r",
-                  ""
-                ],
-                "type": "text/javascript",
-                "packages": {},
-                "requests": {}
-              }
-            },
-            {
-              "listen": "prerequest",
-              "script": {
-                "id": "016b644a-0534-4448-98f4-f2957c30acca",
-                "exec": [
-                  "userProducto1 = \"userProducto1\"\r",
-                  "pm.environment.set(\"usuario_tag\", userProducto1);"
-                ],
-                "type": "text/javascript",
-                "packages": {},
-                "requests": {}
-              }
-            }
-          ],
-          "id": "5ad29e83-f3d8-415c-a6e3-572a7b54eb16",
-          "request": {
-            "auth": {
-              "type": "noauth"
-            },
-            "method": "POST",
-            "header": [
-              {
-                "key": "accept",
-                "value": "*/*"
-              },
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\r\n    \"username\": \"{{usuario_tag}}\",\r\n    \"password\": \"{{usuario_tag}}\"\r\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{baseUrl}}/auth/login",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "auth",
-                "login"
-              ]
-            },
-            "description": "Generated from cURL: curl -X 'POST' \\\r\n  'http://localhost:8080/auth/login' \\\r\n  -H 'accept: */*' \\\r\n  -H 'Content-Type: application/json' \\\r\n  -d '{\r\n    \"username\": \"eldelfin95\",\r\n    \"password\": \"sacha122\"\r\n}'\r\n"
-          },
-          "response": []
-        },
-        {
-          "name": "Eliminar Producto",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "id": "99ecfaaf-e24e-48e5-8b3c-250aa4f03f00",
-                "exec": [
-                  "pm.test(\"Producto eliminado OK (204)\", () => {\r",
-                  "  pm.expect(pm.response.code).to.eql(204);\r",
-                  "});"
-                ],
-                "type": "text/javascript",
-                "packages": {},
-                "requests": {}
-              }
-            },
-            {
-              "listen": "prerequest",
-              "script": {
-                "id": "4b6a5def-5a97-4598-b85b-3eeafba8cfa9",
-                "exec": [
-                  ""
-                ],
-                "type": "text/javascript",
-                "packages": {},
-                "requests": {}
-              }
-            }
-          ],
-          "id": "8e2aa951-abb3-4888-9ea6-718f6cbcb25f",
-          "request": {
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{token}}",
-                  "type": "string"
-                }
-              ]
-            },
-            "method": "DELETE",
-            "header": [],
-            "body": {
-              "mode": "formdata",
-              "formdata": [
-                {
-                  "key": "data",
-                  "value": "{\n  \"categoriaCatalogoId\": 1,\n  \"subCategoriaCatalogoId\": 2,\n  \"titulo\": \"Sillón editado\",\n  \"descripcion\": \"Hecho a mano con materiales reciclados. Muy cómodo y resistente. y editado\"\n}",
-                  "contentType": "application/json",
-                  "type": "text"
-                },
-                {
-                  "key": "imagenes",
-                  "type": "file",
-                  "src": [
-                    "own_qu8fI/Screenshot 2026-01-13 101818.png",
-                    "own_qu8fI/Screenshot 2026-01-13 101906.png"
-                  ]
-                }
-              ]
-            },
-            "url": {
-              "raw": "{{baseUrl}}/catalogo/productos/{{productoId}}",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "catalogo",
-                "productos",
-                "{{productoId}}"
-              ]
-            }
-          },
-          "response": []
         }
       ],
-      "id": "6ddc3330-9a69-426b-8fc1-797283639bc4"
+      "id": "ffa12b6c-72d9-4dd3-991b-7c3e3744a345"
     }
   ],
   "variable": [

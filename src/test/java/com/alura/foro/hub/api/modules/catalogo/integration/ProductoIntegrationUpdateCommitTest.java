@@ -3,9 +3,7 @@ package com.alura.foro.hub.api.modules.catalogo.integration;
 import com.alura.foro.hub.api.modules.catalogo.domain.CategoriaCatalogo;
 import com.alura.foro.hub.api.modules.catalogo.domain.Subcategoria;
 import com.alura.foro.hub.api.modules.catalogo.repository.CategoriaCatalogoRepository;
-import com.alura.foro.hub.api.modules.catalogo.repository.ProductoRepository;
 import com.alura.foro.hub.api.modules.catalogo.repository.SubCategoriaCatalogoRepository;
-import com.alura.foro.hub.api.modules.catalogo.service.StorageService;
 import com.alura.foro.hub.api.security.jwt.TokenService;
 import com.alura.foro.hub.api.user.domain.Usuario;
 import com.alura.foro.hub.api.user.repository.UsuarioRepository;
@@ -48,9 +46,6 @@ class ProductoIntegrationUpdateCommitTest {
     @Autowired UsuarioRepository usuarioRepository;
     @Autowired CategoriaCatalogoRepository categoriaRepository;
     @Autowired SubCategoriaCatalogoRepository subcategoriaRepository;
-    @Autowired ProductoRepository productoRepository;
-
-    @Autowired StorageService storageService;
 
     @Autowired TokenService tokenService;
     @Autowired PasswordEncoder passwordEncoder;
@@ -60,7 +55,6 @@ class ProductoIntegrationUpdateCommitTest {
 
     private Path uploadsPath;
 
-    private Usuario usuario;
     private String authHeader;
 
     private CategoriaCatalogo categoria;
@@ -72,16 +66,20 @@ class ProductoIntegrationUpdateCommitTest {
         purgeDir(uploadsPath);
 
         // ---------- Usuario ----------
-        usuario = new Usuario();
-        usuario.setUsername("user_test_" + UUID.randomUUID());
-        usuario.setEmail(usuario.getUsername() + "@mail.com");
-        usuario.setNombre("User Test");
-        // si tu Usuario implementa UserDetails, mejor guardar password hasheada
+        Usuario usuario = new Usuario();
+        usuario.setNombre("User");
+        usuario.setApellido("Test");
+        usuario.setDni(generarDni8()); // helper abajo
+
+        String email = "user_test_" + UUID.randomUUID() + "@mail.com";
+        usuario.setEmail(email);
+
         usuario.setPassword(passwordEncoder.encode("123456"));
         usuario = usuarioRepository.save(usuario);
 
-        // JWT REAL (lo que tu SecurityFilter espera)
+// JWT REAL (lo que tu SecurityFilter espera)
         authHeader = "Bearer " + tokenService.generateToken(usuario);
+
 
         // ---------- Categoria ----------
         categoria = new CategoriaCatalogo();
@@ -253,4 +251,11 @@ class ProductoIntegrationUpdateCommitTest {
                     try { Files.deleteIfExists(p); } catch (Exception ignored) {}
                 });
     }
+
+    private static String generarDni8() {
+        // 8 dígitos numéricos
+        int n = Math.abs(UUID.randomUUID().hashCode()) % 100_000_000;
+        return String.format("%08d", n);
+    }
+
 }

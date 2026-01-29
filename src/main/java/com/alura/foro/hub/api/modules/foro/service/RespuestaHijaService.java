@@ -121,7 +121,6 @@ public class RespuestaHijaService {
                 String nuevoMensaje = dto.mensaje().trim();
                 if (!nuevoMensaje.equals(rh.getMensaje())) {
                     rh.setMensaje(nuevoMensaje);
-                    rh.setEditado(true);
                 }
 
                 inc(M_RH_ACTIONS, "actualizar", "ok");

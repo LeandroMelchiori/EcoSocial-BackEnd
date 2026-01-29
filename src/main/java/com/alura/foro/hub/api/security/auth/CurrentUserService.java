@@ -22,16 +22,14 @@ public class CurrentUserService {
 
         Object principal = auth.getPrincipal();
 
-        // Caso PROD (tu filtro mete Usuario)
         if (principal instanceof Usuario u) return u.getId();
 
-        // Caso TEST / otros providers (UserDetails / String)
-        String username;
-        if (principal instanceof UserDetails ud) username = ud.getUsername();
-        else username = auth.getName();
-
-        return usuarioRepository.findByUsername(username)
-                .map(Usuario::getId)
-                .orElseThrow(() -> new EntityNotFoundException("Usuario no encontrado"));
+        // fallback: si por algún motivo principal es String con el id
+        String name = auth.getName();
+        try {
+            return Long.valueOf(name);
+        } catch (NumberFormatException e) {
+            throw new EntityNotFoundException("Usuario no encontrado");
+        }
     }
 }

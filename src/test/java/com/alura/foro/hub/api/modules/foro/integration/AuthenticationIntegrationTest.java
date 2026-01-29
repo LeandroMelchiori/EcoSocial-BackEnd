@@ -1,6 +1,5 @@
 package com.alura.foro.hub.api.modules.foro.integration;
 
-import com.alura.foro.hub.api.modules.catalogo.config.TestMinioConfig;
 import com.alura.foro.hub.api.modules.foro.domain.model.Categoria;
 import com.alura.foro.hub.api.modules.foro.domain.model.Curso;
 import com.alura.foro.hub.api.modules.foro.fixtures.ForoHubFixtures;
@@ -14,7 +13,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
@@ -30,19 +28,13 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class AuthenticationIntegrationTest {
 
     @Autowired MockMvc mockMvc;
-    @Autowired
-    UsuarioRepository usuarioRepository;
-    @Autowired
-    TopicoRepository topicoRepository;
-    @Autowired
-    RespuestaRepository respuestaRepository;
-    @Autowired
-    RespuestaHijaRepository respuestaHijaRepository;
-    @Autowired
-    CategoriaRepository categoriaRepository;
+    @Autowired UsuarioRepository usuarioRepository;
+    @Autowired TopicoRepository topicoRepository;
+    @Autowired RespuestaRepository respuestaRepository;
+    @Autowired RespuestaHijaRepository respuestaHijaRepository;
+    @Autowired CategoriaRepository categoriaRepository;
+    @Autowired CursoRepository cursoRepository;
     @Autowired PasswordEncoder passwordEncoder;
-    @Autowired
-    CursoRepository cursoRepository;
     @Autowired ObjectMapper objectMapper;
 
     private ForoHubFixtures fx;
@@ -51,10 +43,12 @@ class AuthenticationIntegrationTest {
     @BeforeEach
     void setup() {
         fx = new ForoHubFixtures(usuarioRepository, topicoRepository, respuestaRepository, respuestaHijaRepository);
+
         var categoria = new Categoria();
-        var curso = new Curso();
         categoria.setNombre("Categoria test");
         categoriaRepository.saveAndFlush(categoria);
+
+        var curso = new Curso();
         curso.setNombre("Curso test");
         curso.setCategoria(categoria);
         cursoId = cursoRepository.saveAndFlush(curso).getId();
@@ -65,7 +59,7 @@ class AuthenticationIntegrationTest {
         fx.usuarioConPassword("tester", "123456", passwordEncoder);
 
         var body = """
-            { "username": "tester", "password": "123456" }
+            { "identificador": "tester@test.com", "password": "123456" }
         """;
 
         mockMvc.perform(
@@ -84,7 +78,7 @@ class AuthenticationIntegrationTest {
         fx.usuarioConPassword("tester", "123456", passwordEncoder);
 
         var body = """
-            { "username": "tester", "password": "mala" }
+            { "identificador": "tester@test.com", "password": "mala" }
         """;
 
         mockMvc.perform(
@@ -97,11 +91,11 @@ class AuthenticationIntegrationTest {
 
     @Test
     void login_y_con_token_puedo_crear_topico_endpoint_protegido() throws Exception {
-        var tester = fx.usuarioConPassword("tester", "123456", passwordEncoder);
+        fx.usuarioConPassword("tester", "123456", passwordEncoder);
 
         // 1) Login y extraer token
         var loginBody = """
-            { "username": "tester", "password": "123456" }
+            { "identificador": "tester@test.com", "password": "123456" }
         """;
 
         var loginResult = mockMvc.perform(
@@ -110,21 +104,20 @@ class AuthenticationIntegrationTest {
                                 .content(loginBody)
                 )
                 .andExpect(status().isOk())
+                .andExpect(jsonPath("$.token").isString())
                 .andReturn();
 
-        String json = loginResult.getResponse().getContentAsString();
-        JsonNode node = objectMapper.readTree(json);
+        JsonNode node = objectMapper.readTree(loginResult.getResponse().getContentAsString());
         String token = node.get("token").asText();
 
-        // 2) Usar token en endpoint protegido: POST /topicos
+        // 2) Usar token en endpoint protegido
         var crearTopicoBody = """
             {
               "titulo": "Topico desde test auth",
               "mensaje": "Probando token real",
               "cursoId": %d
             }
-            """.formatted(this.cursoId);
-
+            """.formatted(cursoId);
 
         mockMvc.perform(
                         post("/topicos")

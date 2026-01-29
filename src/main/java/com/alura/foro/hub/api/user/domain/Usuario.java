@@ -6,6 +6,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -23,15 +24,42 @@ public class Usuario implements UserDetails {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(nullable=false, length = 100)
     private String nombre;
 
-    @Column(unique = true)
+    @Column(nullable=false, length = 100)
+    private String apellido;
+
+    @Column(nullable=false, unique = true, length = 20)
+    private String dni;
+
+    @Column(nullable=false, unique = true, length = 150)
     private String email;
 
+    @Column(nullable=false, length = 255)
     private String password;
 
-    @Column(unique = true)
-    private String username;
+    @Column(nullable=false)
+    private Boolean activo = true;
+
+    @Column(name = "fecha_creacion", nullable=false, updatable=false)
+    private LocalDateTime fechaCreacion;
+
+    @Column(name = "fecha_actualizacion", nullable=false)
+    private LocalDateTime fechaActualizacion;
+
+    @PrePersist
+    void prePersist() {
+        var now = LocalDateTime.now();
+        this.fechaCreacion = now;
+        this.fechaActualizacion = now;
+        if (this.activo == null) this.activo = true;
+    }
+
+    @PreUpdate
+    void preUpdate() {
+        this.fechaActualizacion = LocalDateTime.now();
+    }
 
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
@@ -51,31 +79,23 @@ public class Usuario implements UserDetails {
                 .toList();
     }
 
-    @Override
-    public String getPassword() {
-        return password;
-    }
-
+    // Identificador “principal” para Spring:
     @Override
     public String getUsername() {
-        return username;
+        return email;
     }
 
     @Override
-    public boolean isAccountNonExpired() { return true; }
+    public boolean isEnabled() {
+        return Boolean.TRUE.equals(activo);
+    }
 
-    @Override
-    public boolean isAccountNonLocked() { return true; }
-
-    @Override
-    public boolean isCredentialsNonExpired() { return true; }
-
-    @Override
-    public boolean isEnabled() { return true; }
+    @Override public boolean isAccountNonExpired() { return true; }
+    @Override public boolean isAccountNonLocked() { return true; }
+    @Override public boolean isCredentialsNonExpired() { return true; }
 
     public boolean esAdmin() {
         return getAuthorities().stream()
                 .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
     }
 }
-

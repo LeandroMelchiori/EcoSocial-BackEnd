@@ -12,29 +12,31 @@ import java.util.Optional;
 public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
 
     Optional<Usuario> findByEmail(String email);
+    Optional<Usuario> findByDni(String dni);
 
-    // Método para buscar usuario por nombre de usuario (username)
-    Optional<Usuario> findByUsername(String username);
-
-    // Método para verificar existencia de email
     boolean existsByEmail(String email);
+    boolean existsByDni(String dni);
 
-    // Verificar existencia de username
-    boolean existsByUsername(String username);
-
-    // Traer usuario con sus perfiles/roles
     @Query("""
         select u from Usuario u
         join fetch u.perfiles
-        where u.username = :username
+        where u.email = :email
         """)
-    Usuario findByUsernameConPerfiles(String username);
+    Optional<Usuario> findByEmailConPerfiles(@Param("email") String email);
 
     @Query("""
-    select count(u)
-    from Usuario u
-    join u.perfiles p
-    where p.nombre = :rol
-""")
-long countUsuariosConRol(@Param("rol") String rol);
+        select u from Usuario u
+        join fetch u.perfiles
+        where u.dni = :dni
+        """)
+    Optional<Usuario> findByDniConPerfiles(@Param("dni") String dni);
+
+    @Query("""
+        select count(u)
+        from Usuario u
+        join u.perfiles p
+        where p.nombre = :rol
+    """)
+    long countUsuariosConRol(@Param("rol") String rol);
+
 }

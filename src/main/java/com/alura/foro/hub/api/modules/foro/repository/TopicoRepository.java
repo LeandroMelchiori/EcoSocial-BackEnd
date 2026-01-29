@@ -24,8 +24,7 @@ public interface TopicoRepository extends
 
     List<Topico> findByCurso(Curso curso);
 
-    // Buscar tópicos por autor
-    List<Topico> findByAutorUsername(String username);
+    List<Topico> findByAutorEmail(String email);
 
     // Buscar tópicos por estado
     List<Topico> findByStatus(StatusTopico estado);
@@ -45,8 +44,7 @@ public interface TopicoRepository extends
         cat.nombre,
         t.status,
         count(r.id),
-        max(r.fechaCreacion),
-        coalesce(t.editado, false)
+        max(r.fechaCreacion)
     )
     from Topico t
     join t.autor a
@@ -96,8 +94,7 @@ select new com.alura.foro.hub.api.modules.foro.dto.topico.DatosListadoTopico(
     cat.nombre,
     t.status,
     count(r),
-    max(r.fechaCreacion),
-    coalesce(t.editado, false)
+    max(r.fechaCreacion)
 )
 from Topico t
 join t.autor a

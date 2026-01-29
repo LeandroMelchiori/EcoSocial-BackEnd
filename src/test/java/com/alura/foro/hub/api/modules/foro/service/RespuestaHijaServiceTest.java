@@ -69,7 +69,6 @@ class RespuestaHijaServiceTest {
                     RespuestaHija rh = inv.getArgument(0);
                     rh.setId(99L);
                     rh.setFechaCreacion(LocalDateTime.now());
-                    rh.setEditado(false);
                     return rh;
                 });
 
@@ -86,7 +85,6 @@ class RespuestaHijaServiceTest {
         assertEquals("Hola", out.mensaje());
         assertEquals("Sacha", out.autorNombre());
         assertNotNull(out.fechaCreacion());
-        assertFalse(out.editado());
     }
 
     @Test
@@ -135,7 +133,6 @@ class RespuestaHijaServiceTest {
         rh.setMensaje("msg");
         rh.setAutor(autor);
         rh.setFechaCreacion(LocalDateTime.now());
-        rh.setEditado(false);
 
         when(respuestaHijaRepository.buscarPorRespuestaConAutor(respuestaId))
                 .thenReturn(List.of(rh));
@@ -167,7 +164,6 @@ class RespuestaHijaServiceTest {
         rh.setRespuesta(respuesta);
         rh.setMensaje("Viejo");
         rh.setFechaCreacion(LocalDateTime.now().minusMinutes(5));
-        rh.setEditado(false);
 
         when(respuestaHijaRepository.findById(hijaId)).thenReturn(Optional.of(rh));
 
@@ -175,7 +171,6 @@ class RespuestaHijaServiceTest {
         var out = service.actualizar(hijaId, dto, userId);
 
         assertEquals("Nuevo", rh.getMensaje());
-        assertTrue(rh.getEditado());
         assertEquals(hijaId, out.id());
         assertEquals("Nuevo", out.mensaje());
     }
@@ -265,7 +260,6 @@ class RespuestaHijaServiceTest {
         rh.setRespuesta(respuesta);
         rh.setMensaje("msg");
         rh.setFechaCreacion(fechaCreacion);
-        rh.setEditado(false);
         return rh;
     }
 }
