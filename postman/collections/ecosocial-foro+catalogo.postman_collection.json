@@ -1,7 +1,7 @@
 {
   "info": {
     "_postman_id": "3d510d9f-20e6-4b36-9ecb-dad5324b831a",
-    "name": "Prueba modulos foro + catalogo - EcoSociallWeb",
+    "name": "Prueba modulos foro + catalogo",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
     "_exporter_id": "38883854"
   },
@@ -2254,12 +2254,10 @@
               }
             },
             "url": {
-              "raw": "http://localhost:8080/categorias/{{categoriaId}}",
-              "protocol": "http",
+              "raw": "{{baseUrl}}/categorias/{{categoriaId}}",
               "host": [
-                "localhost"
+                "{{baseUrl}}"
               ],
-              "port": "8080",
               "path": [
                 "categorias",
                 "{{categoriaId}}"
