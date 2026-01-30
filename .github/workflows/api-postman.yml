@@ -67,6 +67,6 @@ jobs:
         if: failure()
         run: docker compose logs
 
-      - name: Stop stack
+      - name: Stop stack - delete volume
         if: always()
         run: docker compose down -v
