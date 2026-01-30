@@ -58,7 +58,7 @@ jobs:
           curl -o- "https://dl-cli.pstmn.io/install/unix.sh" | sh
           postman --version
 
-      - name: Run Postman collection (repo files)
+      - name: Run Postman collection
         run: |
           postman collection run postman/collections/ecosocial-foro+catalogo.postman_collection.json \
             -e postman/environments/ecosocial-foro+catalogo.postman_environment.json
