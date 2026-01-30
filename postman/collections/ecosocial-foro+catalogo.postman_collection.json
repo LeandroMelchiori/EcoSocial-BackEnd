@@ -352,7 +352,7 @@
                 "exec": [
                   "// Check if categoriaCatalogoId is set\r",
                   "const categoriaId = pm.environment.get(\"categoriaCatalogoId\");\r",
-                  "if (!categoriaId || categoriaId === \"undefined\" || categoriaId === \"null\") {\r",
+                  "if (!categoriaId || categoriaId === \"undefined\") {\r",
                   "    console.error(\"categoriaCatalogoId not set! Skipping this request.\");\r",
                   "    pm.execution.skipRequest();\r",
                   "}"
@@ -425,11 +425,11 @@
                   "// Check if both categoriaCatalogoId and subcategoriaCatalogoId are set\r",
                   "const categoriaId = pm.environment.get(\"categoriaCatalogoId\");\r",
                   "const subcategoriaId = pm.environment.get(\"subcategoriaCatalogoId\");\r",
-                  "if (!categoriaId || categoriaId === \"undefined\" || categoriaId === \"null\") {\r",
+                  "if (!categoriaId || categoriaId === \"undefined\") {\r",
                   "    console.error(\"categoriaCatalogoId not set! Skipping this request.\");\r",
                   "    pm.execution.skipRequest();\r",
                   "}\r",
-                  "if (!subcategoriaId || subcategoriaId === \"undefined\" || subcategoriaId === \"null\") {\r",
+                  "if (!subcategoriaId || subcategoriaId === \"undefined\") {\r",
                   "    console.error(\"subcategoriaCatalogoId not set! Skipping this request.\");\r",
                   "    pm.execution.skipRequest();\r",
                   "}"
@@ -671,7 +671,7 @@
                 "exec": [
                   "// Check if categoriaCatalogoId is set\r",
                   "const categoriaId = pm.environment.get(\"categoriaCatalogoId\");\r",
-                  "if (!categoriaId || categoriaId === \"undefined\" || categoriaId === \"null\") {\r",
+                  "if (!categoriaId || categoriaId === \"undefined\") {\r",
                   "    console.error(\"categoriaCatalogoId not set! Skipping this request.\");\r",
                   "    pm.execution.skipRequest();\r",
                   "}",
@@ -723,7 +723,7 @@
                 "exec": [
                   "// Check if categoriaCatalogoId is set\r",
                   "const categoriaId = pm.environment.get(\"categoriaCatalogoId\");\r",
-                  "if (!categoriaId || categoriaId === \"undefined\" || categoriaId === \"null\") {\r",
+                  "if (!categoriaId || categoriaId === \"undefined\") {\r",
                   "    console.error(\"categoriaCatalogoId not set! Skipping this request.\");\r",
                   "    pm.execution.skipRequest();\r",
                   "}"
@@ -784,7 +784,7 @@
                 "exec": [
                   "// Check if categoriaCatalogoId is set\r",
                   "const categoriaId = pm.environment.get(\"categoriaCatalogoId\");\r",
-                  "if (!categoriaId || categoriaId === \"undefined\" || categoriaId === \"null\") {\r",
+                  "if (!categoriaId || categoriaId === \"undefined\") {\r",
                   "    console.error(\"categoriaCatalogoId not set! Skipping this request.\");\r",
                   "    pm.execution.skipRequest();\r",
                   "}"
@@ -856,7 +856,7 @@
                 "exec": [
                   "// Check if categoriaCatalogoId is set\r",
                   "const categoriaId = pm.environment.get(\"categoriaCatalogoId\");\r",
-                  "if (!categoriaId || categoriaId === \"undefined\" || categoriaId === \"null\") {\r",
+                  "if (!categoriaId || categoriaId === \"undefined\") {\r",
                   "    console.error(\"categoriaCatalogoId not set! Skipping this request.\");\r",
                   "    pm.execution.skipRequest();\r",
                   "}"
@@ -971,7 +971,7 @@
                 "exec": [
                   "// Check if categoriaCatalogoId is set\r",
                   "const categoriaId = pm.environment.get(\"categoriaCatalogoId\");\r",
-                  "if (!categoriaId || categoriaId === \"undefined\" || categoriaId === \"null\") {\r",
+                  "if (!categoriaId || categoriaId === \"undefined\") {\r",
                   "    console.error(\"categoriaCatalogoId not set! Skipping this request.\");\r",
                   "    pm.execution.skipRequest();\r",
                   "}"
@@ -1346,7 +1346,7 @@
                 "exec": [
                   "// Check if productoId is set\r",
                   "const productoId = pm.environment.get(\"productoId\");\r",
-                  "if (!productoId || productoId === \"undefined\" || productoId === \"null\") {\r",
+                  "if (!productoId || productoId === \"undefined\") {\r",
                   "    console.error(\"productoId not set! Skipping this request.\");\r",
                   "    pm.execution.skipRequest();\r",
                   "}"
@@ -1427,7 +1427,7 @@
                 "exec": [
                   "// Check if productoId is set\r",
                   "const productoId = pm.environment.get(\"productoId\");\r",
-                  "if (!productoId || productoId === \"undefined\" || productoId === \"null\") {\r",
+                  "if (!productoId || productoId === \"undefined\") {\r",
                   "    console.error(\"productoId not set! Skipping this request.\");\r",
                   "    pm.execution.skipRequest();\r",
                   "}"
@@ -1646,7 +1646,7 @@
                 "exec": [
                   "// Check if productoId is set\r",
                   "const productoId = pm.environment.get(\"productoId\");\r",
-                  "if (!productoId || productoId === \"undefined\" || productoId === \"null\") {\r",
+                  "if (!productoId || productoId === \"undefined\") {\r",
                   "    console.error(\"productoId not set! Skipping this request.\");\r",
                   "    pm.execution.skipRequest();\r",
                   "}"
@@ -1727,7 +1727,7 @@
                 "exec": [
                   "// Check if productoId is set\r",
                   "const productoId = pm.environment.get(\"productoId\");\r",
-                  "if (!productoId || productoId === \"undefined\" || productoId === \"null\") {\r",
+                  "if (!productoId || productoId === \"undefined\") {\r",
                   "    console.error(\"productoId not set! Skipping this request.\");\r",
                   "    pm.execution.skipRequest();\r",
                   "}"
@@ -2038,7 +2038,7 @@
                 "exec": [
                   "// Check if subcategoriaCatalogoId is set\r",
                   "const subcategoriaId = pm.environment.get(\"subcategoriaCatalogoId\");\r",
-                  "if (!subcategoriaId || subcategoriaId === \"undefined\" || subcategoriaId === \"null\") {\r",
+                  "if (!subcategoriaId || subcategoriaId === \"undefined\") {\r",
                   "    console.error(\"subcategoriaCatalogoId not set! Skipping this request.\");\r",
                   "    pm.execution.skipRequest();\r",
                   "}",
@@ -2088,7 +2088,7 @@
                 "exec": [
                   "// Check if categoriaCatalogoId is set\r",
                   "const categoriaId = pm.environment.get(\"categoriaCatalogoId\");\r",
-                  "if (!categoriaId || categoriaId === \"undefined\" || categoriaId === \"null\") {\r",
+                  "if (!categoriaId || categoriaId === \"undefined\") {\r",
                   "    console.error(\"categoriaCatalogoId not set! Skipping this request.\");\r",
                   "    pm.execution.skipRequest();\r",
                   "}"
@@ -5957,7 +5957,8 @@
               "listen": "prerequest",
               "script": {
                 "packages": {},
-                "type": "text/javascript"
+                "type": "text/javascript",
+                "exec": []
               }
             }
           ],
