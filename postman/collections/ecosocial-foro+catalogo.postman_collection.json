@@ -347,6 +347,22 @@
           "name": "CategoriaCatalogo - Editar por ID",
           "event": [
             {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// Check if categoriaCatalogoId is set\r",
+                  "const categoriaId = pm.environment.get(\"categoriaCatalogoId\");\r",
+                  "if (!categoriaId || categoriaId === \"undefined\" || categoriaId === \"null\") {\r",
+                  "    console.error(\"categoriaCatalogoId not set! Skipping this request.\");\r",
+                  "    pm.execution.skipRequest();\r",
+                  "}"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
               "listen": "test",
               "script": {
                 "exec": [
@@ -402,6 +418,27 @@
         {
           "name": "SubCategoriaCatalogo - Editar por ID",
           "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// Check if both categoriaCatalogoId and subcategoriaCatalogoId are set\r",
+                  "const categoriaId = pm.environment.get(\"categoriaCatalogoId\");\r",
+                  "const subcategoriaId = pm.environment.get(\"subcategoriaCatalogoId\");\r",
+                  "if (!categoriaId || categoriaId === \"undefined\" || categoriaId === \"null\") {\r",
+                  "    console.error(\"categoriaCatalogoId not set! Skipping this request.\");\r",
+                  "    pm.execution.skipRequest();\r",
+                  "}\r",
+                  "if (!subcategoriaId || subcategoriaId === \"undefined\" || subcategoriaId === \"null\") {\r",
+                  "    console.error(\"subcategoriaCatalogoId not set! Skipping this request.\");\r",
+                  "    pm.execution.skipRequest();\r",
+                  "}"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
             {
               "listen": "test",
               "script": {
@@ -632,6 +669,13 @@
               "listen": "prerequest",
               "script": {
                 "exec": [
+                  "// Check if categoriaCatalogoId is set\r",
+                  "const categoriaId = pm.environment.get(\"categoriaCatalogoId\");\r",
+                  "if (!categoriaId || categoriaId === \"undefined\" || categoriaId === \"null\") {\r",
+                  "    console.error(\"categoriaCatalogoId not set! Skipping this request.\");\r",
+                  "    pm.execution.skipRequest();\r",
+                  "}",
+                  "\r",
                   ""
                 ],
                 "type": "text/javascript",
@@ -673,6 +717,22 @@
         {
           "name": "CatalogoCategorias - Eliminar sinPermiso",
           "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// Check if categoriaCatalogoId is set\r",
+                  "const categoriaId = pm.environment.get(\"categoriaCatalogoId\");\r",
+                  "if (!categoriaId || categoriaId === \"undefined\" || categoriaId === \"null\") {\r",
+                  "    console.error(\"categoriaCatalogoId not set! Skipping this request.\");\r",
+                  "    pm.execution.skipRequest();\r",
+                  "}"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
             {
               "listen": "test",
               "script": {
@@ -718,6 +778,22 @@
         {
           "name": "Categorias - Editar sinPermiso",
           "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// Check if categoriaCatalogoId is set\r",
+                  "const categoriaId = pm.environment.get(\"categoriaCatalogoId\");\r",
+                  "if (!categoriaId || categoriaId === \"undefined\" || categoriaId === \"null\") {\r",
+                  "    console.error(\"categoriaCatalogoId not set! Skipping this request.\");\r",
+                  "    pm.execution.skipRequest();\r",
+                  "}"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
             {
               "listen": "test",
               "script": {
@@ -774,6 +850,22 @@
         {
           "name": "Cursos - Editar sinPermiso",
           "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// Check if categoriaCatalogoId is set\r",
+                  "const categoriaId = pm.environment.get(\"categoriaCatalogoId\");\r",
+                  "if (!categoriaId || categoriaId === \"undefined\" || categoriaId === \"null\") {\r",
+                  "    console.error(\"categoriaCatalogoId not set! Skipping this request.\");\r",
+                  "    pm.execution.skipRequest();\r",
+                  "}"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
             {
               "listen": "test",
               "script": {
@@ -873,6 +965,22 @@
         {
           "name": "SubCategorias - Listar por categoria",
           "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// Check if categoriaCatalogoId is set\r",
+                  "const categoriaId = pm.environment.get(\"categoriaCatalogoId\");\r",
+                  "if (!categoriaId || categoriaId === \"undefined\" || categoriaId === \"null\") {\r",
+                  "    console.error(\"categoriaCatalogoId not set! Skipping this request.\");\r",
+                  "    pm.execution.skipRequest();\r",
+                  "}"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
             {
               "listen": "test",
               "script": {
@@ -1533,6 +1641,22 @@
           "name": "Borrar producto - no auth",
           "event": [
             {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// Check if productoId is set\r",
+                  "const productoId = pm.environment.get(\"productoId\");\r",
+                  "if (!productoId || productoId === \"undefined\" || productoId === \"null\") {\r",
+                  "    console.error(\"productoId not set! Skipping this request.\");\r",
+                  "    pm.execution.skipRequest();\r",
+                  "}"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
               "listen": "test",
               "script": {
                 "exec": [
@@ -1597,6 +1721,22 @@
         {
           "name": "Editar producto - no auth",
           "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// Check if productoId is set\r",
+                  "const productoId = pm.environment.get(\"productoId\");\r",
+                  "if (!productoId || productoId === \"undefined\" || productoId === \"null\") {\r",
+                  "    console.error(\"productoId not set! Skipping this request.\");\r",
+                  "    pm.execution.skipRequest();\r",
+                  "}"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
             {
               "listen": "test",
               "script": {
@@ -1896,6 +2036,13 @@
               "listen": "prerequest",
               "script": {
                 "exec": [
+                  "// Check if subcategoriaCatalogoId is set\r",
+                  "const subcategoriaId = pm.environment.get(\"subcategoriaCatalogoId\");\r",
+                  "if (!subcategoriaId || subcategoriaId === \"undefined\" || subcategoriaId === \"null\") {\r",
+                  "    console.error(\"subcategoriaCatalogoId not set! Skipping this request.\");\r",
+                  "    pm.execution.skipRequest();\r",
+                  "}",
+                  "\r",
                   ""
                 ],
                 "type": "text/javascript",
@@ -1935,6 +2082,22 @@
         {
           "name": "CategoriaCatalogo - Eliminar",
           "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// Check if categoriaCatalogoId is set\r",
+                  "const categoriaId = pm.environment.get(\"categoriaCatalogoId\");\r",
+                  "if (!categoriaId || categoriaId === \"undefined\" || categoriaId === \"null\") {\r",
+                  "    console.error(\"categoriaCatalogoId not set! Skipping this request.\");\r",
+                  "    pm.execution.skipRequest();\r",
+                  "}"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
             {
               "listen": "test",
               "script": {
