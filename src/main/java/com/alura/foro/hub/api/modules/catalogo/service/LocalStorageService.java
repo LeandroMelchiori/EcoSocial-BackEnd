@@ -107,7 +107,7 @@ public class LocalStorageService implements StorageService {
             return finalKeys;
 
         } catch (Exception e) {
-            try { deleteObjects(finalKeysFromTemp(productoId, opId, tempKeys)); } catch (Exception ignored) {}
+            // Si falla la promoción, no hay archivos finales que limpiar ya que no se crearon
             throw new RuntimeException("Error promoviendo temp->final (local)", e);
         }
     }
@@ -215,10 +215,5 @@ public class LocalStorageService implements StorageService {
         } catch (Exception e) {
             throw new RuntimeException("Error borrando prefix (local): " + prefix, e);
         }
-    }
-
-    private List<String> finalKeysFromTemp(Long productoId, String opId, List<String> tempKeys) {
-        // placeholder por si querés limpiar algo al fallar promote
-        return List.of();
     }
 }

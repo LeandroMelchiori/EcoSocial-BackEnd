@@ -40,10 +40,11 @@ public class MetricsHelper {
 
         try {
             return timer.recordCallable(callable);
-        } catch (RuntimeException e) {
-            // ✅ NO romper Forbidden/BadRequest/etc.
-            throw e;
         } catch (Exception e) {
+            if (e instanceof RuntimeException) {
+                // ✅ NO romper Forbidden/BadRequest/etc.
+                throw (RuntimeException) e;
+            }
             throw new RuntimeException(e);
         }
     }
@@ -54,10 +55,6 @@ public class MetricsHelper {
                 .tag("accion", accion)
                 .register(meterRegistry);
 
-        try {
-            timer.record(runnable);
-        } catch (RuntimeException e) {
-            throw e;
-        }
+        timer.record(runnable);
     }
 }
