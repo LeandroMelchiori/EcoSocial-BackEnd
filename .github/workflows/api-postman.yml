@@ -58,15 +58,10 @@ jobs:
           curl -o- "https://dl-cli.pstmn.io/install/unix.sh" | sh
           postman --version
 
-      - name: Login (API Key)
-        env:
-          POSTMAN_API_KEY: ${{ secrets.POSTMAN_API_KEY }}
-        run: postman login --with-api-key "$POSTMAN_API_KEY"
-
-      - name: Run Postman collection
+      - name: Run Postman collection (repo files)
         run: |
-          postman collection run 38883854-3d510d9f-20e6-4b36-9ecb-dad5324b831a \
-            -e 38883854-739a5e69-3fc2-45c4-a6b7-05dd2381f298
+          postman collection run postman/collections/ecosocial-foro+catalogo.postman_collection.json \
+            -e postman/environments/ecosocial-foro+catalogo.postman_environment.json
 
       - name: Logs on failure
         if: failure()
