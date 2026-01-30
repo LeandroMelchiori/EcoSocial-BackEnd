@@ -184,20 +184,30 @@
                   "    pm.test(\"Categoria creada correctamente (201)\", () => {\r",
                   "        pm.expect(pm.response.code).to.eql(201);\r",
                   "    });\r",
-                  "}\r",
-                  "\r",
-                  "if (pm.response.code === 409) {\r",
+                  "    const json = pm.response.json();\r",
+                  "    const id = json.id ?? json.data?.id;\r",
+                  "    if (id) {\r",
+                  "        pm.environment.set(\"categoriaCatalogoId\", String(id));\r",
+                  "        console.log(\"Saved categoriaCatalogoId:\", id);\r",
+                  "    }\r",
+                  "} else if (pm.response.code === 409) {\r",
                   "    pm.test(\"Categoria ya existe (409)\", () => {\r",
                   "        pm.expect(pm.response.code).to.eql(409);\r",
                   "    });\r",
-                  "}\r",
-                  "\r",
-                  "\r",
-                  "const json = pm.response.json();\r",
-                  "const id = json.id ?? json.data?.id;\r",
-                  "\r",
-                  "// Guardar \"último creado\"\r",
-                  "pm.environment.set(\"categoriaCatalogoId\", id);"
+                  "    // On conflict, try to get ID from response\r",
+                  "    const json = pm.response.json();\r",
+                  "    const id = json.id ?? json.data?.id;\r",
+                  "    if (id) {\r",
+                  "        pm.environment.set(\"categoriaCatalogoId\", String(id));\r",
+                  "        console.log(\"Conflict - saved existing categoriaCatalogoId:\", id);\r",
+                  "    } else {\r",
+                  "        console.warn(\"Conflict but no ID in response. Will use previous value if available.\");\r",
+                  "    }\r",
+                  "} else {\r",
+                  "    pm.test(\"Unexpected response code\", () => {\r",
+                  "        pm.expect(pm.response.code).to.be.oneOf([201, 409]);\r",
+                  "    });\r",
+                  "}"
                 ],
                 "type": "text/javascript",
                 "packages": {},
@@ -220,7 +230,7 @@
             "header": [],
             "body": {
               "mode": "raw",
-              "raw": "{\"nombre\":\"Mobile1253\"}",
+              "raw": "{\"nombre\":\"Mobile{{$randomInt}}\"}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -252,19 +262,42 @@
                   "    pm.test(\"SubCategoria creada correctamente (201)\", () => {\r",
                   "        pm.expect(pm.response.code).to.eql(201);\r",
                   "    });\r",
-                  "}\r",
-                  "\r",
-                  "if (pm.response.code === 409) {\r",
+                  "    const json = pm.response.json();\r",
+                  "    const id = json.id ?? json.data?.id;\r",
+                  "    if (id) {\r",
+                  "        pm.environment.set(\"subcategoriaCatalogoId\", String(id));\r",
+                  "        console.log(\"Saved subcategoriaCatalogoId:\", id);\r",
+                  "    }\r",
+                  "} else if (pm.response.code === 409) {\r",
                   "    pm.test(\"SubCategoria ya existe (409)\", () => {\r",
                   "        pm.expect(pm.response.code).to.eql(409);\r",
                   "    });\r",
-                  "}\r",
-                  "\r",
-                  "const json = pm.response.json();\r",
-                  "const id = json.id ?? json.data?.id;\r",
-                  "\r",
-                  "// Guardar \"último creado\"\r",
-                  "pm.environment.set(\"subcategoriaCatalogoId\", id);"
+                  "    const json = pm.response.json();\r",
+                  "    const id = json.id ?? json.data?.id;\r",
+                  "    if (id) {\r",
+                  "        pm.environment.set(\"subcategoriaCatalogoId\", String(id));\r",
+                  "        console.log(\"Conflict - saved existing subcategoriaCatalogoId:\", id);\r",
+                  "    } else {\r",
+                  "        console.warn(\"Conflict but no ID in response. Will use previous value if available.\");\r",
+                  "    }\r",
+                  "} else {\r",
+                  "    pm.test(\"Unexpected response code\", () => {\r",
+                  "        pm.expect(pm.response.code).to.be.oneOf([201, 409]);\r",
+                  "    });\r",
+                  "}"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// Generate a unique subcategory name\r",
+                  "const timestamp = Date.now();\r",
+                  "pm.environment.set(\"uniqueSubcategoryName\", `Subcategoria-${timestamp}`);"
                 ],
                 "type": "text/javascript",
                 "packages": {},
@@ -287,7 +320,7 @@
             "header": [],
             "body": {
               "mode": "raw",
-              "raw": "{\r\n    \"nombre\": \"Curso creado por {{nombre}} {{apellido}}\",\r\n    \"categoriaId\": {{categoriaCatalogoId}}\r\n}\r\n",
+              "raw": "{\r\n    \"nombre\": \"{{uniqueSubcategoryName}}\",\r\n    \"categoriaId\": {{categoriaCatalogoId}}\r\n}\r\n",
               "options": {
                 "raw": {
                   "language": "json"
@@ -1059,20 +1092,33 @@
                   "  console.log(\"BODY:\", pm.response.text());\r",
                   "});\r",
                   "\r",
-                  "pm.test(\"Crear producto OK (201)\", () => {\r",
-                  "  pm.expect(pm.response.code).to.eql(201);\r",
-                  "});\r",
-                  "\r",
-                  "const json = pm.response.json();\r",
-                  "const id = json.id ?? json.data?.id;\r",
-                  "\r",
-                  "\r",
-                  "pm.test(\"Devuelve id\", () => {\r",
-                  "  pm.expect(id).to.exist;\r",
-                  "});\r",
-                  "\r",
-                  "// Guardar \"último creado\"\r",
-                  "pm.environment.set(\"productoId\", String(id));\r",
+                  "if (pm.response.code === 201) {\r",
+                  "    pm.test(\"Crear producto OK (201)\", () => {\r",
+                  "      pm.expect(pm.response.code).to.eql(201);\r",
+                  "    });\r",
+                  "    \r",
+                  "    const json = pm.response.json();\r",
+                  "    const id = json.id ?? json.data?.id;\r",
+                  "    \r",
+                  "    pm.test(\"Devuelve id\", () => {\r",
+                  "      pm.expect(id).to.exist;\r",
+                  "      pm.expect(id).to.not.equal(undefined);\r",
+                  "      pm.expect(id).to.not.equal(null);\r",
+                  "    });\r",
+                  "    \r",
+                  "    if (id !== undefined && id !== null) {\r",
+                  "        pm.environment.set(\"productoId\", String(id));\r",
+                  "        console.log(\"Saved productoId:\", id);\r",
+                  "    } else {\r",
+                  "        console.error(\"Product created but no ID returned!\");\r",
+                  "    }\r",
+                  "} else {\r",
+                  "    pm.test(\"Unexpected status code\", () => {\r",
+                  "        console.error(\"Expected 201, got:\", pm.response.code);\r",
+                  "        console.error(\"Response body:\", pm.response.text());\r",
+                  "        pm.expect(pm.response.code).to.eql(201);\r",
+                  "    });\r",
+                  "}\r",
                   ""
                 ],
                 "type": "text/javascript",
@@ -1120,8 +1166,8 @@
                   "type": "file",
                   "uuid": "661f4583-b9aa-4545-85db-fb7dadc432c4",
                   "src": [
-                    "postman-cloud:///1f0fd4d4-ae00-45b0-b5ee-8f8fc11c2419",
-                    "postman-cloud:///1f0fd4d4-ab1a-42b0-9038-80d3d846f125"
+                    "postman/fixtures/img1.jpg",
+                    "postman/fixtures/img2.jpg"
                   ]
                 }
               ]
@@ -1187,6 +1233,22 @@
           "name": "Editar Producto",
           "event": [
             {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// Check if productoId is set\r",
+                  "const productoId = pm.environment.get(\"productoId\");\r",
+                  "if (!productoId || productoId === \"undefined\" || productoId === \"null\") {\r",
+                  "    console.error(\"productoId not set! Skipping this request.\");\r",
+                  "    pm.execution.skipRequest();\r",
+                  "}"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
               "listen": "test",
               "script": {
                 "exec": [
@@ -1251,6 +1313,22 @@
         {
           "name": "Detalle Producto",
           "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// Check if productoId is set\r",
+                  "const productoId = pm.environment.get(\"productoId\");\r",
+                  "if (!productoId || productoId === \"undefined\" || productoId === \"null\") {\r",
+                  "    console.error(\"productoId not set! Skipping this request.\");\r",
+                  "    pm.execution.skipRequest();\r",
+                  "}"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
             {
               "listen": "test",
               "script": {
