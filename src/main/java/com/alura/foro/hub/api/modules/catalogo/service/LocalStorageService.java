@@ -107,7 +107,8 @@ public class LocalStorageService implements StorageService {
             return finalKeys;
 
         } catch (Exception e) {
-            // Si falla la promoción, no hay archivos finales que limpiar ya que no se crearon
+            // Si falla la promoción, algunos archivos pueden haberse copiado parcialmente.
+            // Se deja la limpieza a cargo de operaciones posteriores o procesos de mantenimiento.
             throw new RuntimeException("Error promoviendo temp->final (local)", e);
         }
     }
