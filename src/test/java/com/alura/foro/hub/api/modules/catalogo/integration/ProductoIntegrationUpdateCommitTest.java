@@ -5,13 +5,17 @@ import com.alura.foro.hub.api.modules.catalogo.domain.Subcategoria;
 import com.alura.foro.hub.api.modules.catalogo.repository.CategoriaCatalogoRepository;
 import com.alura.foro.hub.api.modules.catalogo.repository.SubCategoriaCatalogoRepository;
 import com.alura.foro.hub.api.security.jwt.TokenService;
+import com.alura.foro.hub.api.user.domain.Localidad;
+import com.alura.foro.hub.api.user.domain.PerfilEmprendimiento;
 import com.alura.foro.hub.api.user.domain.Usuario;
+import com.alura.foro.hub.api.user.repository.LocalidadRepository;
+import com.alura.foro.hub.api.user.repository.PerfilEmprendimientoRepository;
 import com.alura.foro.hub.api.user.repository.UsuarioRepository;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.io.TempDir;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpHeaders;
@@ -19,6 +23,8 @@ import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMultipartHttpServletRequestBuilder;
 
@@ -30,6 +36,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -47,12 +54,16 @@ class ProductoIntegrationUpdateCommitTest {
     @Autowired CategoriaCatalogoRepository categoriaRepository;
     @Autowired SubCategoriaCatalogoRepository subcategoriaRepository;
 
+    @Autowired LocalidadRepository localidadRepository;
+    @Autowired PerfilEmprendimientoRepository perfilEmprendimientoRepository;
+
     @Autowired TokenService tokenService;
     @Autowired PasswordEncoder passwordEncoder;
 
-    @Value("${catalogo.local.root:uploads}")
-    String uploadsRoot;
+    @TempDir
+    static Path tempDir;
 
+    private static Path uploadsRoot;
     private Path uploadsPath;
 
     private String authHeader;
@@ -60,40 +71,57 @@ class ProductoIntegrationUpdateCommitTest {
     private CategoriaCatalogo categoria;
     private Subcategoria subcategoria;
 
+    @DynamicPropertySource
+    static void props(DynamicPropertyRegistry r) {
+        uploadsRoot = tempDir.resolve("uploads-test");
+        r.add("catalogo.storage", () -> "local");
+        r.add("catalogo.local.root", () -> uploadsRoot.toString());
+    }
+
     @BeforeEach
     void setup() throws Exception {
-        uploadsPath = Paths.get(uploadsRoot).toAbsolutePath().normalize();
+        uploadsPath = uploadsRoot.toAbsolutePath().normalize();
         purgeDir(uploadsPath);
 
         // ---------- Usuario ----------
         Usuario usuario = new Usuario();
         usuario.setNombre("User");
         usuario.setApellido("Test");
-        usuario.setDni(generarDni8()); // helper abajo
-
-        String email = "user_test_" + UUID.randomUUID() + "@mail.com";
-        usuario.setEmail(email);
-
+        usuario.setDni(generarDni8());
+        usuario.setEmail("user_test_" + UUID.randomUUID() + "@mail.com");
         usuario.setPassword(passwordEncoder.encode("123456"));
         usuario = usuarioRepository.save(usuario);
 
-// JWT REAL (lo que tu SecurityFilter espera)
-        authHeader = "Bearer " + tokenService.generateToken(usuario);
+        // ---------- Localidad + Emprendimiento (evita 403) ----------
+        Localidad loc = new Localidad();
+        loc.setGeorefId("test-" + UUID.randomUUID());
+        loc.setNombre("Rosario");
+        loc.setDepartamento("Rosario");
+        loc.setActivo(true);
+        loc = localidadRepository.save(loc);
 
+        PerfilEmprendimiento emp = new PerfilEmprendimiento();
+        emp.setUsuario(usuario);
+        emp.setNombre("Emprendimiento Test");
+        emp.setDescripcion("Para tests update/commit");
+        emp.setLocalidad(loc);
+        emp.setActivo(true);
+        perfilEmprendimientoRepository.save(emp);
+
+        // JWT REAL (lo que tu SecurityFilter espera)
+        authHeader = "Bearer " + tokenService.generateToken(usuario);
 
         // ---------- Categoria ----------
         categoria = new CategoriaCatalogo();
         categoria.setNombre("Tecnología");
+        categoria.setActivo(true);
         categoria = categoriaRepository.save(categoria);
 
         // ---------- Subcategoria ----------
         subcategoria = new Subcategoria();
         subcategoria.setNombre("Celulares");
-
-        // OJO: ajustá según tu entidad:
-        // - si es setCategoriaCatalogo(categoria) o setCategoria(categoria)
+        subcategoria.setActivo(true);
         subcategoria.setCategoria(categoria);
-
         subcategoria = subcategoriaRepository.save(subcategoria);
     }
 
@@ -126,7 +154,7 @@ class ProductoIntegrationUpdateCommitTest {
                 """.formatted(categoria.getId(), subcategoria.getId());
 
         MockMultipartFile data = new MockMultipartFile(
-                "data", "data.json", "application/json",
+                "data", "data.json", MediaType.APPLICATION_JSON_VALUE,
                 updateJson.getBytes(StandardCharsets.UTF_8)
         );
 
@@ -139,14 +167,12 @@ class ProductoIntegrationUpdateCommitTest {
                         multipart("/catalogo/productos/{id}", productoId)
                                 .file(data)
                                 .file(nuevaImg)
-                                // multipart() por defecto es POST. Forzamos PUT:
                                 .with(req -> { req.setMethod("PUT"); return req; })
-                                // ✅ AUTH REAL
                                 .header(HttpHeaders.AUTHORIZATION, authHeader)
                                 .contentType(MediaType.MULTIPART_FORM_DATA)
                 )
                 .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
                 .andReturn();
 
         JsonNode updated = objectMapper.readTree(updateResult.getResponse().getContentAsString());
@@ -167,9 +193,9 @@ class ProductoIntegrationUpdateCommitTest {
         }
 
         // 5) Assert NO quedó basura en temp (local)
-        Path tempDir = uploadsPath.resolve("temp");
-        if (Files.exists(tempDir)) {
-            List<Path> tempFiles = Files.walk(tempDir)
+        Path temp = uploadsPath.resolve("temp");
+        if (Files.exists(temp)) {
+            List<Path> tempFiles = Files.walk(temp)
                     .filter(Files::isRegularFile)
                     .collect(Collectors.toList());
             assertThat(tempFiles).isEmpty();
@@ -180,6 +206,11 @@ class ProductoIntegrationUpdateCommitTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(productoId))
                 .andExpect(jsonPath("$.imagenes.length()").value(1));
+
+        // 7) extra: DELETE para forzar limpieza por commit (si tu código lo hace)
+        mvc.perform(delete("/catalogo/productos/{id}", productoId)
+                        .header(HttpHeaders.AUTHORIZATION, authHeader))
+                .andExpect(status().isNoContent());
     }
 
     // -------------------------
@@ -200,13 +231,12 @@ class ProductoIntegrationUpdateCommitTest {
         MockMultipartFile data = new MockMultipartFile(
                 "data",
                 "data.json",
-                "application/json",
+                MediaType.APPLICATION_JSON_VALUE,
                 crearJson.getBytes(StandardCharsets.UTF_8)
         );
 
         MockMultipartHttpServletRequestBuilder builder =
-                multipart("/catalogo/productos")
-                        .file(data);
+                multipart("/catalogo/productos").file(data);
 
         for (int i = 1; i <= cantidadImgs; i++) {
             builder.file(new MockMultipartFile(
@@ -217,14 +247,11 @@ class ProductoIntegrationUpdateCommitTest {
             ));
         }
 
-        builder
-                // ✅ AUTH REAL
-                .header(HttpHeaders.AUTHORIZATION, authHeader)
-                .contentType(MediaType.MULTIPART_FORM_DATA);
-
-        var result = mvc.perform(builder)
+        var result = mvc.perform(builder
+                        .header(HttpHeaders.AUTHORIZATION, authHeader)
+                        .contentType(MediaType.MULTIPART_FORM_DATA))
                 .andExpect(status().isCreated())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
                 .andReturn();
 
         JsonNode created = objectMapper.readTree(result.getResponse().getContentAsString());
@@ -232,6 +259,8 @@ class ProductoIntegrationUpdateCommitTest {
     }
 
     private static byte[] fakePngBytes(String seed) {
+        // No hace falta PNG real si tu backend no valida el contenido.
+        // Si valida, cambiamos esto por un header PNG válido.
         return ("PNG_BYTES_" + seed + "_" + UUID.randomUUID())
                 .getBytes(StandardCharsets.UTF_8);
     }
@@ -253,9 +282,7 @@ class ProductoIntegrationUpdateCommitTest {
     }
 
     private static String generarDni8() {
-        // 8 dígitos numéricos
         int n = Math.abs(UUID.randomUUID().hashCode()) % 100_000_000;
         return String.format("%08d", n);
     }
-
 }

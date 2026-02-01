@@ -155,10 +155,8 @@ public class CatalogoAdminController {
                     """)
             )
     )
-    @PostMapping("/categorias/{categoriaId}/subcategorias")
-    public ResponseEntity<DatosDetalleSubcategoriaProducto> crearSubcategoria(
-            @RequestBody @Valid DatosCrearSubcategoriaProducto dto
-    ) {
+    @PostMapping("/subcategorias")
+    public ResponseEntity<DatosDetalleSubcategoriaProducto> crearSubcategoria(@RequestBody @Valid DatosCrearSubcategoriaProducto dto)  {
         var creado = service.crearSubcategoria(dto);
         var location = ServletUriComponentsBuilder
                 .fromCurrentRequest()
@@ -190,11 +188,11 @@ public class CatalogoAdminController {
                     """)
             )
     )
-    @PutMapping("/categorias/{categoriaId}/subcategorias/{id}")
+
+    @PutMapping("/subcategorias/{id}")
     public ResponseEntity<DatosDetalleSubcategoriaProducto> actualizarSubcategoria(
             @PathVariable Long id,
-            @RequestBody @Valid DatosActualizarSubcategoriaProducto dto
-    ) {
+            @RequestBody @Valid DatosActualizarSubcategoriaProducto dto){
         return ResponseEntity.ok(service.actualizarSubcategoria(id, dto));
     }
 

@@ -1,5 +1,6 @@
 package com.alura.foro.hub.api.modules.catalogo.domain;
 
+import com.alura.foro.hub.api.user.domain.PerfilEmprendimiento;
 import com.alura.foro.hub.api.user.domain.Usuario;
 import jakarta.persistence.*;
 import lombok.*;
@@ -21,8 +22,8 @@ public class Producto {
     private Long id;
 
     @ManyToOne(optional = false, fetch = FetchType.LAZY)
-    @JoinColumn(name = "usuario_id", nullable = false)
-    private Usuario usuario;
+    @JoinColumn(name = "emprendimiento_id", nullable = false)
+    private PerfilEmprendimiento emprendimiento;
 
     @ManyToOne(optional = false, fetch = FetchType.LAZY)
     @JoinColumn(name = "categoria_producto_id", nullable = false)

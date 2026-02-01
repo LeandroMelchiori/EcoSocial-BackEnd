@@ -11,8 +11,8 @@ public record DatosDetalleProducto(
         @Schema(example = "10")
         Long id,
 
-        @Schema(description = "ID del usuario creador", example = "3")
-        Long usuarioId,
+        @Schema(description = "ID del emprendimiento creador", example = "3")
+        Long emprendimientoId,
 
         @Schema(description = "ID de la categoría", example = "2")
         Long categoriaId,

@@ -40,8 +40,7 @@ class MinioStorageServiceIntegrationTest {
 
     @BeforeAll
     void setup() throws Exception {
-        // ✅ Si MinIO no está disponible -> SKIP del test (no falla)
-        Assumptions.assumeTrue(isMinioUp(minioEndpoint, Duration.ofSeconds(2)),
+        Assumptions.assumeTrue(isMinioReady(minioEndpoint, Duration.ofSeconds(2)),
                 "MinIO no está disponible en " + minioEndpoint + " (se ignora el test)");
 
         client = MinioClient.builder()
@@ -57,11 +56,9 @@ class MinioStorageServiceIntegrationTest {
         storage = new MinioStorageService(client, bucket);
     }
 
-    private boolean isMinioUp(String endpoint, Duration timeout) {
+    private boolean isMinioReady(String endpoint, Duration timeout) {
         try {
             String base = endpoint.endsWith("/") ? endpoint.substring(0, endpoint.length() - 1) : endpoint;
-
-            // MinIO suele responder en /minio/health/ready (y si no, el GET al root igual te dice si hay algo vivo)
             String healthUrl = base + "/minio/health/ready";
 
             HttpURLConnection con = (HttpURLConnection) new URL(healthUrl).openConnection();
@@ -69,15 +66,14 @@ class MinioStorageServiceIntegrationTest {
             con.setConnectTimeout((int) timeout.toMillis());
             con.setReadTimeout((int) timeout.toMillis());
 
-            int code = con.getResponseCode();
-            return code >= 200 && code < 500; // 200-399 OK, 404 también indica "hay server"
+            return con.getResponseCode() == 200;
         } catch (Exception e) {
             return false;
         }
     }
 
     @Test
-    void saveProductImage_sube_objeto_y_existe_en_bucket() throws Exception {
+    void saveProductImage_sube_objeto_y_se_puede_leer() throws Exception {
         var file = new MockMultipartFile(
                 "imagenes",
                 "a.png",
@@ -85,26 +81,43 @@ class MinioStorageServiceIntegrationTest {
                 "contenido".getBytes(StandardCharsets.UTF_8)
         );
 
-        Long productoId = 10L;
+        Long productoId = System.currentTimeMillis(); // único
         int orden = 1;
 
-        String objectKey = storage.saveProductImage(productoId, file, orden);
+        String objectKey = null;
 
-        assertNotNull(objectKey);
-        assertTrue(objectKey.startsWith("productos/" + productoId + "/"));
+        try {
+            objectKey = storage.saveProductImage(productoId, file, orden);
 
-        var stat = client.statObject(
-                StatObjectArgs.builder()
+            assertNotNull(objectKey);
+            assertTrue(objectKey.startsWith("productos/" + productoId + "/"));
+
+            var stat = client.statObject(
+                    StatObjectArgs.builder()
+                            .bucket(bucket)
+                            .object(objectKey)
+                            .build()
+            );
+            assertNotNull(stat);
+            assertTrue(stat.size() > 0);
+
+            // ✅ verificar que realmente se puede leer el objeto
+            try (var stream = client.getObject(
+                    GetObjectArgs.builder().bucket(bucket).object(objectKey).build()
+            )) {
+                byte[] bytes = stream.readAllBytes();
+                assertArrayEquals("contenido".getBytes(StandardCharsets.UTF_8), bytes);
+            }
+
+        } finally {
+            // ✅ cleanup: no ensuciar el bucket
+            if (objectKey != null) {
+                client.removeObject(RemoveObjectArgs.builder()
                         .bucket(bucket)
                         .object(objectKey)
-                        .build()
-        );
-
-        assertNotNull(stat);
-        assertTrue(stat.size() > 0);
-
-        String url = storage.getUrl(objectKey);
-        assertNotNull(url);
-        assertTrue(url.startsWith("http"));
+                        .build());
+            }
+        }
     }
 }
+
