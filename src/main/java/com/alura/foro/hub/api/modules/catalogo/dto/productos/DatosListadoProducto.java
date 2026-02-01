@@ -20,7 +20,7 @@ public record DatosListadoProducto(
         LocalDateTime fechaCreacion,
 
         @Schema(example = "3")
-        Long usuarioId,
+        Long emprendimientoId,
 
         @Schema(example = "2")
         Long categoriaId,

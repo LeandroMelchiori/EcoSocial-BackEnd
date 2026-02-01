@@ -19,7 +19,7 @@ public class Localidad {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "georef_id", nullable = false, unique = true, length = 20)
+    @Column(name = "georef_id", nullable = false, unique = true, length = 64)
     private String georefId;
 
     @Column(nullable = false, length = 120)

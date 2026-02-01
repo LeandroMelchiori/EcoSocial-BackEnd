@@ -14,7 +14,7 @@ SELECT
 );
 
 -- 2️⃣ Asignar perfil ADMIN al usuario admin
-INSERT INTO usuario_perfiles (usuario_id, perfiles_id)
+INSERT INTO usuario_perfiles (usuario_id, perfil_id)
 SELECT u.id, p.id
 FROM usuario u
          JOIN perfil p ON p.nombre = 'ADMIN'
@@ -23,5 +23,5 @@ WHERE u.email = 'admin@forohub.com'
     SELECT 1
     FROM usuario_perfiles up
     WHERE up.usuario_id = u.id
-      AND up.perfiles_id = p.id
+      AND up.perfil_id = p.id
 );

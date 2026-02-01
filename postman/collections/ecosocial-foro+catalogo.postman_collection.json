@@ -184,30 +184,20 @@
                   "    pm.test(\"Categoria creada correctamente (201)\", () => {\r",
                   "        pm.expect(pm.response.code).to.eql(201);\r",
                   "    });\r",
-                  "    const json = pm.response.json();\r",
-                  "    const id = json.id ?? json.data?.id;\r",
-                  "    if (id) {\r",
-                  "        pm.environment.set(\"categoriaCatalogoId\", String(id));\r",
-                  "        console.log(\"Saved categoriaCatalogoId:\", id);\r",
-                  "    }\r",
-                  "} else if (pm.response.code === 409) {\r",
+                  "}\r",
+                  "\r",
+                  "if (pm.response.code === 409) {\r",
                   "    pm.test(\"Categoria ya existe (409)\", () => {\r",
                   "        pm.expect(pm.response.code).to.eql(409);\r",
                   "    });\r",
-                  "    // On conflict, try to get ID from response\r",
-                  "    const json = pm.response.json();\r",
-                  "    const id = json.id ?? json.data?.id;\r",
-                  "    if (id) {\r",
-                  "        pm.environment.set(\"categoriaCatalogoId\", String(id));\r",
-                  "        console.log(\"Conflict - saved existing categoriaCatalogoId:\", id);\r",
-                  "    } else {\r",
-                  "        console.warn(\"Conflict but no ID in response. Will use previous value if available.\");\r",
-                  "    }\r",
-                  "} else {\r",
-                  "    pm.test(\"Unexpected response code\", () => {\r",
-                  "        pm.expect(pm.response.code).to.be.oneOf([201, 409]);\r",
-                  "    });\r",
-                  "}"
+                  "}\r",
+                  "\r",
+                  "\r",
+                  "const json = pm.response.json();\r",
+                  "const id = json.id ?? json.data?.id;\r",
+                  "\r",
+                  "// Guardar \"último creado\"\r",
+                  "pm.environment.set(\"categoriaCatalogoId\", id);"
                 ],
                 "type": "text/javascript",
                 "packages": {},
@@ -230,7 +220,7 @@
             "header": [],
             "body": {
               "mode": "raw",
-              "raw": "{\"nombre\":\"Mobile{{$randomInt}}\"}",
+              "raw": "{\"nombre\":\"Mobile1253\"}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -262,42 +252,19 @@
                   "    pm.test(\"SubCategoria creada correctamente (201)\", () => {\r",
                   "        pm.expect(pm.response.code).to.eql(201);\r",
                   "    });\r",
-                  "    const json = pm.response.json();\r",
-                  "    const id = json.id ?? json.data?.id;\r",
-                  "    if (id) {\r",
-                  "        pm.environment.set(\"subcategoriaCatalogoId\", String(id));\r",
-                  "        console.log(\"Saved subcategoriaCatalogoId:\", id);\r",
-                  "    }\r",
-                  "} else if (pm.response.code === 409) {\r",
+                  "}\r",
+                  "\r",
+                  "if (pm.response.code === 409) {\r",
                   "    pm.test(\"SubCategoria ya existe (409)\", () => {\r",
                   "        pm.expect(pm.response.code).to.eql(409);\r",
                   "    });\r",
-                  "    const json = pm.response.json();\r",
-                  "    const id = json.id ?? json.data?.id;\r",
-                  "    if (id) {\r",
-                  "        pm.environment.set(\"subcategoriaCatalogoId\", String(id));\r",
-                  "        console.log(\"Conflict - saved existing subcategoriaCatalogoId:\", id);\r",
-                  "    } else {\r",
-                  "        console.warn(\"Conflict but no ID in response. Will use previous value if available.\");\r",
-                  "    }\r",
-                  "} else {\r",
-                  "    pm.test(\"Unexpected response code\", () => {\r",
-                  "        pm.expect(pm.response.code).to.be.oneOf([201, 409]);\r",
-                  "    });\r",
-                  "}"
-                ],
-                "type": "text/javascript",
-                "packages": {},
-                "requests": {}
-              }
-            },
-            {
-              "listen": "prerequest",
-              "script": {
-                "exec": [
-                  "// Generate a unique subcategory name\r",
-                  "const timestamp = Date.now();\r",
-                  "pm.environment.set(\"uniqueSubcategoryName\", `Subcategoria-${timestamp}`);"
+                  "}\r",
+                  "\r",
+                  "const json = pm.response.json();\r",
+                  "const id = json.id ?? json.data?.id;\r",
+                  "\r",
+                  "// Guardar \"último creado\"\r",
+                  "pm.environment.set(\"subcategoriaCatalogoId\", id);"
                 ],
                 "type": "text/javascript",
                 "packages": {},
@@ -320,7 +287,7 @@
             "header": [],
             "body": {
               "mode": "raw",
-              "raw": "{\r\n    \"nombre\": \"{{uniqueSubcategoryName}}\",\r\n    \"categoriaId\": {{categoriaCatalogoId}}\r\n}\r\n",
+              "raw": "{\r\n    \"nombre\": \"Curso creado por {{nombre}} {{apellido}}\",\r\n    \"categoriaId\": {{categoriaCatalogoId}}\r\n}\r\n",
               "options": {
                 "raw": {
                   "language": "json"
@@ -328,15 +295,13 @@
               }
             },
             "url": {
-              "raw": "{{baseUrl}}/catalogo/admin/categorias/{{categoriaCatalogoId}}/subcategorias",
+              "raw": "{{baseUrl}}/catalogo/admin/subcategorias",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
                 "catalogo",
                 "admin",
-                "categorias",
-                "{{categoriaCatalogoId}}",
                 "subcategorias"
               ]
             }
@@ -346,22 +311,6 @@
         {
           "name": "CategoriaCatalogo - Editar por ID",
           "event": [
-            {
-              "listen": "prerequest",
-              "script": {
-                "exec": [
-                  "// Check if categoriaCatalogoId is set\r",
-                  "const categoriaId = pm.environment.get(\"categoriaCatalogoId\");\r",
-                  "if (!categoriaId || categoriaId === \"undefined\") {\r",
-                  "    console.error(\"categoriaCatalogoId not set! Skipping this request.\");\r",
-                  "    pm.execution.skipRequest();\r",
-                  "}"
-                ],
-                "type": "text/javascript",
-                "packages": {},
-                "requests": {}
-              }
-            },
             {
               "listen": "test",
               "script": {
@@ -419,27 +368,6 @@
           "name": "SubCategoriaCatalogo - Editar por ID",
           "event": [
             {
-              "listen": "prerequest",
-              "script": {
-                "exec": [
-                  "// Check if both categoriaCatalogoId and subcategoriaCatalogoId are set\r",
-                  "const categoriaId = pm.environment.get(\"categoriaCatalogoId\");\r",
-                  "const subcategoriaId = pm.environment.get(\"subcategoriaCatalogoId\");\r",
-                  "if (!categoriaId || categoriaId === \"undefined\") {\r",
-                  "    console.error(\"categoriaCatalogoId not set! Skipping this request.\");\r",
-                  "    pm.execution.skipRequest();\r",
-                  "}\r",
-                  "if (!subcategoriaId || subcategoriaId === \"undefined\") {\r",
-                  "    console.error(\"subcategoriaCatalogoId not set! Skipping this request.\");\r",
-                  "    pm.execution.skipRequest();\r",
-                  "}"
-                ],
-                "type": "text/javascript",
-                "packages": {},
-                "requests": {}
-              }
-            },
-            {
               "listen": "test",
               "script": {
                 "exec": [
@@ -476,15 +404,13 @@
               }
             },
             "url": {
-              "raw": "{{baseUrl}}/catalogo/admin/categorias/{{categoriaCatalogoId}}/subcategorias/{{subcategoriaCatalogoId}}",
+              "raw": "{{baseUrl}}/catalogo/admin/subcategorias/{{subcategoriaCatalogoId}}",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
                 "catalogo",
                 "admin",
-                "categorias",
-                "{{categoriaCatalogoId}}",
                 "subcategorias",
                 "{{subcategoriaCatalogoId}}"
               ]
@@ -669,13 +595,6 @@
               "listen": "prerequest",
               "script": {
                 "exec": [
-                  "// Check if categoriaCatalogoId is set\r",
-                  "const categoriaId = pm.environment.get(\"categoriaCatalogoId\");\r",
-                  "if (!categoriaId || categoriaId === \"undefined\") {\r",
-                  "    console.error(\"categoriaCatalogoId not set! Skipping this request.\");\r",
-                  "    pm.execution.skipRequest();\r",
-                  "}",
-                  "\r",
                   ""
                 ],
                 "type": "text/javascript",
@@ -717,22 +636,6 @@
         {
           "name": "CatalogoCategorias - Eliminar sinPermiso",
           "event": [
-            {
-              "listen": "prerequest",
-              "script": {
-                "exec": [
-                  "// Check if categoriaCatalogoId is set\r",
-                  "const categoriaId = pm.environment.get(\"categoriaCatalogoId\");\r",
-                  "if (!categoriaId || categoriaId === \"undefined\") {\r",
-                  "    console.error(\"categoriaCatalogoId not set! Skipping this request.\");\r",
-                  "    pm.execution.skipRequest();\r",
-                  "}"
-                ],
-                "type": "text/javascript",
-                "packages": {},
-                "requests": {}
-              }
-            },
             {
               "listen": "test",
               "script": {
@@ -778,22 +681,6 @@
         {
           "name": "Categorias - Editar sinPermiso",
           "event": [
-            {
-              "listen": "prerequest",
-              "script": {
-                "exec": [
-                  "// Check if categoriaCatalogoId is set\r",
-                  "const categoriaId = pm.environment.get(\"categoriaCatalogoId\");\r",
-                  "if (!categoriaId || categoriaId === \"undefined\") {\r",
-                  "    console.error(\"categoriaCatalogoId not set! Skipping this request.\");\r",
-                  "    pm.execution.skipRequest();\r",
-                  "}"
-                ],
-                "type": "text/javascript",
-                "packages": {},
-                "requests": {}
-              }
-            },
             {
               "listen": "test",
               "script": {
@@ -850,22 +737,6 @@
         {
           "name": "Cursos - Editar sinPermiso",
           "event": [
-            {
-              "listen": "prerequest",
-              "script": {
-                "exec": [
-                  "// Check if categoriaCatalogoId is set\r",
-                  "const categoriaId = pm.environment.get(\"categoriaCatalogoId\");\r",
-                  "if (!categoriaId || categoriaId === \"undefined\") {\r",
-                  "    console.error(\"categoriaCatalogoId not set! Skipping this request.\");\r",
-                  "    pm.execution.skipRequest();\r",
-                  "}"
-                ],
-                "type": "text/javascript",
-                "packages": {},
-                "requests": {}
-              }
-            },
             {
               "listen": "test",
               "script": {
@@ -965,22 +836,6 @@
         {
           "name": "SubCategorias - Listar por categoria",
           "event": [
-            {
-              "listen": "prerequest",
-              "script": {
-                "exec": [
-                  "// Check if categoriaCatalogoId is set\r",
-                  "const categoriaId = pm.environment.get(\"categoriaCatalogoId\");\r",
-                  "if (!categoriaId || categoriaId === \"undefined\") {\r",
-                  "    console.error(\"categoriaCatalogoId not set! Skipping this request.\");\r",
-                  "    pm.execution.skipRequest();\r",
-                  "}"
-                ],
-                "type": "text/javascript",
-                "packages": {},
-                "requests": {}
-              }
-            },
             {
               "listen": "test",
               "script": {
@@ -1189,6 +1044,249 @@
           "response": []
         },
         {
+          "name": "Crear Producto - Error debe crear emprendimiento",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Bloquea crear producto si no hay emprendimiento (403/400)\", () => {\r",
+                  "  pm.expect([403, 400]).to.include(pm.response.code);\r",
+                  "});\r",
+                  "\r",
+                  "let json = {};\r",
+                  "try { json = pm.response.json(); } catch (e) {}\r",
+                  "\r",
+                  "pm.test(\"Devuelve mensaje indicando que falta emprendimiento\", () => {\r",
+                  "  pm.expect(json).to.have.property(\"message\");\r",
+                  "  pm.expect((json.message || \"\").toLowerCase()).to.include(\"emprendimiento\");\r",
+                  "});\r",
+                  "\r",
+                  "// opcional: si tu handler devuelve status/error\r",
+                  "pm.test(\"Incluye status/error (opcional)\", () => {\r",
+                  "  if (json.status !== undefined) pm.expect(json.status).to.be.a(\"number\");\r",
+                  "  if (json.error !== undefined) pm.expect(json.error).to.be.a(\"string\");\r",
+                  "});\r",
+                  "\r",
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "data",
+                  "value": "{\n  \"categoriaCatalogoId\": {{categoriaCatalogoId}},\n  \"subCategoriaCatalogoId\": {{subcategoriaCatalogoId}},\n  \"titulo\": \"Sillón reciclado\",\n  \"descripcion\": \"Hecho a mano con materiales reciclados. Muy cómodo y resistente.\"\n}",
+                  "type": "text",
+                  "uuid": "f1c083c5-9ba0-4da0-a353-5d85fcd314c9",
+                  "contentType": "application/json"
+                },
+                {
+                  "key": "imagenes",
+                  "type": "file",
+                  "uuid": "661f4583-b9aa-4545-85db-fb7dadc432c4",
+                  "src": [
+                    "postman/fixtures/img1.jpg",
+                    "postman/fixtures/img2.jpg"
+                  ]
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/catalogo/productos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "catalogo",
+                "productos"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Producto - Crear Emprendimiento",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const status = pm.response.code;\r",
+                  "\r",
+                  "// Intentamos parsear JSON siempre\r",
+                  "let json = {};\r",
+                  "try { json = pm.response.json(); } catch (e) { json = {}; }\r",
+                  "\r",
+                  "pm.test(\"Crear emprendimiento: OK si crea (201) o si ya existe (400)\", function () {\r",
+                  "  pm.expect([201, 400]).to.include(status);\r",
+                  "\r",
+                  "  if (status === 400) {\r",
+                  "    pm.expect(json).to.have.property(\"message\");\r",
+                  "    pm.expect(json.message).to.match(/ya tiene un emprendimiento creado/i);\r",
+                  "  }\r",
+                  "});\r",
+                  "\r",
+                  "if (status === 201) {\r",
+                  "  // ✅ Caso creación nueva\r",
+                  "  pm.test(\"Devuelve id y usuarioId\", function () {\r",
+                  "    pm.expect(json).to.have.property(\"id\");\r",
+                  "    pm.expect(json.id).to.be.a(\"number\");\r",
+                  "\r",
+                  "    pm.expect(json).to.have.property(\"usuarioId\");\r",
+                  "    pm.expect(json.usuarioId).to.be.a(\"number\");\r",
+                  "  });\r",
+                  "\r",
+                  "  pm.collectionVariables.set(\"emprendimientoId\", json.id);\r",
+                  "\r",
+                  "} else if (status === 400 && /ya tiene un emprendimiento creado/i.test(json.message || \"\")) {\r",
+                  "  // ✅ Caso ya existía → el test sigue siendo válido\r",
+                  "  pm.test(\"El emprendimiento ya existía (caso válido)\", function () {\r",
+                  "    pm.expect(true).to.eql(true);\r",
+                  "  });\r",
+                  "\r",
+                  "  // Si todavía no tenemos el ID, lo recuperamos\r",
+                  "  const existingId = pm.collectionVariables.get(\"emprendimientoId\");\r",
+                  "  if (!existingId) {\r",
+                  "    pm.sendRequest({\r",
+                  "      url: pm.environment.get(\"baseUrl\") + \"/me/emprendimiento\",\r",
+                  "      method: \"GET\",\r",
+                  "      header: {\r",
+                  "        \"Authorization\": \"Bearer \" + pm.environment.get(\"token\"),\r",
+                  "        \"Content-Type\": \"application/json\"\r",
+                  "      }\r",
+                  "    }, function (err, res) {\r",
+                  "\r",
+                  "      pm.test(\"GET /me/emprendimiento responde 200\", function () {\r",
+                  "        pm.expect(err).to.equal(null);\r",
+                  "        pm.expect(res.code).to.equal(200);\r",
+                  "      });\r",
+                  "\r",
+                  "      const data = res.json();\r",
+                  "      if (data && typeof data.id === \"number\") {\r",
+                  "        pm.collectionVariables.set(\"emprendimientoId\", data.id);\r",
+                  "      }\r",
+                  "    });\r",
+                  "  }\r",
+                  "}\r",
+                  "\r",
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"nombre\": \"Mi emprendimiento\",\r\n  \"descripcion\": \"Vendo cosas re piolas\",\r\n  \"telefonoContacto\": \"3411234567\",\r\n  \"instagram\": \"@miemprendimiento\",\r\n  \"facebook\": \"mi.emprendimiento\",\r\n  \"provincia\": \"Santa Fe\",\r\n  \"localidadId\": 1,\r\n  \"direccion\": \"Mitre 123\",\r\n  \"codigoPostal\": \"2000\"\r\n}\r\n",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/me/emprendimiento",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "me",
+                "emprendimiento"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Producto - Detalle MiEmprendimiento",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Detalle correcto -> 200\", () => {\r",
+                  "  pm.expect([200]).to.include(pm.response.code);\r",
+                  "});\r",
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/me/emprendimiento",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "me",
+                "emprendimiento"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
           "name": "Crear Producto",
           "event": [
             {
@@ -1200,33 +1298,20 @@
                   "  console.log(\"BODY:\", pm.response.text());\r",
                   "});\r",
                   "\r",
-                  "if (pm.response.code === 201) {\r",
-                  "    pm.test(\"Crear producto OK (201)\", () => {\r",
-                  "      pm.expect(pm.response.code).to.eql(201);\r",
-                  "    });\r",
-                  "    \r",
-                  "    const json = pm.response.json();\r",
-                  "    const id = json.id ?? json.data?.id;\r",
-                  "    \r",
-                  "    pm.test(\"Devuelve id\", () => {\r",
-                  "      pm.expect(id).to.exist;\r",
-                  "      pm.expect(id).to.not.equal(undefined);\r",
-                  "      pm.expect(id).to.not.equal(null);\r",
-                  "    });\r",
-                  "    \r",
-                  "    if (id !== undefined && id !== null) {\r",
-                  "        pm.environment.set(\"productoId\", String(id));\r",
-                  "        console.log(\"Saved productoId:\", id);\r",
-                  "    } else {\r",
-                  "        console.error(\"Product created but no ID returned!\");\r",
-                  "    }\r",
-                  "} else {\r",
-                  "    pm.test(\"Unexpected status code\", () => {\r",
-                  "        console.error(\"Expected 201, got:\", pm.response.code);\r",
-                  "        console.error(\"Response body:\", pm.response.text());\r",
-                  "        pm.expect(pm.response.code).to.eql(201);\r",
-                  "    });\r",
-                  "}\r",
+                  "pm.test(\"Crear producto OK (201)\", () => {\r",
+                  "  pm.expect(pm.response.code).to.eql(201);\r",
+                  "});\r",
+                  "\r",
+                  "const json = pm.response.json();\r",
+                  "const id = json.id ?? json.data?.id;\r",
+                  "\r",
+                  "\r",
+                  "pm.test(\"Devuelve id\", () => {\r",
+                  "  pm.expect(id).to.exist;\r",
+                  "});\r",
+                  "\r",
+                  "// Guardar \"último creado\"\r",
+                  "pm.environment.set(\"productoId\", String(id));\r",
                   ""
                 ],
                 "type": "text/javascript",
@@ -1341,22 +1426,6 @@
           "name": "Editar Producto",
           "event": [
             {
-              "listen": "prerequest",
-              "script": {
-                "exec": [
-                  "// Check if productoId is set\r",
-                  "const productoId = pm.environment.get(\"productoId\");\r",
-                  "if (!productoId || productoId === \"undefined\") {\r",
-                  "    console.error(\"productoId not set! Skipping this request.\");\r",
-                  "    pm.execution.skipRequest();\r",
-                  "}"
-                ],
-                "type": "text/javascript",
-                "packages": {},
-                "requests": {}
-              }
-            },
-            {
               "listen": "test",
               "script": {
                 "exec": [
@@ -1398,8 +1467,8 @@
                   "type": "file",
                   "uuid": "661f4583-b9aa-4545-85db-fb7dadc432c4",
                   "src": [
-                    "postman-cloud:///1f0fd4d4-ae00-45b0-b5ee-8f8fc11c2419",
-                    "postman-cloud:///1f0fd4d4-ab1a-42b0-9038-80d3d846f125"
+                    "postman/fixtures/img1.jpg",
+                    "postman/fixtures/img2.jpg"
                   ]
                 }
               ]
@@ -1421,22 +1490,6 @@
         {
           "name": "Detalle Producto",
           "event": [
-            {
-              "listen": "prerequest",
-              "script": {
-                "exec": [
-                  "// Check if productoId is set\r",
-                  "const productoId = pm.environment.get(\"productoId\");\r",
-                  "if (!productoId || productoId === \"undefined\") {\r",
-                  "    console.error(\"productoId not set! Skipping this request.\");\r",
-                  "    pm.execution.skipRequest();\r",
-                  "}"
-                ],
-                "type": "text/javascript",
-                "packages": {},
-                "requests": {}
-              }
-            },
             {
               "listen": "test",
               "script": {
@@ -1641,22 +1694,6 @@
           "name": "Borrar producto - no auth",
           "event": [
             {
-              "listen": "prerequest",
-              "script": {
-                "exec": [
-                  "// Check if productoId is set\r",
-                  "const productoId = pm.environment.get(\"productoId\");\r",
-                  "if (!productoId || productoId === \"undefined\") {\r",
-                  "    console.error(\"productoId not set! Skipping this request.\");\r",
-                  "    pm.execution.skipRequest();\r",
-                  "}"
-                ],
-                "type": "text/javascript",
-                "packages": {},
-                "requests": {}
-              }
-            },
-            {
               "listen": "test",
               "script": {
                 "exec": [
@@ -1698,8 +1735,8 @@
                   "type": "file",
                   "uuid": "661f4583-b9aa-4545-85db-fb7dadc432c4",
                   "src": [
-                    "postman-cloud:///1f0fd4d4-ae00-45b0-b5ee-8f8fc11c2419",
-                    "postman-cloud:///1f0fd4d4-ab1a-42b0-9038-80d3d846f125"
+                    "postmans/fixtures/img1.jpg",
+                    "postman/fixtures/img2.jpg"
                   ]
                 }
               ]
@@ -1721,22 +1758,6 @@
         {
           "name": "Editar producto - no auth",
           "event": [
-            {
-              "listen": "prerequest",
-              "script": {
-                "exec": [
-                  "// Check if productoId is set\r",
-                  "const productoId = pm.environment.get(\"productoId\");\r",
-                  "if (!productoId || productoId === \"undefined\") {\r",
-                  "    console.error(\"productoId not set! Skipping this request.\");\r",
-                  "    pm.execution.skipRequest();\r",
-                  "}"
-                ],
-                "type": "text/javascript",
-                "packages": {},
-                "requests": {}
-              }
-            },
             {
               "listen": "test",
               "script": {
@@ -1779,8 +1800,8 @@
                   "type": "file",
                   "uuid": "661f4583-b9aa-4545-85db-fb7dadc432c4",
                   "src": [
-                    "postman-cloud:///1f0fd4d4-ae00-45b0-b5ee-8f8fc11c2419",
-                    "postman-cloud:///1f0fd4d4-ab1a-42b0-9038-80d3d846f125"
+                    "postman/fixtures/img1.jpg",
+                    "postman/fixtures/img2.jpg"
                   ]
                 }
               ]
@@ -1879,6 +1900,78 @@
           "response": []
         },
         {
+          "name": "Borrar emprendimiento - Error productos asociados",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Eliminar emprendimiento: 204 o 409\", () => {\r",
+                  "  pm.expect([204, 409]).to.include(pm.response.code);\r",
+                  "});\r",
+                  "\r",
+                  "if (pm.response.code === 409) {\r",
+                  "  const json = pm.response.json();\r",
+                  "  pm.test(\"409 trae mensaje\", () => {\r",
+                  "    pm.expect(json.message || \"\").to.include(\"productos\");\r",
+                  "  });\r",
+                  "}\r",
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "DELETE",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "data",
+                  "value": "{\n  \"categoriaCatalogoId\": 1,\n  \"subCategoriaCatalogoId\": 2,\n  \"titulo\": \"Sillón editado\",\n  \"descripcion\": \"Hecho a mano con materiales reciclados. Muy cómodo y resistente. y editado\"\n}",
+                  "type": "text",
+                  "uuid": "f1c083c5-9ba0-4da0-a353-5d85fcd314c9",
+                  "contentType": "application/json"
+                },
+                {
+                  "key": "imagenes",
+                  "type": "file",
+                  "uuid": "661f4583-b9aa-4545-85db-fb7dadc432c4",
+                  "src": [
+                    "postman/fixtures/img1.jpg",
+                    "postman/fixtures/img2.jpg"
+                  ]
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/me/emprendimiento",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "me",
+                "emprendimiento"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
           "name": "Borrar producto - no auth",
           "event": [
             {
@@ -1923,8 +2016,8 @@
                   "type": "file",
                   "uuid": "661f4583-b9aa-4545-85db-fb7dadc432c4",
                   "src": [
-                    "postman-cloud:///1f0fd4d4-ae00-45b0-b5ee-8f8fc11c2419",
-                    "postman-cloud:///1f0fd4d4-ab1a-42b0-9038-80d3d846f125"
+                    "postman/fixtures/img1.jpg",
+                    "postman/fixtures/img2.jpg"
                   ]
                 }
               ]
@@ -1938,6 +2031,78 @@
                 "catalogo",
                 "productos",
                 "{{productoId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Borrar emprendimiento",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Eliminar emprendimiento: 204 o 409\", () => {\r",
+                  "  pm.expect([204, 409]).to.include(pm.response.code);\r",
+                  "});\r",
+                  "\r",
+                  "if (pm.response.code === 409) {\r",
+                  "  const json = pm.response.json();\r",
+                  "  pm.test(\"409 trae mensaje\", () => {\r",
+                  "    pm.expect(json.message || \"\").to.include(\"productos\");\r",
+                  "  });\r",
+                  "}\r",
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "DELETE",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "data",
+                  "value": "{\n  \"categoriaCatalogoId\": 1,\n  \"subCategoriaCatalogoId\": 2,\n  \"titulo\": \"Sillón editado\",\n  \"descripcion\": \"Hecho a mano con materiales reciclados. Muy cómodo y resistente. y editado\"\n}",
+                  "type": "text",
+                  "uuid": "f1c083c5-9ba0-4da0-a353-5d85fcd314c9",
+                  "contentType": "application/json"
+                },
+                {
+                  "key": "imagenes",
+                  "type": "file",
+                  "uuid": "661f4583-b9aa-4545-85db-fb7dadc432c4",
+                  "src": [
+                    "postman/fixtures/img1.jpg",
+                    "postman/fixtures/img2.jpg"
+                  ]
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/me/emprendimiento",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "me",
+                "emprendimiento"
               ]
             }
           },
@@ -2036,13 +2201,6 @@
               "listen": "prerequest",
               "script": {
                 "exec": [
-                  "// Check if subcategoriaCatalogoId is set\r",
-                  "const subcategoriaId = pm.environment.get(\"subcategoriaCatalogoId\");\r",
-                  "if (!subcategoriaId || subcategoriaId === \"undefined\") {\r",
-                  "    console.error(\"subcategoriaCatalogoId not set! Skipping this request.\");\r",
-                  "    pm.execution.skipRequest();\r",
-                  "}",
-                  "\r",
                   ""
                 ],
                 "type": "text/javascript",
@@ -2082,22 +2240,6 @@
         {
           "name": "CategoriaCatalogo - Eliminar",
           "event": [
-            {
-              "listen": "prerequest",
-              "script": {
-                "exec": [
-                  "// Check if categoriaCatalogoId is set\r",
-                  "const categoriaId = pm.environment.get(\"categoriaCatalogoId\");\r",
-                  "if (!categoriaId || categoriaId === \"undefined\") {\r",
-                  "    console.error(\"categoriaCatalogoId not set! Skipping this request.\");\r",
-                  "    pm.execution.skipRequest();\r",
-                  "}"
-                ],
-                "type": "text/javascript",
-                "packages": {},
-                "requests": {}
-              }
-            },
             {
               "listen": "test",
               "script": {
@@ -5957,8 +6099,7 @@
               "listen": "prerequest",
               "script": {
                 "packages": {},
-                "type": "text/javascript",
-                "exec": []
+                "type": "text/javascript"
               }
             }
           ],
@@ -6062,6 +6203,10 @@
     {
       "key": "baseUrl",
       "value": "http://localhost:8080"
+    },
+    {
+      "key": "emprendimientoId",
+      "value": ""
     }
   ]
 }

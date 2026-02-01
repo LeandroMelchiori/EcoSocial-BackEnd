@@ -5,7 +5,11 @@ import com.alura.foro.hub.api.modules.catalogo.domain.Subcategoria;
 import com.alura.foro.hub.api.modules.catalogo.repository.CategoriaCatalogoRepository;
 import com.alura.foro.hub.api.modules.catalogo.repository.ProductoRepository;
 import com.alura.foro.hub.api.modules.catalogo.repository.SubCategoriaCatalogoRepository;
+import com.alura.foro.hub.api.user.domain.Localidad;
+import com.alura.foro.hub.api.user.domain.PerfilEmprendimiento;
 import com.alura.foro.hub.api.user.domain.Usuario;
+import com.alura.foro.hub.api.user.repository.LocalidadRepository;
+import com.alura.foro.hub.api.user.repository.PerfilEmprendimientoRepository;
 import com.alura.foro.hub.api.user.repository.UsuarioRepository;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -48,6 +52,9 @@ class ProductoIntegrationDeleteRollbackTest {
     @Autowired CategoriaCatalogoRepository categoriaRepository;
     @Autowired SubCategoriaCatalogoRepository subcategoriaRepository;
 
+    @Autowired LocalidadRepository localidadRepository;
+    @Autowired PerfilEmprendimientoRepository perfilEmprendimientoRepository;
+
     // Spy para forzar falla DB en el delete
     @MockitoSpyBean
     ProductoRepository productoRepository;
@@ -66,22 +73,46 @@ class ProductoIntegrationDeleteRollbackTest {
         uploadsPath = Paths.get(uploadsRoot).toAbsolutePath().normalize();
         purgeDir(uploadsPath);
 
-        // Usuario (NO hace falta username; vamos a autenticar con ID)
+        // -------------------------
+        // 1) Usuario
+        // -------------------------
         usuario = new Usuario();
         usuario.setNombre("User");
         usuario.setApellido("Test");
         usuario.setDni(UUID.randomUUID().toString().replaceAll("\\D", "").substring(0, 8));
         usuario.setEmail("user_test_" + UUID.randomUUID() + "@mail.com");
         usuario.setPassword("123456");
-
         usuario = usuarioRepository.save(usuario);
 
-        // Categoria
+        // -------------------------
+        // 2) Localidad (obligatoria para PerfilEmprendimiento)
+        // -------------------------
+        Localidad loc = new Localidad();
+        loc.setGeorefId("test-" + UUID.randomUUID());   // not null + unique
+        loc.setNombre("Rosario");                       // not null
+        loc.setDepartamento("Rosario");
+        loc.setActivo(true);
+        loc = localidadRepository.save(loc);
+
+        // -------------------------
+        // 3) PerfilEmprendimiento (obligatorio para publicar productos)
+        // -------------------------
+        PerfilEmprendimiento emp = new PerfilEmprendimiento();
+        emp.setUsuario(usuario);
+        emp.setNombre("Emprendimiento Test");           // not null
+        emp.setDescripcion("Creado para tests de integración");
+        emp.setLocalidad(loc);                          // not null
+        emp.setActivo(true);
+        // provincia default "Santa Fe" en la entidad
+        perfilEmprendimientoRepository.save(emp);
+
+        // -------------------------
+        // 4) Categoría / Subcategoría catálogo
+        // -------------------------
         categoria = new CategoriaCatalogo();
         categoria.setNombre("Tecnología");
         categoria = categoriaRepository.save(categoria);
 
-        // Subcategoria
         subcategoria = new Subcategoria();
         subcategoria.setNombre("Celulares");
         subcategoria.setCategoria(categoria);
@@ -117,7 +148,7 @@ class ProductoIntegrationDeleteRollbackTest {
         // 3) Ejecutar DELETE -> debe dar 5xx
         mvc.perform(
                         delete("/catalogo/productos/{id}", productoId)
-                                // IMPORTANTE: autenticamos con el ID como "username" (auth.getName())
+                                // Autenticamos con el ID como username (si tu CurrentUser lo toma de auth.getName())
                                 .with(user(String.valueOf(usuario.getId())).roles("ADMIN"))
                 )
                 .andExpect(status().is5xxServerError());

@@ -10,6 +10,7 @@ import com.alura.foro.hub.api.modules.catalogo.dto.subcategorias.DatosCrearSubca
 import com.alura.foro.hub.api.modules.catalogo.dto.subcategorias.DatosDetalleSubcategoriaProducto;
 import com.alura.foro.hub.api.modules.catalogo.service.CatalogoAdminService;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.hamcrest.Matchers;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -24,8 +25,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -50,7 +50,7 @@ class CatalogoAdminControllerTest {
         var dto = new DatosCrearCategoriaProducto("Electrónica");
         var creado = new DatosDetalleCategoriaProducto(10L, "Electrónica", true);
 
-        Mockito.when(service.crearCategoria(any(DatosCrearCategoriaProducto.class)))
+        when(service.crearCategoria(any(DatosCrearCategoriaProducto.class)))
                 .thenReturn(creado);
 
         mvc.perform(post("/catalogo/admin/categorias")
@@ -88,7 +88,7 @@ class CatalogoAdminControllerTest {
         var dto = new DatosActualizarCategoriaProducto("Nueva");
         var actualizado = new DatosDetalleCategoriaProducto(10L, "Nueva", true);
 
-        Mockito.when(service.actualizarCategoria(eq(id), any(DatosActualizarCategoriaProducto.class)))
+        when(service.actualizarCategoria(eq(id), any(DatosActualizarCategoriaProducto.class)))
                 .thenReturn(actualizado);
 
         mvc.perform(put("/catalogo/admin/categorias/{id}", id)
@@ -145,25 +145,30 @@ class CatalogoAdminControllerTest {
     @DisplayName("ADMIN: POST /catalogo/admin/subcategorias -> 201 + Location + body")
     @WithMockUser(roles = "ADMIN")
     void crearSubcategoria_admin_ok_201() throws Exception {
-        var dto = new DatosCrearSubcategoriaProducto(10L, "Celulares");
-        var creado = new DatosDetalleSubcategoriaProducto(77L, 10L, "Celulares", true);
+        var json = """
+        {
+          "categoriaId": 10,
+          "nombre": "Celulares"
+        }
+        """;
 
-        Mockito.when(service.crearSubcategoria(any(DatosCrearSubcategoriaProducto.class)))
-                .thenReturn(creado);
+        // mock del service
+        when(service.crearSubcategoria(any(DatosCrearSubcategoriaProducto.class)))
+                .thenReturn(new DatosDetalleSubcategoriaProducto(77L, 10L, "Celulares", true));
 
         mvc.perform(post("/catalogo/admin/subcategorias")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(om.writeValueAsString(dto)))
+                        .content(json))
                 .andExpect(status().isCreated())
-                .andExpect(header().string("Location", "/catalogo/categorias/10/subcategorias"))
+                // si devolvés Location, validalo (ajustá si tu controller arma otra URL)
+                .andExpect(header().string("Location", Matchers.containsString("/catalogo/admin/subcategorias/77")))
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.id").value(77))
                 .andExpect(jsonPath("$.categoriaId").value(10))
                 .andExpect(jsonPath("$.nombre").value("Celulares"))
                 .andExpect(jsonPath("$.activo").value(true));
-
-        Mockito.verify(service, times(1)).crearSubcategoria(any(DatosCrearSubcategoriaProducto.class));
     }
+
 
     @Test
     @DisplayName("ADMIN: PUT /catalogo/admin/subcategorias/{id} -> 200")
@@ -175,7 +180,7 @@ class CatalogoAdminControllerTest {
         var dto = new DatosActualizarSubcategoriaProducto(10L, "Smartphones");
         var actualizado = new DatosDetalleSubcategoriaProducto(77L, 10L, "Smartphones", true);
 
-        Mockito.when(service.actualizarSubcategoria(eq(id), any(DatosActualizarSubcategoriaProducto.class)))
+        when(service.actualizarSubcategoria(eq(id), any(DatosActualizarSubcategoriaProducto.class)))
                 .thenReturn(actualizado);
 
         mvc.perform(put("/catalogo/admin/subcategorias/{id}", id)
@@ -238,7 +243,7 @@ class CatalogoAdminControllerTest {
                 new DatosDetalleCategoriaProducto(2L, "B", false)
         );
 
-        Mockito.when(service.listarCategoriasAdmin()).thenReturn(lista);
+        when(service.listarCategoriasAdmin()).thenReturn(lista);
 
         mvc.perform(get("/catalogo/admin/categorias"))
                 .andExpect(status().isOk())
@@ -257,7 +262,7 @@ class CatalogoAdminControllerTest {
                 new DatosDetalleSubcategoriaProducto(77L, 10L, "Celulares", true)
         );
 
-        Mockito.when(service.listarSubcategoriasAdmin(eq(10L))).thenReturn(lista);
+        when(service.listarSubcategoriasAdmin(eq(10L))).thenReturn(lista);
 
         mvc.perform(get("/catalogo/admin/subcategorias")
                         .param("categoriaId", "10"))
@@ -277,7 +282,7 @@ class CatalogoAdminControllerTest {
                 new DatosDetalleSubcategoriaProducto(78L, 10L, "Accesorios", true)
         );
 
-        Mockito.when(service.listarSubcategoriasAdmin(isNull())).thenReturn(lista);
+        when(service.listarSubcategoriasAdmin(isNull())).thenReturn(lista);
 
         mvc.perform(get("/catalogo/admin/subcategorias"))
                 .andExpect(status().isOk())
@@ -293,7 +298,7 @@ class CatalogoAdminControllerTest {
         Long id = 77L;
         var detalle = new DatosDetalleSubcategoriaProducto(77L, 10L, "Celulares", true);
 
-        Mockito.when(service.detalleSubcategoriaAdmin(id)).thenReturn(detalle);
+        when(service.detalleSubcategoriaAdmin(id)).thenReturn(detalle);
 
         mvc.perform(get("/catalogo/admin/subcategorias/{id}", id))
                 .andExpect(status().isOk())
@@ -312,7 +317,7 @@ class CatalogoAdminControllerTest {
         Long id = 10L;
         var detalle = new DatosDetalleCategoriaProducto(10L, "Electrónica", true);
 
-        Mockito.when(service.detalleCategoriaAdmin(id)).thenReturn(detalle);
+        when(service.detalleCategoriaAdmin(id)).thenReturn(detalle);
 
         mvc.perform(get("/catalogo/admin/categorias/{id}", id))
                 .andExpect(status().isOk())

@@ -3,7 +3,6 @@ package com.alura.foro.hub.api.modules.catalogo.mapper;
 import com.alura.foro.hub.api.modules.catalogo.domain.Producto;
 import com.alura.foro.hub.api.modules.catalogo.dto.productos.DatosDetalleProducto;
 import com.alura.foro.hub.api.modules.catalogo.dto.productos.DatosImagenProducto;
-import com.alura.foro.hub.api.modules.catalogo.service.MinioStorageService;
 import com.alura.foro.hub.api.modules.catalogo.service.StorageService;
 
 public class ProductoMapper {
@@ -19,7 +18,7 @@ public class ProductoMapper {
 
         return new DatosDetalleProducto(
                 p.getId(),
-                p.getUsuario() != null ? p.getUsuario().getId() : null,
+                p.getEmprendimiento() != null ? p.getEmprendimiento().getId() : null,
                 p.getCategoria() != null ? p.getCategoria().getId() : null,
                 p.getSubcategoria() != null ? p.getSubcategoria().getId() : null,
                 p.getTitulo(),

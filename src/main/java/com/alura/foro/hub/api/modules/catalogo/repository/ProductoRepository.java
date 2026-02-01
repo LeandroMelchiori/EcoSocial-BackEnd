@@ -19,7 +19,7 @@ public interface ProductoRepository extends JpaRepository<Producto, Long> {
         p.titulo,
         p.activo,
         p.fechaCreacion,
-        p.usuario.id,
+        p.emprendimiento.id,
         p.categoria.id,
         CASE WHEN p.subcategoria IS NULL THEN NULL ELSE p.subcategoria.id END,
         (
@@ -40,10 +40,12 @@ public interface ProductoRepository extends JpaRepository<Producto, Long> {
                                              Pageable pageable);
 
 
-    @EntityGraph(attributePaths = {"imagenes", "usuario", "categoria", "subcategoria"})
+    @EntityGraph(attributePaths = {"imagenes", "emprendimiento", "emprendimiento.usuario", "categoria", "subcategoria"})
     Optional<Producto> findWithImagenesById(Long id);
 
     boolean existsByCategoria_Id(Long categoriaId);
     boolean existsBySubcategoria_Id(Long subcategoriaId);
 
+    boolean existsByEmprendimientoId(Long emprendimientoId);
+    long countByEmprendimientoId(Long emprendimientoId);
 }

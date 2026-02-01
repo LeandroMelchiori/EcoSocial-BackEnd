@@ -19,6 +19,7 @@ import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.RequestPostProcessor;
+
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -38,11 +39,9 @@ class ProductoControllerTest {
     @Autowired MockMvc mvc;
     @Autowired ObjectMapper mapper;
 
-    @MockitoBean
-    ProductoService productoService;
+    @MockitoBean ProductoService productoService;
+    @MockitoBean private CurrentUserService currentUserService;
 
-    @MockitoBean
-    private CurrentUserService currentUserService;
     // -------------------------
     // Helpers
     // -------------------------
@@ -50,18 +49,17 @@ class ProductoControllerTest {
         Usuario u = new Usuario();
         u.setId(id);
 
-        // campos mínimos coherentes con tu entidad (aunque acá no pegues DB)
         u.setNombre("User");
         u.setApellido("Test");
-        u.setDni(String.format("%08d", id));          // 00000001, etc.
-        u.setEmail("u" + id + "@mail.com");           // <- tu getUsername() devuelve email
-        u.setPassword("x");                           // no se usa, pero queda completo
+        u.setDni(String.format("%08d", id));
+        u.setEmail("u" + id + "@mail.com");
+        u.setPassword("x");
 
-        u.setPerfiles(List.of()); // ROLE_USER por default en getAuthorities()
+        u.setPerfiles(List.of());
         return u;
     }
 
-
+    @SuppressWarnings("unused")
     private Usuario admin(Long id) {
         Usuario u = user(id);
         Perfil p = new Perfil();
@@ -84,7 +82,7 @@ class ProductoControllerTest {
     private DatosDetalleProducto detalleMock() {
         return new DatosDetalleProducto(
                 10L,
-                1L,
+                1L, // emprendimientoId (NO usuarioId)
                 2L,
                 3L,
                 "Sillón",
@@ -98,28 +96,27 @@ class ProductoControllerTest {
         );
     }
 
-
     // -------------------------
     // POST /catalogo/productos (multipart)
     // -------------------------
     @Test
     void crear_ok_201_y_body() throws Exception {
-        var dto = new DatosCrearProducto(2L, 3L, "Sillón", "Desc");
-        var dataJson = mapper.writeValueAsBytes(dto);
 
-        MockMultipartFile dataPart = new MockMultipartFile(
+        var dataPart = new MockMultipartFile(
                 "data",
                 "data.json",
                 "application/json",
                 """
                 {
                   "categoriaCatalogoId": 2,
-                  "subCategoriaCatalogoId": 5,
-                  "titulo": "Pan casero integral",
-                  "descripcion": "Pan artesanal elaborado con masa madre, sin conservantes."
+                  "subCategoriaCatalogoId": 3,
+                  "titulo": "Sillón",
+                  "descripcion": "Descripcion valida"
                 }
                 """.getBytes(StandardCharsets.UTF_8)
         );
+
+
         var img1 = new MockMultipartFile(
                 "imagenes", "a.png", "image/png", "x".getBytes(StandardCharsets.UTF_8)
         );
@@ -137,7 +134,7 @@ class ProductoControllerTest {
                 .andExpect(status().isCreated())
                 .andExpect(header().string("Location", "/catalogo/productos/10"))
                 .andExpect(jsonPath("$.id").value(10))
-                .andExpect(jsonPath("$.usuarioId").value(1))
+                .andExpect(jsonPath("$.emprendimientoId").value(1))
                 .andExpect(jsonPath("$.categoriaId").value(2))
                 .andExpect(jsonPath("$.subcategoriaId").value(3))
                 .andExpect(jsonPath("$.imagenes.length()").value(2));
@@ -166,10 +163,6 @@ class ProductoControllerTest {
     // -------------------------
     @Test
     void listar_ok_200() throws Exception {
-        // Si tu controller devuelve Page, en WebMvcTest podés mockear con un JSON simple,
-        // pero lo más fácil acá: que el service devuelva Page real -> evitamos acá.
-        // Alternativa: testear sólo que llame al service, y status 200.
-        // Si querés full JSON del Page, te lo armo con PageImpl (decime y lo sumamos).
         given(productoService.listar(any(), any(), any(), any()))
                 .willAnswer(inv -> org.springframework.data.domain.Page.empty());
 
@@ -190,11 +183,14 @@ class ProductoControllerTest {
     // -------------------------
     @Test
     void eliminar_ok_204() throws Exception {
+        given(currentUserService.userId(any(Authentication.class))).willReturn(1L);
+
         mvc.perform(delete("/catalogo/productos/{id}", 10L)
                         .with(withAuth(auth(user(1L))))
                 )
                 .andExpect(status().isNoContent());
 
+        verify(currentUserService).userId(any(Authentication.class));
         verify(productoService).eliminar(10L, 1L);
     }
 
@@ -203,16 +199,25 @@ class ProductoControllerTest {
     // -------------------------
     @Test
     void actualizar_ok_200() throws Exception {
-        var dto = new DatosActualizarProducto(2L, 3L, "Nuevo", "Nueva desc");
-        var dataJson = mapper.writeValueAsBytes(dto);
-
         var dataPart = new MockMultipartFile(
-                "data", "data.json", "application/json", dataJson
+                "data",
+                "data.json",
+                "application/json",
+                """
+                {
+                  "categoriaCatalogoId": 2,
+                  "subCategoriaCatalogoId": 3,
+                  "titulo": "Nuevo",
+                  "descripcion": "Nueva desc"
+                }
+                """.getBytes(StandardCharsets.UTF_8)
         );
+
         var img1 = new MockMultipartFile(
                 "imagenes", "a.png", "image/png", "x".getBytes(StandardCharsets.UTF_8)
         );
 
+        given(currentUserService.userId(any(Authentication.class))).willReturn(1L);
         given(productoService.actualizar(eq(10L), any(DatosActualizarProducto.class), anyList(), eq(1L)))
                 .willReturn(detalleMock());
 
@@ -226,6 +231,7 @@ class ProductoControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(10));
 
+        verify(currentUserService).userId(any(Authentication.class));
         verify(productoService).actualizar(eq(10L), any(DatosActualizarProducto.class), anyList(), eq(1L));
     }
 
@@ -236,6 +242,7 @@ class ProductoControllerTest {
     void reordenar_ok_200() throws Exception {
         var body = new DatosReordenarImagenes(List.of(101L, 102L));
 
+        given(currentUserService.userId(any(Authentication.class))).willReturn(1L);
         given(productoService.reordenarImagenes(eq(10L), any(DatosReordenarImagenes.class), eq(1L)))
                 .willReturn(detalleMock());
 
@@ -247,6 +254,7 @@ class ProductoControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(10));
 
+        verify(currentUserService).userId(any(Authentication.class));
         verify(productoService).reordenarImagenes(eq(10L), any(DatosReordenarImagenes.class), eq(1L));
     }
 
@@ -255,11 +263,14 @@ class ProductoControllerTest {
     // -------------------------
     @Test
     void eliminarImagen_ok_204() throws Exception {
+        given(currentUserService.userId(any(Authentication.class))).willReturn(1L);
+
         mvc.perform(delete("/catalogo/productos/{pid}/imagenes/{iid}", 10L, 101L)
                         .with(withAuth(auth(user(1L))))
                 )
                 .andExpect(status().isNoContent());
 
+        verify(currentUserService).userId(any(Authentication.class));
         verify(productoService).eliminarImagen(10L, 101L, 1L);
     }
 
@@ -272,6 +283,7 @@ class ProductoControllerTest {
                 "imagen", "n.png", "image/png", "x".getBytes(StandardCharsets.UTF_8)
         );
 
+        given(currentUserService.userId(any(Authentication.class))).willReturn(1L);
         given(productoService.reemplazarImagen(eq(10L), eq(101L), any(), eq(1L)))
                 .willReturn(detalleMock());
 
@@ -284,6 +296,7 @@ class ProductoControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(10));
 
+        verify(currentUserService).userId(any(Authentication.class));
         verify(productoService).reemplazarImagen(eq(10L), eq(101L), any(), eq(1L));
     }
 
@@ -299,6 +312,7 @@ class ProductoControllerTest {
                 "imagenes", "b.png", "image/png", "y".getBytes(StandardCharsets.UTF_8)
         );
 
+        given(currentUserService.userId(any(Authentication.class))).willReturn(1L);
         given(productoService.agregarImagenes(eq(10L), anyList(), eq(1L)))
                 .willReturn(detalleMock());
 
@@ -311,6 +325,7 @@ class ProductoControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(10));
 
+        verify(currentUserService).userId(any(Authentication.class));
         verify(productoService).agregarImagenes(eq(10L), anyList(), eq(1L));
     }
 
@@ -327,6 +342,7 @@ class ProductoControllerTest {
                 .andExpect(status().isBadRequest());
 
         verifyNoInteractions(productoService);
+        verifyNoInteractions(currentUserService);
     }
 
     @Test
@@ -338,7 +354,6 @@ class ProductoControllerTest {
 
         mvc.perform(multipart("/catalogo/productos")
                         .file(dataPart)
-                        // auth para que no falle por null antes de parsear
                         .with(withAuth(auth(user(1L))))
                         .contentType(MediaType.MULTIPART_FORM_DATA)
                 )
@@ -355,7 +370,6 @@ class ProductoControllerTest {
 
         mvc.perform(multipart("/catalogo/productos/10")
                         .file(img1)
-                        // multipart() por defecto hace POST; lo forzamos a PUT
                         .with(req -> { req.setMethod("PUT"); return req; })
                         .with(withAuth(auth(user(1L))))
                         .contentType(MediaType.MULTIPART_FORM_DATA)

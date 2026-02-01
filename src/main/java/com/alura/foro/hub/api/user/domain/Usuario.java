@@ -45,27 +45,27 @@ public class Usuario implements UserDetails {
     @Column(name = "fecha_creacion", nullable=false, updatable=false)
     private LocalDateTime fechaCreacion;
 
-    @Column(name = "fecha_actualizacion", nullable=false)
+    @Column(name = "fecha_actualizacion")
     private LocalDateTime fechaActualizacion;
 
     @PrePersist
     void prePersist() {
-        var now = LocalDateTime.now();
-        this.fechaCreacion = now;
-        this.fechaActualizacion = now;
+        this.fechaCreacion = LocalDateTime.now();
         if (this.activo == null) this.activo = true;
     }
 
     @PreUpdate
     void preUpdate() {
-        this.fechaActualizacion = LocalDateTime.now();
+        if (this.fechaActualizacion == null) {
+            this.fechaActualizacion = LocalDateTime.now(); // primera edición
+        }
     }
 
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
             name = "usuario_perfiles",
             joinColumns = @JoinColumn(name = "usuario_id"),
-            inverseJoinColumns = @JoinColumn(name = "perfiles_id")
+            inverseJoinColumns = @JoinColumn(name = "perfil_id")
     )
     private List<Perfil> perfiles = new ArrayList<>();
 

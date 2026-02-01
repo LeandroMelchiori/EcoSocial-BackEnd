@@ -4,10 +4,15 @@ import com.alura.foro.hub.api.modules.catalogo.domain.CategoriaCatalogo;
 import com.alura.foro.hub.api.modules.catalogo.domain.Subcategoria;
 import com.alura.foro.hub.api.modules.catalogo.repository.CategoriaCatalogoRepository;
 import com.alura.foro.hub.api.modules.catalogo.repository.SubCategoriaCatalogoRepository;
+import com.alura.foro.hub.api.user.domain.Localidad;
+import com.alura.foro.hub.api.user.domain.PerfilEmprendimiento;
 import com.alura.foro.hub.api.user.domain.Usuario;
+import com.alura.foro.hub.api.user.repository.LocalidadRepository;
+import com.alura.foro.hub.api.user.repository.PerfilEmprendimientoRepository;
 import com.alura.foro.hub.api.user.repository.UsuarioRepository;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -23,7 +28,6 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.mock.web.MockMultipartFile;
 
-import jakarta.transaction.Transactional;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -47,6 +51,9 @@ class ProductoIntegrationTest {
     @Autowired CategoriaCatalogoRepository categoriaRepo;
     @Autowired SubCategoriaCatalogoRepository subcategoriaRepo;
 
+    @Autowired LocalidadRepository localidadRepository;
+    @Autowired PerfilEmprendimientoRepository perfilEmprendimientoRepository;
+
     @TempDir
     static Path tempDir;
 
@@ -64,25 +71,58 @@ class ProductoIntegrationTest {
     }
 
     @BeforeEach
-    void setup() {
-        // Usuario
+    void setup() throws Exception {
+
+        // Limpieza por si quedó algo (no debería por @TempDir, pero mejor)
+        if (Files.exists(uploadsRoot)) {
+            try (var s = Files.walk(uploadsRoot)) {
+                s.sorted((a, b) -> b.compareTo(a)).forEach(p -> {
+                    try { Files.deleteIfExists(p); } catch (Exception ignored) {}
+                });
+            }
+        }
+
+        // -------------------------
+        // 1) Usuario
+        // -------------------------
         usuario = new Usuario();
         usuario.setNombre("User");
         usuario.setApellido("Test");
         usuario.setDni(UUID.randomUUID().toString().replaceAll("\\D", "").substring(0, 8));
-
         usuario.setEmail("user_test_" + UUID.randomUUID() + "@mail.com");
         usuario.setPassword("123456");
-
         usuario = usuarioRepository.save(usuario);
 
-        // ----- CATEGORIA -----
+        // -------------------------
+        // 2) Localidad (obligatoria para PerfilEmprendimiento)
+        // -------------------------
+        Localidad loc = new Localidad();
+        loc.setGeorefId("test-" + UUID.randomUUID()); // not null + unique
+        loc.setNombre("Rosario");                     // not null
+        loc.setDepartamento("Rosario");
+        loc.setActivo(true);
+        loc = localidadRepository.save(loc);
+
+        // -------------------------
+        // 3) PerfilEmprendimiento (requisito para publicar productos)
+        // -------------------------
+        PerfilEmprendimiento emp = new PerfilEmprendimiento();
+        emp.setUsuario(usuario);
+        emp.setNombre("Emprendimiento Test");
+        emp.setDescripcion("Creado para tests de integración");
+        emp.setLocalidad(loc);
+        emp.setActivo(true);
+        // provincia default "Santa Fe" en tu entidad
+        perfilEmprendimientoRepository.save(emp);
+
+        // -------------------------
+        // 4) Categoria / Subcategoria
+        // -------------------------
         categoria = new CategoriaCatalogo();
         categoria.setNombre("Tecnologia");
         categoria.setActivo(true);
         categoria = categoriaRepo.save(categoria);
 
-        // ----- SUBCATEGORIA -----
         subcategoria = new Subcategoria();
         subcategoria.setCategoria(categoria);
         subcategoria.setNombre("Celulares");
@@ -113,7 +153,7 @@ class ProductoIntegrationTest {
                 jsonData.getBytes(StandardCharsets.UTF_8)
         );
 
-        // Imagen fake PNG
+        // Imagen fake PNG (header válido)
         byte[] fakePng = new byte[] {(byte)0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A};
         MockMultipartFile img1 = new MockMultipartFile(
                 "imagenes",
@@ -148,7 +188,7 @@ class ProductoIntegrationTest {
         // -------- GET detalle --------
         mvc.perform(get("/catalogo/productos/{id}", productoId))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value((int) productoId))
+                .andExpect(jsonPath("$.id").value(productoId))
                 .andExpect(jsonPath("$.titulo").value("Redmi Note 14 Pro"))
                 .andExpect(jsonPath("$.imagenes").isArray());
 

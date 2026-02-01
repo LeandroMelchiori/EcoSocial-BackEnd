@@ -20,8 +20,8 @@ public record DatosCrearProducto(
                 example = "5",
                 requiredMode = Schema.RequiredMode.REQUIRED
         )
-        @NotNull
         Long subCategoriaCatalogoId,
+
         @Schema(
                 description = "Título del producto",
                 example = "Pan casero integral",

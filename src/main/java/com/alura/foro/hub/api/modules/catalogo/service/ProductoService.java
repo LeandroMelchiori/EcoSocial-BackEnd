@@ -4,7 +4,9 @@ import com.alura.foro.hub.api.modules.catalogo.dto.productos.*;
 import com.alura.foro.hub.api.modules.catalogo.mapper.ProductoMapper;
 import com.alura.foro.hub.api.security.exception.BadRequestException;
 import com.alura.foro.hub.api.security.exception.ForbiddenException;
+import com.alura.foro.hub.api.user.domain.PerfilEmprendimiento;
 import com.alura.foro.hub.api.user.domain.Usuario; // ajustá paquete
+import com.alura.foro.hub.api.user.repository.PerfilEmprendimientoRepository;
 import com.alura.foro.hub.api.user.repository.UsuarioRepository; // ajustá paquete
 import com.alura.foro.hub.api.modules.catalogo.domain.*;
 import com.alura.foro.hub.api.modules.catalogo.repository.*;
@@ -33,6 +35,7 @@ public class ProductoService {
     private static final int MAX_IMGS = 5;
     private static final long MAX_SIZE = 5L * 1024 * 1024; // 5MB
 
+    private final PerfilEmprendimientoRepository emprendimientoRepository;
     private final ProductoRepository productoRepository;
     private final CategoriaCatalogoRepository categoriaCatalogoRepository;
     private final SubCategoriaCatalogoRepository subCategoriaCatalogoRepository;
@@ -45,13 +48,15 @@ public class ProductoService {
                            SubCategoriaCatalogoRepository subCategoriaCatalogoRepository,
                            UsuarioRepository usuarioRepository,
                            StorageService storageService,
-                           ProductoImagenRepository productoImagenRepository) {
+                           ProductoImagenRepository productoImagenRepository,
+                           PerfilEmprendimientoRepository emprendimientoRepository) {
         this.productoRepository = productoRepository;
         this.categoriaCatalogoRepository = categoriaCatalogoRepository;
         this.subCategoriaCatalogoRepository = subCategoriaCatalogoRepository;
         this.usuarioRepository = usuarioRepository;
         this.storageService = storageService;
         this.productoImagenRepository = productoImagenRepository;
+        this.emprendimientoRepository = emprendimientoRepository;
     }
 
     // =========================
@@ -59,8 +64,8 @@ public class ProductoService {
     // =========================
     @Transactional
     public DatosDetalleProducto crear(DatosCrearProducto dto, List<MultipartFile> imagenes, Long userId) throws IOException {
-        Usuario usuario = usuarioRepository.findById(userId)
-                .orElseThrow(() -> new EntityNotFoundException("Usuario no encontrado"));
+        PerfilEmprendimiento emp = emprendimientoRepository.findByUsuarioId(userId)
+                .orElseThrow(() -> new ForbiddenException("Primero debés crear tu emprendimiento para publicar productos"));
 
         CategoriaCatalogo categoria = categoriaCatalogoRepository.findById(dto.categoriaCatalogoId())
                 .orElseThrow(() -> new EntityNotFoundException("Categoría no encontrada"));
@@ -94,7 +99,7 @@ public class ProductoService {
         }
 
         Producto p = new Producto();
-        p.setUsuario(usuario);
+        p.setEmprendimiento(emp);
         p.setCategoria(categoria);
         p.setSubcategoria(subcategoria);
         p.setTitulo(dto.titulo().trim());
@@ -197,12 +202,7 @@ public class ProductoService {
         Producto p = productoRepository.findWithImagenesById(productoId)
                 .orElseThrow(() -> new EntityNotFoundException("Producto no encontrado"));
 
-        Usuario user = usuarioRepository.findById(userId)
-                .orElseThrow(() -> new EntityNotFoundException("Usuario no encontrado"));
-
-        if (!user.esAdmin() && !p.getUsuario().getId().equals(userId)) {
-            throw new ForbiddenException("No tenés permiso para eliminar este producto");
-        }
+        validarPermisoProducto(p, userId);
 
         // 1) mover carpeta a TRASH (si falla acá, no tocamos DB)
         String opId = UUID.randomUUID().toString();
@@ -279,12 +279,7 @@ public class ProductoService {
         Producto p = productoRepository.findWithImagenesById(productoId)
                 .orElseThrow(() -> new EntityNotFoundException("Producto no encontrado"));
 
-        Usuario user = usuarioRepository.findById(userId)
-                .orElseThrow(() -> new EntityNotFoundException("Usuario no encontrado"));
-
-        if (!user.esAdmin() && !p.getUsuario().getId().equals(userId)) {
-            throw new ForbiddenException("No tenés permiso para editar este producto");
-        }
+        validarPermisoProducto(p, userId);
 
         CategoriaCatalogo categoria = categoriaCatalogoRepository.findById(dto.categoriaCatalogoId())
                 .orElseThrow(() -> new EntityNotFoundException("Categoría no encontrada"));
@@ -368,12 +363,7 @@ public class ProductoService {
         Producto p = productoRepository.findWithImagenesById(productoId)
                 .orElseThrow(() -> new EntityNotFoundException("Producto no encontrado"));
 
-        Usuario user = usuarioRepository.findById(userId)
-                .orElseThrow(() -> new EntityNotFoundException("Usuario no encontrado"));
-
-        if (!user.esAdmin() && !p.getUsuario().getId().equals(userId)) {
-            throw new ForbiddenException("No tenés permiso para editar este producto");
-        }
+        validarPermisoProducto(p, userId);
 
         var ids = dto.orden();
         if (ids == null || ids.isEmpty()) {
@@ -488,7 +478,10 @@ public class ProductoService {
         Usuario user = usuarioRepository.findById(userId)
                 .orElseThrow(() -> new EntityNotFoundException("Usuario no encontrado"));
 
-        if (!user.esAdmin() && !p.getUsuario().getId().equals(userId)) {
+        if (user.esAdmin()) return;
+
+        Long duenioId = p.getEmprendimiento().getUsuario().getId();
+        if (!duenioId.equals(userId)) {
             throw new ForbiddenException("No tenés permiso para editar este producto");
         }
     }
@@ -519,5 +512,4 @@ public class ProductoService {
         productoRepository.save(p);
         em.flush();
     }
-
 }
