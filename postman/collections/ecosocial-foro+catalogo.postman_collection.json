@@ -1115,8 +1115,8 @@
                   "type": "file",
                   "uuid": "661f4583-b9aa-4545-85db-fb7dadc432c4",
                   "src": [
-                    "postman-cloud:///1f0fd4d4-ae00-45b0-b5ee-8f8fc11c2419",
-                    "postman-cloud:///1f0fd4d4-ab1a-42b0-9038-80d3d846f125"
+                    "postman/fixtures/img1.jpg",
+                    "postman/fixtures/img2.jpg"
                   ]
                 }
               ]
@@ -1359,8 +1359,8 @@
                   "type": "file",
                   "uuid": "661f4583-b9aa-4545-85db-fb7dadc432c4",
                   "src": [
-                    "postman-cloud:///1f0fd4d4-ae00-45b0-b5ee-8f8fc11c2419",
-                    "postman-cloud:///1f0fd4d4-ab1a-42b0-9038-80d3d846f125"
+                    "postman/fixtures/img1.jpg",
+                    "postman/fixtures/img2.jpg"
                   ]
                 }
               ]
@@ -1467,8 +1467,8 @@
                   "type": "file",
                   "uuid": "661f4583-b9aa-4545-85db-fb7dadc432c4",
                   "src": [
-                    "postman-cloud:///1f0fd4d4-ae00-45b0-b5ee-8f8fc11c2419",
-                    "postman-cloud:///1f0fd4d4-ab1a-42b0-9038-80d3d846f125"
+                    "postman/fixtures/img1.jpg",
+                    "postman/fixtures/img2.jpg"
                   ]
                 }
               ]
@@ -1735,8 +1735,8 @@
                   "type": "file",
                   "uuid": "661f4583-b9aa-4545-85db-fb7dadc432c4",
                   "src": [
-                    "postman-cloud:///1f0fd4d4-ae00-45b0-b5ee-8f8fc11c2419",
-                    "postman-cloud:///1f0fd4d4-ab1a-42b0-9038-80d3d846f125"
+                    "postmans/fixtures/img1.jpg",
+                    "postman/fixtures/img2.jpg"
                   ]
                 }
               ]
@@ -1800,8 +1800,8 @@
                   "type": "file",
                   "uuid": "661f4583-b9aa-4545-85db-fb7dadc432c4",
                   "src": [
-                    "postman-cloud:///1f0fd4d4-ae00-45b0-b5ee-8f8fc11c2419",
-                    "postman-cloud:///1f0fd4d4-ab1a-42b0-9038-80d3d846f125"
+                    "postman/fixtures/img1.jpg",
+                    "postman/fixtures/img2.jpg"
                   ]
                 }
               ]
@@ -1952,8 +1952,8 @@
                   "type": "file",
                   "uuid": "661f4583-b9aa-4545-85db-fb7dadc432c4",
                   "src": [
-                    "postman-cloud:///1f0fd4d4-ae00-45b0-b5ee-8f8fc11c2419",
-                    "postman-cloud:///1f0fd4d4-ab1a-42b0-9038-80d3d846f125"
+                    "postman/fixtures/img1.jpg",
+                    "postman/fixtures/img2.jpg"
                   ]
                 }
               ]
@@ -2016,8 +2016,8 @@
                   "type": "file",
                   "uuid": "661f4583-b9aa-4545-85db-fb7dadc432c4",
                   "src": [
-                    "postman-cloud:///1f0fd4d4-ae00-45b0-b5ee-8f8fc11c2419",
-                    "postman-cloud:///1f0fd4d4-ab1a-42b0-9038-80d3d846f125"
+                    "postman/fixtures/img1.jpg",
+                    "postman/fixtures/img2.jpg"
                   ]
                 }
               ]
@@ -2089,8 +2089,8 @@
                   "type": "file",
                   "uuid": "661f4583-b9aa-4545-85db-fb7dadc432c4",
                   "src": [
-                    "postman-cloud:///1f0fd4d4-ae00-45b0-b5ee-8f8fc11c2419",
-                    "postman-cloud:///1f0fd4d4-ab1a-42b0-9038-80d3d846f125"
+                    "postman/fixtures/img1.jpg",
+                    "postman/fixtures/img2.jpg"
                   ]
                 }
               ]
