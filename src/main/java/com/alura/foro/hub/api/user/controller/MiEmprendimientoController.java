@@ -86,6 +86,8 @@ public class MiEmprendimientoController {
         return ResponseEntity.noContent().build();
     }
 
+    @Operation(summary = "Actualizar mi emprendimiento",
+            description = "Actualiza los datos del emprendimiento asociado al usuario logueado.")
     @ApiResponsesDefault
     @PutMapping
     public ResponseEntity<DatosDetalleEmprendimiento> actualizar(
