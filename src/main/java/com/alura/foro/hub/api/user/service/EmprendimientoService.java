@@ -47,9 +47,8 @@ public class EmprendimientoService {
         if (userId == null) throw new ForbiddenException("No autenticado");
 
         if (emprendimientoRepository.existsByUsuarioId(userId)) {
-            // 409 es lo correcto, pero como vos tenés BadRequest/Forbidden,
-            // podés crear ConflictException. Por ahora tiro BadRequest con mensaje claro:
-            throw new BadRequestException("El usuario ya tiene un emprendimiento creado.");
+            // 409 es lo correcto, ya que se trata de un recurso ya existente:
+            throw new ConflictException("El usuario ya tiene un emprendimiento creado.");
         }
 
         Usuario usuario = usuarioRepository.findById(userId)
