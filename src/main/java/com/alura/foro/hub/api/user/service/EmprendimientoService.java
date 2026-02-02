@@ -56,6 +56,7 @@ public class EmprendimientoService {
         Long userId = requireUserId(auth);
 
         if (emprendimientoRepository.existsByUsuarioId(userId)) {
+            // 409 es lo correcto, ya que se trata de un recurso ya existente:
             throw new ConflictException("El usuario ya tiene un emprendimiento creado.");
         }
 
