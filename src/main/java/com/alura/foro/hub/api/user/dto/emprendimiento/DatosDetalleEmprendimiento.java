@@ -17,4 +17,3 @@ public record DatosDetalleEmprendimiento(
         String codigoPostal,
         Boolean activo
 ) {}
-

@@ -62,7 +62,7 @@ class EmprendimientoServiceCrearUnitTest {
         );
 
         auth = mock(Authentication.class);
-        when(auth.isAuthenticated()).thenReturn(true); // ✅ CLAVE: evita Forbidden en todos los tests
+        when(auth.isAuthenticated()).thenReturn(true); // NOTE: ensures authenticated user to avoid Forbidden in all tests
     }
 
     @Test

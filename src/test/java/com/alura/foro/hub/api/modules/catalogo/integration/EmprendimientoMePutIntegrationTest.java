@@ -52,12 +52,18 @@ class EmprendimientoMePutIntegrationTest {
         rosario = new Localidad();
         rosario.setGeorefId("geo-1");
         rosario.setNombre("Rosario");
+        rosario.setDepartamento("Santa Fe");
+        rosario.setLat(-32.9442);
+        rosario.setLon(-60.6505);
         rosario.setActivo(true);
         rosario = localidadRepository.save(rosario);
 
         funes = new Localidad();
         funes.setGeorefId("geo-2");
         funes.setNombre("Funes");
+        funes.setDepartamento("Santa Fe");
+        funes.setLat(-32.9167);
+        funes.setLon(-60.8167);
         funes.setActivo(true);
         funes = localidadRepository.save(funes);
 
@@ -126,7 +132,7 @@ class EmprendimientoMePutIntegrationTest {
                 .andExpect(jsonPath("$.logoKey").isEmpty())
                 .andExpect(jsonPath("$.logoUrl").isEmpty());
 
-        // ✅ Verificación real en DB
+        // VERIFY: Verificación real en DB
         PerfilEmprendimiento empDb = emprendimientoRepository.findById(emp.getId()).orElseThrow();
         assertThat(empDb.getNombre()).isEqualTo("Mi emp actualizado");
         assertThat(empDb.getDescripcion()).isEqualTo("Nueva descripcion");

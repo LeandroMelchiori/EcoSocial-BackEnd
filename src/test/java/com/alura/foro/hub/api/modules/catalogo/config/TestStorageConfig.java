@@ -35,12 +35,14 @@ class TestStorageConfig {
 
             @Override public String getUrl(String objectKey) { return "http://test/" + objectKey; }
 
-            // 👉 agregá estos si los creaste para logo (mejor que estén en la interfaz)
+            @Override
             public String saveEmprendimientoLogo(Long emprendimientoId, MultipartFile file) {
                 String key = "logos/" + emprendimientoId + "/" + UUID.randomUUID() + ".jpg";
                 try { store.put(key, file.getBytes()); } catch (Exception ignored) {}
                 return key;
             }
+            
+            @Override
             public void deleteObject(String key) { store.remove(key); }
         };
     }
