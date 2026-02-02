@@ -152,8 +152,7 @@ public class EmprendimientoService {
 
         validarLocalidadActiva(loc);
 
-        // ✅ Campos actualizables
-        // si tu DTO permite nulls parciales, acá habría que hacer "if (datos.nombre()!=null) ..."
+        // Campos actualizables
         emp.setNombre(datos.nombre());
         emp.setDescripcion(datos.descripcion());
         emp.setTelefonoContacto(datos.telefonoContacto());
@@ -163,7 +162,7 @@ public class EmprendimientoService {
         emp.setDireccion(datos.direccion());
         emp.setCodigoPostal(datos.codigoPostal());
 
-        // ✅ Provincia NO se toca (Santa Fe por defecto / regla tuya)
+        // Provincia NO se toca (Santa Fe por defecto)
 
         return mapper.toDetalle(emp);
     }
