@@ -236,8 +236,8 @@ public class LocalStorageService implements StorageService {
             String original = StringUtils.cleanPath(originalFilename);
             if (original.isBlank()
                     || original.contains("..")
-                    || original.startsWith("/")
-                    || original.startsWith("\\")) {
+                    || original.contains("/")
+                    || original.contains("\\")) {
                 throw new IllegalArgumentException("Nombre de archivo inválido para el logo del emprendimiento");
             }
             String ext = getExtension(original);
