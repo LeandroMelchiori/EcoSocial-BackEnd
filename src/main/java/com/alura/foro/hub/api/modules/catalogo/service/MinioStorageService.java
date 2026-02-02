@@ -312,4 +312,47 @@ public class MinioStorageService implements StorageService {
             throw new RuntimeException("No se pudo generar URL para el objeto: " + objectKey, e);
         }
     }
+
+    @Override
+    public String saveEmprendimientoLogo(Long emprendimientoId, MultipartFile file) {
+        try {
+            ensureBucket();
+
+            String original = StringUtils.cleanPath(
+                    file.getOriginalFilename() == null ? "logo" : file.getOriginalFilename()
+            );
+            String ext = getExtension(original);
+
+            String filename = "logo_" + UUID.randomUUID() + (ext.isBlank() ? "" : "." + ext);
+            String objectKey = "emprendimientos/" + emprendimientoId + "/logo/" + filename;
+
+            try (InputStream in = file.getInputStream()) {
+                long partSize = 10L * 1024 * 1024;
+                minio.putObject(
+                        PutObjectArgs.builder()
+                                .bucket(bucket)
+                                .object(objectKey)
+                                .stream(in, file.getSize(), partSize)
+                                .contentType(file.getContentType())
+                                .build()
+                );
+            }
+
+            return objectKey;
+
+        } catch (Exception e) {
+            throw new RuntimeException("Error al guardar logo en MinIO", e);
+        }
+    }
+
+    @Override
+    public void deleteObject(String objectKey) {
+        if (objectKey == null || objectKey.isBlank()) return;
+        try {
+            minio.removeObject(RemoveObjectArgs.builder().bucket(bucket).object(objectKey).build());
+        } catch (Exception e) {
+            throw new RuntimeException("Error borrando objeto en MinIO: " + objectKey, e);
+        }
+    }
+
 }

@@ -16,4 +16,8 @@ public interface StorageService {
 
     void deleteObjects(List<String> objectKeys);
     String getUrl(String objectKey);
+
+    // Emprendimiento logo
+    String saveEmprendimientoLogo(Long emprendimientoId, MultipartFile file);
+    void deleteObject(String objectKey);
 }
