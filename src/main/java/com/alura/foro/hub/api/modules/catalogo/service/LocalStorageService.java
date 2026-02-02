@@ -201,7 +201,7 @@ public class LocalStorageService implements StorageService {
             return toKey(target);
 
         } catch (Exception e) {
-            throw new RuntimeException("Error al guardar logo en LocalStorage", e);
+            throw new RuntimeException("Error al guardar logo en LocalStorage para emprendimiento ID " + emprendimientoId, e);
         }
     }
 
@@ -210,7 +210,7 @@ public class LocalStorageService implements StorageService {
         if (objectKey == null || objectKey.isBlank()) return;
         try {
             Files.deleteIfExists(fromKey(objectKey));
-        } catch (Exception e) {
+        } catch (java.io.IOException e) {
             throw new RuntimeException("Error borrando objeto (local): " + objectKey, e);
         }
     }
