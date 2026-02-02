@@ -229,16 +229,21 @@ public class LocalStorageService implements StorageService {
             Files.createDirectories(dir);
 
             String originalFilename = file.getOriginalFilename();
-            if (originalFilename == null || originalFilename.isBlank()) {
-                originalFilename = "logo";
+            
+            // Validate raw filename first to detect and reject suspicious inputs
+            if (originalFilename != null && !originalFilename.isBlank()) {
+                if (originalFilename.contains("..")
+                        || originalFilename.contains("/")
+                        || originalFilename.contains("\\")
+                        || originalFilename.startsWith("/")
+                        || originalFilename.startsWith("\\")) {
+                    throw new IllegalArgumentException("Nombre de archivo inválido para el logo del emprendimiento");
+                }
             }
 
-            // Validate raw filename first to detect and reject suspicious inputs
-            if (!originalFilename.equals("logo")
-                    && (originalFilename.contains("..")
-                        || originalFilename.startsWith("/")
-                        || originalFilename.startsWith("\\"))) {
-                throw new IllegalArgumentException("Nombre de archivo inválido para el logo del emprendimiento");
+            // Use default if null or blank
+            if (originalFilename == null || originalFilename.isBlank()) {
+                originalFilename = "logo";
             }
 
             String original = StringUtils.cleanPath(originalFilename);
