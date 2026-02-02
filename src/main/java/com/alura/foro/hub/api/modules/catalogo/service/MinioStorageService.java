@@ -324,8 +324,7 @@ public class MinioStorageService implements StorageService {
                 if (rawOriginal.contains("..")
                         || rawOriginal.contains("/")
                         || rawOriginal.contains("\\")
-                        || rawOriginal.startsWith("/")
-                        || rawOriginal.startsWith("\\")) {
+                        || rawOriginal.contains("\0")) {
                     throw new IllegalArgumentException("Nombre de archivo inválido");
                 }
             }

@@ -235,8 +235,7 @@ public class LocalStorageService implements StorageService {
                 if (originalFilename.contains("..")
                         || originalFilename.contains("/")
                         || originalFilename.contains("\\")
-                        || originalFilename.startsWith("/")
-                        || originalFilename.startsWith("\\")) {
+                        || originalFilename.contains("\0")) {
                     throw new IllegalArgumentException("Nombre de archivo inválido para el logo del emprendimiento");
                 }
             }
