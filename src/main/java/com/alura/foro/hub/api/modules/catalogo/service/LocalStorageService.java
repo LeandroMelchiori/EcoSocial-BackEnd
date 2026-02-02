@@ -107,7 +107,8 @@ public class LocalStorageService implements StorageService {
             return finalKeys;
 
         } catch (Exception e) {
-            try { deleteObjects(finalKeysFromTemp(productoId, opId, tempKeys)); } catch (Exception ignored) {}
+            // Si falla la promoción, algunos archivos pueden haberse copiado parcialmente.
+            // Se deja la limpieza a cargo de operaciones posteriores o procesos de mantenimiento.
             throw new RuntimeException("Error promoviendo temp->final (local)", e);
         }
     }
@@ -216,43 +217,4 @@ public class LocalStorageService implements StorageService {
             throw new RuntimeException("Error borrando prefix (local): " + prefix, e);
         }
     }
-
-    private List<String> finalKeysFromTemp(Long productoId, String opId, List<String> tempKeys) {
-        // placeholder por si querés limpiar algo al fallar promote
-        return List.of();
-    }
-
-    @Override
-    public String saveEmprendimientoLogo(Long emprendimientoId, MultipartFile file) {
-        try {
-            Path dir = root.resolve(Paths.get("emprendimientos", String.valueOf(emprendimientoId), "logo"));
-            Files.createDirectories(dir);
-
-            String original = StringUtils.cleanPath(file.getOriginalFilename() == null ? "logo" : file.getOriginalFilename());
-            String ext = getExtension(original);
-
-            String filename = "logo_" + UUID.randomUUID() + (ext.isBlank() ? "" : "." + ext);
-            Path target = dir.resolve(filename);
-
-            try (InputStream in = file.getInputStream()) {
-                Files.copy(in, target, StandardCopyOption.REPLACE_EXISTING);
-            }
-
-            return toKey(target);
-
-        } catch (Exception e) {
-            throw new RuntimeException("Error al guardar logo en LocalStorage", e);
-        }
-    }
-
-    @Override
-    public void deleteObject(String objectKey) {
-        if (objectKey == null || objectKey.isBlank()) return;
-        try {
-            Files.deleteIfExists(fromKey(objectKey));
-        } catch (Exception e) {
-            throw new RuntimeException("Error borrando objeto (local): " + objectKey, e);
-        }
-    }
-
 }
