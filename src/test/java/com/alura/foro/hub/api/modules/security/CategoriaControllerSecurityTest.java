@@ -1,4 +1,4 @@
-package com.alura.foro.hub.api.modules.foro.security;
+package com.alura.foro.hub.api.modules.security;
 
 import com.alura.foro.hub.api.modules.foro.controller.CategoriaController;
 import com.alura.foro.hub.api.modules.foro.dto.categoria.DatosListadoCategoria;

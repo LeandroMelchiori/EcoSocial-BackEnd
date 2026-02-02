@@ -1,4 +1,4 @@
-package com.alura.foro.hub.api.modules.foro.security;
+package com.alura.foro.hub.api.modules.security;
 
 import com.alura.foro.hub.api.modules.foro.controller.RespuestaHijaController;
 import com.alura.foro.hub.api.security.exception.ForbiddenException;

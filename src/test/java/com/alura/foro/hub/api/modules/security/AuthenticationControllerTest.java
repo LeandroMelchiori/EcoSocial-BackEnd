@@ -1,7 +1,8 @@
-package com.alura.foro.hub.api.modules.foro.security;
+package com.alura.foro.hub.api.modules.security;
 
 import com.alura.foro.hub.api.modules.catalogo.repository.ProductoRepository;
 import com.alura.foro.hub.api.user.domain.Usuario;
+import com.alura.foro.hub.api.user.repository.PerfilEmprendimientoRepository;
 import com.alura.foro.hub.api.user.repository.UsuarioRepository;
 import com.alura.foro.hub.api.security.auth.UsuarioAuthenticateData;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -35,6 +36,8 @@ class AuthenticationControllerTest {
     ProductoRepository productoRepository;
     @Autowired
     PasswordEncoder passwordEncoder;
+    @Autowired
+    PerfilEmprendimientoRepository perfilEmprendimientoRepository;
 
     private static final String EMAIL = "autor1@test.com";
     private static final String DNI = "12345678";
@@ -43,6 +46,7 @@ class AuthenticationControllerTest {
     @BeforeEach
     void setup() {
         productoRepository.deleteAll();
+        perfilEmprendimientoRepository.deleteAll();
         usuarioRepository.deleteAll();
 
         var usuario = new Usuario();

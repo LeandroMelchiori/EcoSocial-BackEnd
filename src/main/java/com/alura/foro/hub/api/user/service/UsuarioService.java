@@ -64,8 +64,6 @@ public class UsuarioService {
         var rolAdmin = perfilRepository.findByNombre("ADMIN")
                 .orElseThrow(() -> new IllegalStateException("No existe el perfil ADMIN"));
 
-        long cantidadAdmins = usuarioRepository.countUsuariosConRol("ADMIN");
-
         if (!usuario.getPerfiles().contains(rolAdmin)) {
             usuario.getPerfiles().add(rolAdmin);
         }
@@ -96,4 +94,6 @@ public class UsuarioService {
 
         usuario.getPerfiles().remove(rolAdmin);
     }
+
+
 }
