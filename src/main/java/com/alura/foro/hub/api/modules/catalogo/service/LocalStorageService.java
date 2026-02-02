@@ -217,4 +217,48 @@ public class LocalStorageService implements StorageService {
             throw new RuntimeException("Error borrando prefix (local): " + prefix, e);
         }
     }
+
+    @Override
+    public String saveEmprendimientoLogo(Long emprendimientoId, MultipartFile file) {
+        try {
+            Path dir = root.resolve(Paths.get("emprendimientos", String.valueOf(emprendimientoId), "logo"));
+            Files.createDirectories(dir);
+
+            String originalFilename = file.getOriginalFilename();
+            if (originalFilename == null || originalFilename.isBlank()) {
+                originalFilename = "logo";
+            }
+
+            String original = StringUtils.cleanPath(originalFilename);
+            if (original.isBlank()
+                    || original.contains("..")
+                    || original.startsWith("/")
+                    || original.startsWith("\\")) {
+                throw new IllegalArgumentException("Nombre de archivo inválido para el logo del emprendimiento");
+            }
+
+            String ext = getExtension(original);
+            String filename = "logo_" + UUID.randomUUID() + (ext.isBlank() ? "" : "." + ext);
+            Path target = dir.resolve(filename);
+
+            try (InputStream in = file.getInputStream()) {
+                Files.copy(in, target, StandardCopyOption.REPLACE_EXISTING);
+            }
+
+            return toKey(target);
+
+        } catch (Exception e) {
+            throw new RuntimeException("Error al guardar logo del emprendimiento (local)", e);
+        }
+    }
+
+    @Override
+    public void deleteObject(String objectKey) {
+        if (objectKey == null || objectKey.isBlank()) return;
+        try {
+            Files.deleteIfExists(fromKey(objectKey));
+        } catch (Exception e) {
+            throw new RuntimeException("Error borrando objeto (local): " + objectKey, e);
+        }
+    }
 }

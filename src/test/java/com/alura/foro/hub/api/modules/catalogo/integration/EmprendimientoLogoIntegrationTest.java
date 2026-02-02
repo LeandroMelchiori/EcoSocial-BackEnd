@@ -60,6 +60,9 @@ class EmprendimientoLogoIntegrationTest {
         Localidad loc = new Localidad();
         loc.setGeorefId("geo-1");
         loc.setNombre("Rosario");
+        loc.setDepartamento("Santa Fe");
+        loc.setLat(-32.95);
+        loc.setLon(-60.66);
         loc.setActivo(true);
         loc = localidadRepository.save(loc);
 
@@ -108,14 +111,14 @@ class EmprendimientoLogoIntegrationTest {
                 .andExpect(jsonPath("$.usuarioId").value(usuario.getId()))
                 .andExpect(jsonPath("$.logoKey").exists());
 
-        // ✅ verificar persistencia real
+        // VERIFY: verificar persistencia real
         PerfilEmprendimiento empDb =
                 emprendimientoRepository.findById(emp.getId()).orElseThrow();
 
         assertThat(empDb.getLogoKey())
                 .isEqualTo("emprendimientos/" + emp.getId() + "/logo.png");
 
-        // ✅ verificar interacción con storage
+        // VERIFY: verificar interacción con storage
         verify(storageService)
                 .saveEmprendimientoLogo(eq(emp.getId()), any());
     }
