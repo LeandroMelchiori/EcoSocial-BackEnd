@@ -318,9 +318,10 @@ public class MinioStorageService implements StorageService {
         try {
             ensureBucket();
 
+            // Get filename and validate before applying any transformations
             String rawOriginal = file.getOriginalFilename();
-            if (rawOriginal != null) {
-                // Validate raw filename first to detect and reject suspicious inputs
+            if (rawOriginal != null && !rawOriginal.isBlank()) {
+                // Validate raw filename to detect and reject suspicious inputs
                 if (rawOriginal.contains("..")
                         || rawOriginal.contains("/")
                         || rawOriginal.contains("\\")
@@ -328,7 +329,11 @@ public class MinioStorageService implements StorageService {
                     throw new IllegalArgumentException("Nombre de archivo inválido");
                 }
             }
-            String original = (rawOriginal == null) ? "logo" : StringUtils.cleanPath(rawOriginal);
+
+            // Apply default and clean
+            String original = (rawOriginal == null || rawOriginal.isBlank()) 
+                    ? "logo" 
+                    : StringUtils.cleanPath(rawOriginal);
             if (!StringUtils.hasText(original)) {
                 throw new IllegalArgumentException("Nombre de archivo inválido");
             }

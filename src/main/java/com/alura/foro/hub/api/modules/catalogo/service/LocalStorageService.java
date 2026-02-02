@@ -228,10 +228,10 @@ public class LocalStorageService implements StorageService {
             Path dir = root.resolve(Paths.get("emprendimientos", String.valueOf(emprendimientoId), "logo"));
             Files.createDirectories(dir);
 
+            // Get filename and validate before applying any transformations
             String originalFilename = file.getOriginalFilename();
-            
-            // Validate raw filename first to detect and reject suspicious inputs
             if (originalFilename != null && !originalFilename.isBlank()) {
+                // Validate raw filename to detect and reject suspicious inputs
                 if (originalFilename.contains("..")
                         || originalFilename.contains("/")
                         || originalFilename.contains("\\")
@@ -240,16 +240,14 @@ public class LocalStorageService implements StorageService {
                 }
             }
 
-            // Use default if null or blank
-            if (originalFilename == null || originalFilename.isBlank()) {
-                originalFilename = "logo";
-            }
-
-            String original = StringUtils.cleanPath(originalFilename);
-            if (original.isBlank()) {
+            // Apply default and clean
+            String cleanedFilename = (originalFilename == null || originalFilename.isBlank()) 
+                    ? "logo" 
+                    : StringUtils.cleanPath(originalFilename);
+            if (cleanedFilename.isBlank()) {
                 throw new IllegalArgumentException("Nombre de archivo inválido para el logo del emprendimiento");
             }
-            String ext = getExtension(original);
+            String ext = getExtension(cleanedFilename);
 
             String filename = "logo_" + UUID.randomUUID() + (ext.isBlank() ? "" : "." + ext);
             Path target = dir.resolve(filename);
