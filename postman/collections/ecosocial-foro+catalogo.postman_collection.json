@@ -1735,7 +1735,7 @@
                   "type": "file",
                   "uuid": "661f4583-b9aa-4545-85db-fb7dadc432c4",
                   "src": [
-                    "postmans/fixtures/img1.jpg",
+                    "postman/fixtures/img1.jpg",
                     "postman/fixtures/img2.jpg"
                   ]
                 }

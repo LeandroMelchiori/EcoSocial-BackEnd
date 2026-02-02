@@ -67,7 +67,12 @@ public class Usuario implements UserDetails {
             joinColumns = @JoinColumn(name = "usuario_id"),
             inverseJoinColumns = @JoinColumn(name = "perfil_id")
     )
+    @Getter(AccessLevel.NONE)
     private List<Perfil> perfiles = new ArrayList<>();
+
+    public List<Perfil> getPerfiles() {
+        return List.copyOf(perfiles);
+    }
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

@@ -74,12 +74,14 @@ public class GlobalExceptionHandler {
 
     // ✅ 409 - ConflictException
     @ExceptionHandler(ConflictException.class)
-    public ResponseEntity<?> handleConflict(ConflictException ex) {
-        return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of(
-                "status", 409,
-                "error", "CONFLICT",
-                "message", ex.getMessage()
-        ));
+    public ResponseEntity<ApiError> handleConflict(ConflictException ex, HttpServletRequest req) {
+        var body = ApiError.of(
+                HttpStatus.CONFLICT.value(),
+                "Conflict",
+                ex.getMessage(),
+                req.getRequestURI()
+        );
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(body);
     }
 
     // ✅ 409 - violación de constraints

@@ -81,7 +81,7 @@ class MinioStorageServiceIntegrationTest {
                 "contenido".getBytes(StandardCharsets.UTF_8)
         );
 
-        Long productoId = System.currentTimeMillis(); // único
+        long productoId = System.currentTimeMillis(); // único
         int orden = 1;
 
         String objectKey = null;
