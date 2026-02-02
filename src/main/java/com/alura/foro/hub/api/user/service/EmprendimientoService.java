@@ -152,8 +152,6 @@ public class EmprendimientoService {
 
         validarLocalidadActiva(loc);
 
-        // ✅ Campos actualizables
-        // si tu DTO permite nulls parciales, acá habría que hacer "if (datos.nombre()!=null) ..."
         emp.setNombre(datos.nombre());
         emp.setDescripcion(datos.descripcion());
         emp.setTelefonoContacto(datos.telefonoContacto());
