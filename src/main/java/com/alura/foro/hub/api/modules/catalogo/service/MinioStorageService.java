@@ -326,7 +326,7 @@ public class MinioStorageService implements StorageService {
                         || rawOriginal.contains("/")
                         || rawOriginal.contains("\\")
                         || rawOriginal.contains("\0")) {
-                    throw new IllegalArgumentException("Nombre de archivo inválido");
+                    throw new IllegalArgumentException("Nombre de archivo contiene caracteres no permitidos");
                 }
             }
 
@@ -334,7 +334,7 @@ public class MinioStorageService implements StorageService {
             String original = (rawOriginal == null || rawOriginal.isBlank()) 
                     ? "logo" 
                     : StringUtils.cleanPath(rawOriginal);
-            if (!StringUtils.hasText(original)) {
+            if (original.isBlank()) {
                 throw new IllegalArgumentException("Nombre de archivo inválido");
             }
             String ext = getExtension(original);

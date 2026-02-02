@@ -236,7 +236,7 @@ public class LocalStorageService implements StorageService {
                         || originalFilename.contains("/")
                         || originalFilename.contains("\\")
                         || originalFilename.contains("\0")) {
-                    throw new IllegalArgumentException("Nombre de archivo inválido para el logo del emprendimiento");
+                    throw new IllegalArgumentException("Nombre de archivo contiene caracteres no permitidos");
                 }
             }
 
@@ -245,7 +245,7 @@ public class LocalStorageService implements StorageService {
                     ? "logo" 
                     : StringUtils.cleanPath(originalFilename);
             if (cleanedFilename.isBlank()) {
-                throw new IllegalArgumentException("Nombre de archivo inválido para el logo del emprendimiento");
+                throw new IllegalArgumentException("Nombre de archivo inválido");
             }
             String ext = getExtension(cleanedFilename);
 
