@@ -79,17 +79,17 @@ public class UsuarioService {
         var usuario = usuarioRepository.findById(usuarioObjetivoId)
                 .orElseThrow(() -> new EntityNotFoundException("Usuario no encontrado"));
 
-        var rolAdmin = perfilRepository.findByNombre("admin")
-                .orElseThrow(() -> new IllegalStateException("No existe el perfil admin"));
+        var rolAdmin = perfilRepository.findByNombre("ADMIN")
+                .orElseThrow(() -> new IllegalStateException("No existe el perfil ADMIN"));
 
         if (!usuario.getPerfiles().contains(rolAdmin)) {
-            throw new BusinessException("El usuario no tiene el rol admin");
+            throw new BusinessException("El usuario no tiene el rol ADMIN");
         }
 
-        long cantidadAdmins = usuarioRepository.countUsuariosConRol("admin");
+        long cantidadAdmins = usuarioRepository.countUsuariosConRol("ADMIN");
 
         if (cantidadAdmins <= 1) {
-            throw new BusinessException("No se puede quitar el rol admin al último administrador del sistema");
+            throw new BusinessException("No se puede quitar el rol ADMIN al último administrador del sistema");
         }
 
         usuario.getPerfiles().remove(rolAdmin);

@@ -107,19 +107,38 @@ Flyway.
 
 ### 🔐 Variables de entorno
 
-Configurar las siguientes variables de entorno o propiedades en application.properties:
+⚠️ **IMPORTANTE**: Para una guía completa de seguridad, consulta [SECURITY.md](SECURITY.md)
 
-```properties
-spring.datasource.url=jdbc:mysql://localhost/foro_hub
-spring.datasource.username=TU_USUARIO
-spring.datasource.password=TU_PASSWORD
+Se proporciona un archivo `.env.example` con todas las variables necesarias. Para configurar:
 
-api.security.secret=CLAVE_SECRETA_JWT
+```bash
+cp .env.example .env
+# Edita .env con tus valores reales
 ```
 
-### ⚠️ Importante:
-La clave api.security.secret debe mantenerse privada.
-No se recomienda subirla a repositorios públicos.
+Variables principales a configurar:
+
+```properties
+# Base de datos
+SPRING_DATASOURCE_URL=jdbc:mysql://localhost:3306/foro_hub
+SPRING_DATASOURCE_USERNAME=TU_USUARIO
+SPRING_DATASOURCE_PASSWORD=TU_PASSWORD
+
+# JWT (genera una clave fuerte única)
+API_SECURITY_SECRET=CLAVE_SECRETA_JWT
+
+# Almacenamiento (local o minio)
+CATALOGO_STORAGE=local
+CATALOGO_LOCAL_ROOT=uploads
+```
+
+### ⚠️ Seguridad:
+- La clave `API_SECURITY_SECRET` debe ser fuerte y única (mínimo 256 bits)
+- Genera claves seguras con: `openssl rand -base64 32`
+- **NUNCA** subas archivos `.env` con valores reales a repositorios públicos
+- Usa gestores de secrets en producción (AWS Secrets Manager, Vault, etc.)
+- Consulta [SECURITY.md](SECURITY.md) para mejores prácticas completas
+
 
 ## ▶️ Ejecución del proyecto
 

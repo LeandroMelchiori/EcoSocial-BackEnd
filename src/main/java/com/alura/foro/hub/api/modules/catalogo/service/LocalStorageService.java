@@ -219,9 +219,19 @@ public class LocalStorageService implements StorageService {
     // helpers
     // -----------------
     private String getExtension(String name) {
-        int dot = name.lastIndexOf('.');
+        if (name == null || name.isBlank()) {
+            return "";
+        }
+        // Sanitizar nombre de archivo para prevenir ataques
+        String sanitized = name.replaceAll("[^a-zA-Z0-9._-]", "");
+        int dot = sanitized.lastIndexOf('.');
         if (dot == -1) return "";
-        return name.substring(dot + 1).toLowerCase();
+        String ext = sanitized.substring(dot + 1).toLowerCase();
+        // Validar extensiones permitidas
+        if (!ext.matches("^(jpg|jpeg|png|gif|webp)$")) {
+            throw new IllegalArgumentException("Extensión de archivo no permitida: " + ext);
+        }
+        return ext;
     }
 
     private String toKey(Path absolutePath) {
@@ -231,8 +241,24 @@ public class LocalStorageService implements StorageService {
 
     private Path fromKey(String key) {
         // key tipo "productos/1/a.png"
+        if (key == null || key.isBlank()) {
+            throw new IllegalArgumentException("Key no puede ser nulo o vacío");
+        }
+        
+        // Validar path traversal
+        if (key.contains("..") || key.contains("~")) {
+            throw new SecurityException("Key contiene caracteres de path traversal no permitidos: " + key);
+        }
+        
         String clean = key.startsWith("/") ? key.substring(1) : key;
-        return root.resolve(clean).toAbsolutePath().normalize();
+        Path resolved = root.resolve(clean).toAbsolutePath().normalize();
+        
+        // Verificar que el path resuelto está dentro del root
+        if (!resolved.startsWith(root)) {
+            throw new SecurityException("Path traversal detectado. Path resuelto fuera del directorio root: " + key);
+        }
+        
+        return resolved;
     }
 
     private void deletePrefix(String prefix) {

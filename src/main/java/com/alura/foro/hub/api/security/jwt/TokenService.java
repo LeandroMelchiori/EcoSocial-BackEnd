@@ -29,13 +29,12 @@ public class TokenService {
                     .withExpiresAt(generateExpirationTime())
                     .sign(algorithm);
         } catch (JWTCreationException exception){
-            // Invalid Signing configuration / Couldn't convert Claims.
-            throw new RuntimeException();
+            throw new RuntimeException("Error al generar token JWT para usuario: " + usuario.getId(), exception);
         }
     }
     public String  getSubject(String token) {
-        if (token == null) {
-            throw new RuntimeException();
+        if (token == null || token.isBlank()) {
+            throw new RuntimeException("Token JWT es nulo o vacío");
         }
         try {
             Algorithm algorithm = HMAC256(apiSecret);
@@ -46,8 +45,7 @@ public class TokenService {
                     .verify(token);
             return decodedJWT.getSubject();
         } catch (JWTVerificationException exception) {
-            // Invalid signature/claims
-            throw new RuntimeException("Error al verificar el token", exception);
+            throw new RuntimeException("Error al verificar el token JWT", exception);
         }
     }
 
@@ -65,7 +63,7 @@ public class TokenService {
             return verifier.getClaim("id").asLong();
 
         } catch (Exception e) {
-            throw new RuntimeException("Error al verificar el token");
+            throw new RuntimeException("Error al extraer userId del token JWT", e);
         }
     }
 }
