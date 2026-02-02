@@ -61,8 +61,8 @@ class EmprendimientoLogoIntegrationTest {
         loc.setGeorefId("geo-1");
         loc.setNombre("Rosario");
         loc.setDepartamento("Santa Fe");
-        loc.setLat(-32.95);
-        loc.setLon(-60.66);
+        loc.setLat(-32.9442);
+        loc.setLon(-60.6505);
         loc.setActivo(true);
         loc = localidadRepository.save(loc);
 
