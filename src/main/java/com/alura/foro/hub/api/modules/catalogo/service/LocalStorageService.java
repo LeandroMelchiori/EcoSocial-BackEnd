@@ -233,11 +233,16 @@ public class LocalStorageService implements StorageService {
                 originalFilename = "logo";
             }
 
+            // Validate raw filename first to detect and reject suspicious inputs
+            if (!originalFilename.equals("logo")
+                    && (originalFilename.contains("..")
+                        || originalFilename.startsWith("/")
+                        || originalFilename.startsWith("\\"))) {
+                throw new IllegalArgumentException("Nombre de archivo inválido para el logo del emprendimiento");
+            }
+
             String original = StringUtils.cleanPath(originalFilename);
-            if (original.isBlank()
-                    || original.contains("..")
-                    || original.startsWith("/")
-                    || original.startsWith("\\")) {
+            if (original.isBlank()) {
                 throw new IllegalArgumentException("Nombre de archivo inválido para el logo del emprendimiento");
             }
             String ext = getExtension(original);
