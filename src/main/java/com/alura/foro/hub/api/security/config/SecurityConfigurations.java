@@ -45,7 +45,7 @@ public class SecurityConfigurations {
 
     @Bean
     public SecurityFilter securityFilter(TokenService tokenService, UsuarioRepository usuarioRepository) {
-        return new SecurityFilter(tokenService, usuarioRepository);
+        return new SecurityFilter(tokenService, usuarioRepository, objectMapper);
     }
 
     @Bean
@@ -71,7 +71,7 @@ public class SecurityConfigurations {
                         .referrerPolicy(ref -> ref.policy(org.springframework.security.web.header.writers.ReferrerPolicyHeaderWriter.ReferrerPolicy.NO_REFERRER))
                         // CSP
                         .contentSecurityPolicy(csp -> csp
-                                .policyDirectives("default-src * 'unsafe-inline' 'unsafe-eval' data: blob:"
+                                .policyDirectives("default-src 'none'"
                                 )
                         )
                         // Permissions-Policy
@@ -93,8 +93,6 @@ public class SecurityConfigurations {
                                 .requestMatchers(HttpMethod.GET, "/actuator/info/**").permitAll()
                                 .requestMatchers(HttpMethod.GET, "/respuestas/*/hijas").permitAll()
                                 .requestMatchers(HttpMethod.GET, "/respuestas/**").permitAll()
-                                .requestMatchers(HttpMethod.GET, "/actuator/metrics/**").permitAll()
-                                .requestMatchers(HttpMethod.GET, "/actuator/prometheus/**").permitAll()
                                 .requestMatchers(HttpMethod.GET, "/catalogo/**").permitAll()
                                 .requestMatchers(HttpMethod.GET, "/productos/**").permitAll()
                                 .requestMatchers(HttpMethod.GET, "/catalogo/categorias/**").permitAll()

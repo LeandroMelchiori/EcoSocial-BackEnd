@@ -17,8 +17,8 @@ public class CorsConfig {
 
         // 🔒 Orígenes permitidos
         config.setAllowedOrigins(List.of(
-                "http://localhost:*",
-                "https://*.tudominio.com"
+                "http://localhost:3000",
+                "http://localhost:5173"
         ));
 
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));

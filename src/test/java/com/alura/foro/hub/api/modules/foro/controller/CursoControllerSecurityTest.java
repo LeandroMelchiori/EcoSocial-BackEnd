@@ -1,11 +1,10 @@
-package com.alura.foro.hub.api.modules.security;
+package com.alura.foro.hub.api.modules.foro.controller;
 
-import com.alura.foro.hub.api.modules.foro.controller.CategoriaController;
-import com.alura.foro.hub.api.modules.foro.dto.categoria.DatosListadoCategoria;
+import com.alura.foro.hub.api.modules.foro.dto.curso.DatosListadoCurso;
 import com.alura.foro.hub.api.security.config.SecurityConfigurations;
 import com.alura.foro.hub.api.security.filter.RateLimitFilter;
 import com.alura.foro.hub.api.security.filter.SecurityFilter;
-import com.alura.foro.hub.api.modules.foro.service.CategoriaService;
+import com.alura.foro.hub.api.modules.foro.service.CursoService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletRequest;
 import jakarta.servlet.ServletResponse;
@@ -25,14 +24,13 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 
-@WebMvcTest(CategoriaController.class)
+@WebMvcTest(CursoController.class)
 @Import(SecurityConfigurations.class)
-class CategoriaControllerSecurityTest {
+class CursoControllerSecurityTest {
 
     @Autowired MockMvc mvc;
 
-    @MockitoBean
-    CategoriaService categoriaService;
+    @MockitoBean CursoService cursoService;
 
     // Mockeamos tus filtros custom para que NO exijan JWT real en tests
     @MockitoBean SecurityFilter securityFilter;
@@ -56,45 +54,45 @@ class CategoriaControllerSecurityTest {
 
     @Test
     void crear_sinAuth_401() throws Exception {
-        mvc.perform(post("/categorias")
+        mvc.perform(post("/cursos")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                                 { "nombre": "Docker", "categoriaId": 2 }
                                 """))
                 .andExpect(status().isUnauthorized());
 
-        verifyNoInteractions(categoriaService);
+        verifyNoInteractions(cursoService);
     }
 
     @Test
     @WithMockUser(roles = "USER")
     void crear_conUser_403() throws Exception {
-        mvc.perform(post("/categorias")
+        mvc.perform(post("/cursos")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
-                                { "nombre": "AWS" }
+                                { "nombre": "Docker", "categoriaId": 2 }
                                 """))
                 .andExpect(status().isForbidden());
 
-        verifyNoInteractions(categoriaService);
+        verifyNoInteractions(cursoService);
     }
 
     @Test
     @WithMockUser(roles = "ADMIN")
     void crear_conAdmin_201() throws Exception {
-        when(categoriaService.crear(any()))
-                .thenReturn(new DatosListadoCategoria(3L, "Docker"));
+        when(cursoService.crear(any()))
+                .thenReturn(new DatosListadoCurso(3L, "Docker", 2L, "Cloud"));
 
-        mvc.perform(post("/categorias")
+        mvc.perform(post("/cursos")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
-                                { "nombre": "Docker" }
+                                { "nombre": "Docker", "categoriaId": 2 }
                                 """))
                 .andExpect(status().isCreated())
-                .andExpect(header().string("Location", "/categorias/3"))
+                .andExpect(header().string("Location", "/cursos/3"))
                 .andExpect(jsonPath("$.id").value(3))
                 .andExpect(jsonPath("$.nombre").value("Docker"));
 
-        verify(categoriaService).crear(any());
+        verify(cursoService).crear(any());
     }
 }

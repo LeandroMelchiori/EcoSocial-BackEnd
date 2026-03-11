@@ -5,9 +5,9 @@ import com.alura.foro.hub.api.modules.catalogo.mapper.ProductoMapper;
 import com.alura.foro.hub.api.security.exception.BadRequestException;
 import com.alura.foro.hub.api.security.exception.ForbiddenException;
 import com.alura.foro.hub.api.user.domain.PerfilEmprendimiento;
-import com.alura.foro.hub.api.user.domain.Usuario; // ajustá paquete
+import com.alura.foro.hub.api.user.domain.Usuario;
 import com.alura.foro.hub.api.user.repository.PerfilEmprendimientoRepository;
-import com.alura.foro.hub.api.user.repository.UsuarioRepository; // ajustá paquete
+import com.alura.foro.hub.api.user.repository.UsuarioRepository;
 import com.alura.foro.hub.api.modules.catalogo.domain.*;
 import com.alura.foro.hub.api.modules.catalogo.repository.*;
 import jakarta.persistence.EntityManager;
@@ -452,7 +452,7 @@ public class ProductoService {
     // =========================
     private void validarImagenes(List<MultipartFile> imagenes) {
         if (imagenes.size() > MAX_IMGS)
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Máximo " + MAX_IMGS + " imágenes");
+            throw new BadRequestException("Máximo " + MAX_IMGS + " imágenes");
 
         for (MultipartFile f : imagenes) {
             if (f == null || f.isEmpty()) continue;

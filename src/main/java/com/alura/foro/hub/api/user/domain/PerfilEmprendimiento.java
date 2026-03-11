@@ -78,8 +78,6 @@ public class PerfilEmprendimiento {
 
     @PreUpdate
     void preUpdate() {
-        if (this.fechaActualizacion == null) {
-            this.fechaActualizacion = LocalDateTime.now();
-        }
+        this.fechaActualizacion = LocalDateTime.now();
     }
 }

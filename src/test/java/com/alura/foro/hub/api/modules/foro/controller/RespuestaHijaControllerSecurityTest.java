@@ -1,6 +1,5 @@
-package com.alura.foro.hub.api.modules.security;
+package com.alura.foro.hub.api.modules.foro.controller;
 
-import com.alura.foro.hub.api.modules.foro.controller.RespuestaHijaController;
 import com.alura.foro.hub.api.security.exception.ForbiddenException;
 import com.alura.foro.hub.api.modules.foro.service.RespuestaHijaService;
 import org.junit.jupiter.api.Test;
