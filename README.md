@@ -1,371 +1,378 @@
-# 🧠 Foro Hub API
-![Java](https://img.shields.io/badge/Java-17-red)
-![Spring Boot](https://img.shields.io/badge/Spring_Boot-3-green)
-![Build](https://img.shields.io/badge/build-passing-brightgreen)
-![Security](https://img.shields.io/badge/security-JWT-blue)
+<div align="center">
 
-API REST desarrollada con **Spring Boot** para la gestión de un foro de discusión basado en
-tópicos y respuestas.
+# 🌱 EcoSocial — Backend
 
-El sistema implementa **autenticación con JWT**, control de acceso por **roles (USER / ADMIN)**,
-y validaciones de seguridad para garantizar que solo los autores o administradores puedan
-modificar o eliminar los recursos correspondientes.
+### Plataforma digital para emprendedores de la economía social
 
-El proyecto está pensado para ser probado principalmente con **Postman**, aunque también
-cuenta con documentación OpenAPI (Swagger) para referencia.
+[![Java](https://img.shields.io/badge/Java-17-ED8B00?style=for-the-badge&logo=openjdk&logoColor=white)](https://www.java.com)
+[![Spring Boot](https://img.shields.io/badge/Spring_Boot_3-6DB33F?style=for-the-badge&logo=springboot&logoColor=white)](https://spring.io/projects/spring-boot)
+[![MySQL](https://img.shields.io/badge/MySQL_8-4479A1?style=for-the-badge&logo=mysql&logoColor=white)](https://www.mysql.com)
+[![MinIO](https://img.shields.io/badge/MinIO-C72E49?style=for-the-badge&logo=minio&logoColor=white)](https://min.io)
+[![Docker](https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white)](https://www.docker.com)
+[![JWT](https://img.shields.io/badge/JWT-000000?style=for-the-badge&logo=jsonwebtokens&logoColor=white)](https://jwt.io)
+[![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)](LICENSE)
 
-## 🛠️ Tecnologías utilizadas
+[![Tests](https://img.shields.io/badge/Tests-155_passing-brightgreen?style=flat-square&logo=checkmarx)](/)
+[![Security](https://img.shields.io/badge/CodeQL-Passed-blue?style=flat-square&logo=github)](/)
+[![Swagger](https://img.shields.io/badge/Docs-Swagger_UI-85EA2D?style=flat-square&logo=swagger)](/)
 
-- **Java 17**
-- **Spring Boot 3**
-    - Spring Web
-    - Spring Security
-    - Spring Data JPA
-    - Spring Validation
-- **JWT (JSON Web Tokens)** para autenticación
-- **MySQL 8** como base de datos
-- **Flyway** para migraciones de base de datos
-- **Hibernate / JPA**
-- **Swagger / OpenAPI (springdoc)** para documentación de la API
-- **Postman** para pruebas de los endpoints
-- **Maven** como gestor de dependencias
-
-
-## 🚀 Funcionalidades principales
-
-### 👤 Autenticación y usuarios
-- Registro de usuarios
-- Login con generación de **token JWT**
-- Control de acceso basado en roles (**USER / ADMIN**)
-- Conversión y revocación de privilegios de administrador
-
-### 🧵 Tópicos
-- Crear tópicos (usuario autenticado)
-- Listar todos los tópicos (paginado)
-- Ver detalle de un tópico con sus respuestas
-- Editar tópicos (solo autor o administrador)
-- Eliminar tópicos (solo autor o administrador)
-
-### 💬 Respuestas
-- Crear respuestas en un tópico
-- Listar respuestas de un tópico
-- Editar respuestas (solo autor)
-- Eliminar respuestas (autor, autor del tópico o administrador)
-- Marcar una respuesta como solución (solo autor del tópico)
-
-### 💬 Respuestas hijas
-- Responder a una respuesta (1 solo nivel)
-- Reglas de edición y permisos propias
-- Test de integración específico
-
-### 📚 Cursos y categorías
-- Listar categorías
-- Listar cursos por categoría
-- Crear, editar y eliminar cursos (**solo ADMIN**)
-- Crear, editar y eliminar categorías (**solo ADMIN**)
-
-### 🔐 Seguridad
-- Autenticación mediante **Bearer Token**
-- Filtros de seguridad personalizados
-- Manejo centralizado de errores
-- Validaciones de datos con mensajes claros
-
---- 
-
-## 🧩 Arquitectura
-
-El proyecto sigue una arquitectura por capas:
-
-- Controller: manejo HTTP
-- Service: lógica de negocio
-- Repository: acceso a datos
-- Security: autenticación y autorización con JWT
+</div>
 
 ---
 
-## ⚙️ Requisitos y configuración
+## 📖 ¿Qué es EcoSocial?
 
-### 📌 Requisitos previos
-Para ejecutar el proyecto es necesario contar con:
+**EcoSocial** es una API REST que potencia una plataforma integral para emprendedores de la economía social. No es un simple catálogo ni un marketplace: es un **espacio digital que combina visibilización y comunidad**.
+
+El sistema resuelve dos necesidades reales:
+
+> 🏪 **Catálogo** — Los emprendedores publican sus productos y emprendimientos para que cualquier persona pueda descubrirlos, sin necesidad de registrarse.
+
+> 🧵 **Foro** — Los usuarios registrados intercambian ideas, consultas y experiencias, fortaleciendo la red emprendedora desde adentro.
+
+Ambas partes comparten la misma infraestructura de usuarios, autenticación y seguridad.
+
+---
+
+## 🗂️ Módulos del sistema
+
+```
+EcoSocial
+├── 👤 Usuarios & Emprendimientos    → Registro, perfil, 1 usuario = 1 emprendimiento
+├── 🏪 Catálogo                      → Productos, categorías, subcategorías, imágenes
+└── 🧵 Foro                          → Tópicos, respuestas, respuestas hijas
+```
+
+---
+
+## 🛠️ Stack tecnológico
+
+| Área | Tecnología |
+|------|-----------|
+| 🔧 Lenguaje | Java 17 |
+| 🍃 Framework | Spring Boot 3 (Web, Security, Data JPA, Validation) |
+| 🗄️ Base de datos | MySQL 8 |
+| 🧪 Testing DB | H2 en memoria |
+| 🔐 Autenticación | JWT (JSON Web Tokens) |
+| 🗃️ Migraciones | Flyway |
+| 🖼️ Storage de archivos | MinIO (producción) / Local filesystem (dev) |
+| 📦 Contenedores | Docker + Docker Compose |
+| 📊 Monitoreo | Spring Actuator + Micrometer + Prometheus |
+| 📄 Documentación | Swagger / OpenAPI (springdoc) |
+| 🔒 Análisis de seguridad | CodeQL (GitHub Actions) |
+| 🏗️ Build | Maven |
+
+---
+
+## 🚀 Funcionalidades
+
+### 👤 Usuarios y autenticación
+
+- ✅ Registro de nuevos usuarios
+- ✅ Login con generación de **token JWT**
+- ✅ Control de acceso por roles (`USER` / `ADMIN`)
+- ✅ Conversión y revocación de rol administrador
+- ✅ Rate limiting configurable por perfil de entorno
+
+---
+
+### 🏪 Catálogo de emprendimientos y productos
+
+#### 🏢 Mi emprendimiento *(1 usuario = 1 emprendimiento)*
+
+- ✅ Crear el emprendimiento propio (`POST /me/emprendimiento`)
+- ✅ Ver el emprendimiento propio (`GET /me/emprendimiento`)
+- ✅ Actualizar datos del emprendimiento
+- ✅ Subir / reemplazar logo (`PUT /me/emprendimiento/logo`)
+- ✅ Eliminar logo
+- ✅ Eliminar emprendimiento
+- ✅ Localidad georreferenciada (datos de Santa Fe pre-cargados desde GeoRef)
+
+#### 📦 Productos *(con imágenes múltiples)*
+
+- ✅ Listar productos con paginación y filtros por categoría, subcategoría o texto libre (**público**)
+- ✅ Ver detalle de un producto (**público**)
+- ✅ Crear producto con imágenes (`multipart/form-data`)
+- ✅ Actualizar producto + imágenes
+- ✅ Eliminar producto
+- ✅ Agregar imágenes adicionales a un producto existente
+- ✅ Reemplazar una imagen individual
+- ✅ Eliminar una imagen individual
+- ✅ Reordenar imágenes
+
+#### 🗂️ Categorías y subcategorías
+
+- ✅ Listar categorías activas (**público**)
+- ✅ Listar subcategorías activas por categoría (**público**)
+- ✅ CRUD completo de categorías y subcategorías (**solo ADMIN**)
+- ✅ Activar / desactivar categorías y subcategorías (**solo ADMIN**)
+- ✅ Vista admin con categorías/subcategorías activas e inactivas
+
+---
+
+### 🧵 Foro de emprendedores
+
+#### 📌 Tópicos
+
+- ✅ Crear tópico (usuario autenticado)
+- ✅ Listar tópicos paginados
+- ✅ Ver detalle de un tópico con sus respuestas
+- ✅ Editar tópico (solo autor o administrador)
+- ✅ Eliminar tópico (solo autor o administrador)
+
+#### 💬 Respuestas
+
+- ✅ Crear respuesta en un tópico
+- ✅ Listar respuestas de un tópico
+- ✅ Editar respuesta (solo autor)
+- ✅ Eliminar respuesta (autor, autor del tópico o administrador)
+- ✅ Marcar respuesta como ✔️ solución (solo autor del tópico)
+
+#### 💬 Respuestas hijas *(1 solo nivel)*
+
+- ✅ Responder a una respuesta
+- ✅ Editar y eliminar respuesta hija con permisos propios
+- ✅ Test de integración específico
+
+#### 📚 Cursos y categorías del foro
+
+- ✅ Listar categorías y cursos
+- ✅ CRUD completo de cursos y categorías (**solo ADMIN**)
+
+---
+
+## 🧩 Arquitectura
+
+El proyecto sigue una **arquitectura modular por capas**:
+
+```
+src/main/java/
+└── com.alura.foro.hub.api
+    ├── modules/
+    │   ├── catalogo/       → Productos, categorías, subcategorías, imágenes
+    │   └── foro/           → Tópicos, respuestas, cursos
+    ├── user/               → Usuarios, emprendimientos, localidades
+    ├── security/           → JWT, filtros, excepciones, rate limit
+    └── helpers/            → Métricas y utilidades
+```
+
+Cada módulo sigue la estructura:
+`controller` → `service` → `repository` → `domain` + `dto` + `mapper`
+
+---
+
+## 🔑 Roles y permisos
+
+### 👥 Roles disponibles
+
+| Rol | Descripción |
+|-----|-------------|
+| `USER` | Usuario autenticado estándar |
+| `ADMIN` | Usuario con privilegios administrativos |
+
+### 🛂 Tabla de permisos
+
+#### Catálogo
+
+| Recurso | Operación | 🌐 Público | 👤 USER | 🔑 ADMIN |
+|---------|-----------|-----------|---------|---------|
+| Emprendimiento | Ver / Listar | ✅ | ✅ | ✅ |
+| Emprendimiento | Crear / Editar / Eliminar | ❌ | ✅ (propio) | ✅ |
+| Emprendimiento | Subir / Eliminar logo | ❌ | ✅ (propio) | ✅ |
+| Productos | Ver / Listar | ✅ | ✅ | ✅ |
+| Productos | Crear / Editar / Eliminar | ❌ | ✅ (propio) | ✅ |
+| Productos | Gestión de imágenes | ❌ | ✅ (propio) | ✅ |
+| Categorías | Listar activas | ✅ | ✅ | ✅ |
+| Categorías | CRUD + activar/desactivar | ❌ | ❌ | ✅ |
+| Subcategorías | Listar activas | ✅ | ✅ | ✅ |
+| Subcategorías | CRUD + activar/desactivar | ❌ | ❌ | ✅ |
+
+#### Foro
+
+| Recurso | Operación | 👤 USER | 🔑 ADMIN |
+|---------|-----------|---------|---------|
+| Tópicos | Crear | ✅ | ✅ |
+| Tópicos | Editar / Eliminar | ✅ (autor) | ✅ |
+| Respuestas | Crear / Editar | ✅ | ✅ |
+| Respuestas | Eliminar | ✅ (autor/topico) | ✅ |
+| Respuestas | Marcar como solución | ✅ (autor del tópico) | ✅ |
+| Cursos y categorías | Listar | ✅ | ✅ |
+| Cursos y categorías | CRUD | ❌ | ✅ |
+
+#### Usuarios
+
+| Operación | 👤 USER | 🔑 ADMIN |
+|-----------|---------|---------|
+| Registro | ✅ | ✅ |
+| Convertir en ADMIN | ❌ | ✅ |
+| Quitar ADMIN | ❌ | ✅ |
+
+---
+
+## ⚙️ Requisitos previos
 
 - **Java 17**
-- **MySQL 8**
+- **MySQL 8** (o Docker)
 - **Maven**
-- **Postman** (recomendado para pruebas)
+- **Docker + Docker Compose** *(recomendado para levantar todo con un comando)*
 - IDE compatible con Spring Boot (IntelliJ IDEA recomendado)
+- **Postman** *(para pruebas manuales)*
 
+---
 
-### 🗄️ Base de datos
+## ▶️ Ejecución
 
-Crear una base de datos MySQL:
+### 🐳 Opción A — Docker Compose *(recomendado)*
 
-```sql
-CREATE DATABASE foro_hub;
+Levanta automáticamente **MySQL + MinIO + la API**:
+
+```bash
+git clone https://github.com/LeandroMelchiori/EcoSocial-BackEnd.git
+cd EcoSocial-BackEnd
+
+# Crear .env con tus variables (ver sección de configuración)
+docker-compose up --build
 ```
-Las tablas y datos iniciales se crean automáticamente al iniciar la aplicación mediante
-Flyway.
 
-### 🔐 Variables de entorno
+Servicios disponibles:
+- 🌐 API → `http://localhost:8080`
+- 🗄️ MySQL → `localhost:3307`
+- 🖼️ MinIO → `http://localhost:9001` (consola web)
 
-Configurar las siguientes variables de entorno o propiedades en application.properties:
+---
+
+### ☕ Opción B — Maven local
+
+```bash
+# 1. Clonar
+git clone https://github.com/LeandroMelchiori/EcoSocial-BackEnd.git
+cd EcoSocial-BackEnd
+
+# 2. Configurar application.properties (ver sección de configuración)
+
+# 3. Ejecutar
+mvn spring-boot:run
+```
+
+La API quedará disponible en: `http://localhost:8080/api/v1/`
+
+---
+
+## 🔐 Configuración
+
+### Variables de entorno / application.properties
 
 ```properties
-spring.datasource.url=jdbc:mysql://localhost/foro_hub
+# Base de datos
+spring.datasource.url=jdbc:mysql://localhost/ecosocial
 spring.datasource.username=TU_USUARIO
 spring.datasource.password=TU_PASSWORD
 
+# JWT
 api.security.secret=CLAVE_SECRETA_JWT
+
+# Storage de imágenes: "minio" | "local"
+catalogo.storage=minio
+
+# Si storage = minio
+minio.endpoint=http://localhost:9000
+minio.access-key=minioadmin
+minio.secret-key=minioadmin123
+minio.bucket=ecosocial
 ```
 
-### ⚠️ Importante:
-La clave api.security.secret debe mantenerse privada.
-No se recomienda subirla a repositorios públicos.
+> ⚠️ **Importante:** No subas `api.security.secret` ni credenciales de MinIO a repositorios públicos. Usá variables de entorno o un archivo `.env` excluido del `.gitignore`.
 
-## ▶️ Ejecución del proyecto
+---
 
-### 1. Clonar el repositorio:
+## 🔐 Autenticación JWT
 
-```bash
-  git clone https://github.com/tu-usuario/foro-hub-api.git
+### 1️⃣ Registrar usuario
+
+```http
+POST /auth/registro
+Content-Type: application/json
+
+{
+  "username": "maria",
+  "email": "maria@ejemplo.com",
+  "password": "miPassword123"
+}
 ```
 
-### 2. Ingresar al directorio del proyecto:
-```bash
-  cd foro-hub-api
+### 2️⃣ Obtener token
+
+```http
+POST /auth/login
+Content-Type: application/json
+
+{
+  "username": "maria",
+  "password": "miPassword123"
+}
 ```
 
-### 3. Ejecutar la aplicacion con Maven:
-
-```bash
-  mvn spring-boot:run
+Respuesta:
+```json
+{
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+}
 ```
-### 4. La API quedará disponible en:
 
-```yaml
-http://localhost:8080/api/v1/
+### 3️⃣ Usar el token
+
+En cada request protegido, incluir en el header:
+
 ```
+Authorization: Bearer <TOKEN>
+```
+
+> 📌 El prefijo `Bearer` es obligatorio. No agregar comillas al token.
+
+---
+
+## 📄 Documentación Swagger
+
+La documentación interactiva de todos los endpoints está disponible en:
+
+```
+http://localhost:8080/swagger-ui/index.html
+```
+
 ---
 
 ## 📊 Monitoreo
 
-El proyecto integra Spring Boot Actuator + Micrometer + Prometheus.
-Se exponen métricas de:
-- Performance HTTP
-- Uso de JVM
-- Pool de conexiones HikariCP
-- Estado de la aplicación
+El proyecto integra **Spring Boot Actuator + Micrometer + Prometheus** con métricas de:
 
-Las métricas están pensadas para ser consumidas por Prometheus
-y visualizadas en Grafana.
+- ⚡ Performance HTTP (tiempos de respuesta)
+- 🧠 Uso de JVM (heap, GC)
+- 🔗 Pool de conexiones HikariCP
+- 💓 Estado general de la aplicación
 
----
-
-
-## 📄 Documentación OpenAPI (Swagger)
-
-### La documentación de la API está disponible en:
-
-```yaml
-http://localhost:8080/swagger-ui/index.html
-```
-
-## 🔐 Autenticación JWT (Postman)
-
-La API utiliza **JSON Web Tokens (JWT)** para autenticar y autorizar las solicitudes.
+Las métricas están listas para ser consumidas por **Prometheus** y visualizadas en **Grafana**.
 
 ---
 
-### 1️⃣ Login de usuario
+## ⚙️ Perfiles de ejecución
 
-#### Endpoint:
-#### POST /auth/login
-
-
-
-Body (JSON):
-
-```json
-{
-  "username": "user",
-  "password": "123456"
-}
-```
-
-#### Respuesta esperada:
-```json
-{
-"token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
-}
-```
-
-### 2️⃣ Uso del token en Postman
-
-Para realizar solicitudes a los endpoints protegidos, se debe incluir el token generado en el header de la solicitud:
-
-```makefile
-Authorization: Bearer <TOKEN>
-```
-
-### 📌 Importante en Postman:
-* No agregar comillas al token
-* Verificar que no haya espacios extra
-* El prefijo Bearer es obligatorio
-
-### 3️⃣ Endpoints protegidos
-
-Requieren autenticación JWT:
-
-* Crear, editar y eliminar tópicos
-* Crear, editar y eliminar respuestas
-* Marcar respuestas como solución
-* Gestión de cursos y categorías
-* Operaciones de administración de usuarios
----
-## 🧯 Troubleshooting
-
-- **401 Unauthorized**: token ausente/incorrecto/expirado 
-- **403 Forbidden**: rol insuficiente o no sos autor del recurso
-- **404 Not Found**: recurso inexistente (ej: `cursoId` que no existe)
-- **409 Conflict**: regla de negocio (duplicado / estado inválido / etc.)
-
----
-## 🔑 Roles y permisos
-
-El sistema maneja control de acceso basado en **roles**, definidos a nivel de seguridad
-con Spring Security.
-
-### 👥 Roles disponibles
-
-| Rol   | Descripción |
-|------|-------------|
-| USER | Usuario autenticado estándar |
-| ADMIN | Usuario con privilegios administrativos |
-
----
-
-### 🛂 Permisos por operación
-
-| Módulo | Operación | USER | ADMIN |
-|------|----------|:---:|:----:|
-| Auth | Login | ✅ | ✅ |
-| Usuarios | Registro | ✅ | ✅ |
-| Usuarios | Convertir en ADMIN | ❌ | ✅ |
-| Usuarios | Quitar ADMIN | ❌ | ✅ |
-| Categorías | Listar | ✅ | ✅ |
-| Categorías | Crear | ❌ | ✅ |
-| Categorías | Editar | ❌ | ✅ |
-| Categorías | Eliminar | ❌ | ✅ |
-| Cursos | Listar | ✅ | ✅ |
-| Cursos | Crear | ❌ | ✅ |
-| Cursos | Editar | ❌ | ✅ |
-| Cursos | Eliminar | ❌ | ✅ |
-| Tópicos | Crear | ✅ | ✅ |
-| Tópicos | Editar (autor) | ✅ | ✅ |
-| Tópicos | Eliminar (autor) | ✅ | ✅ |
-| Respuestas | Crear | ✅ | ✅ |
-| Respuestas | Editar (autor) | ✅ | ✅ |
-| Respuestas | Eliminar | ✅ | ✅ |
-| Respuestas | Marcar como solución | ✅ | ✅ |
-
----
-
-## 🧪 Flujo recomendado de pruebas (Postman)
-
-1. Registrar un usuario
-2. Realizar login para obtener el token JWT
-3. Guardar el token como variable de entorno en Postman
-4. Enviar el token en el header:
-
-```yaml
-Authorization: Bearer {{token}}
-```
-
-5. Probar endpoints según el rol del usuario
-
----
-
-## ⚠️ Manejo de errores
-
-La API devuelve respuestas claras y consistentes ante errores comunes:
-
-| Código | Descripción |
-|------|-------------|
-| 400 | Datos inválidos |
-| 401 | No autenticado |
-| 403 | No autorizado |
-| 404 | Recurso no encontrado |
-| 409 | Conflicto de negocio |
-| 500 | Error interno del servidor |
-
----
-## 🗄️ Migraciones de base de datos
-
-El proyecto utiliza **Flyway** para el versionado y control de la base de datos.
-
-- Las migraciones se ejecutan automáticamente al iniciar la aplicación
-- Los scripts se encuentran en:
-
-```markdown
-src/main/resources/db/migration
-```
-
-
-Esto garantiza:
-- Consistencia entre entornos
-- Control de versiones del esquema
-- Facilidad para desplegar el proyecto desde cero
-
----
-## ⚙️ Perfiles de ejecución (Spring Profiles)
-
-El proyecto utiliza **Spring Profiles** para adaptar el comportamiento según el entorno (**desarrollo, testing y producción**), manteniendo una configuración limpia, segura y fácil de probar.
-
-### 🧪 Profile `test`
-
-Usado para **tests automáticos** (JUnit / MockMvc).
-
-✅ Características:
-- Base de datos **H2 en memoria**
-- `ddl-auto=create-drop` (se crea y destruye el esquema por test)
-- Flyway deshabilitado
-- Rate limit desactivado (evita errores 429 en tests)
-
-📌 Archivo: `src/test/resources/application-test.properties`
+### 🧪 `test` — Tests automáticos
 
 ```properties
-spring.datasource.url=jdbc:h2:mem:forohub_test;MODE=MySQL;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
-spring.datasource.driverClassName=org.h2.Driver
-spring.datasource.username=sa
-spring.datasource.password=
-
+spring.datasource.url=jdbc:h2:mem:ecosocial_test;MODE=MySQL;DB_CLOSE_DELAY=-1
 spring.jpa.hibernate.ddl-auto=create-drop
-spring.jpa.show-sql=false
-spring.jpa.properties.hibernate.format_sql=false
-
 spring.flyway.enabled=false
-
 app.ratelimit.enabled=false
 ```
 
-### 🧑‍💻 Profile `dev`
-
-Usado para **desarrollo local** y pruebas manuales (Postman / Swagger).
-
-✅ Características:
-- Mantiene MySQL local
-- Rate limit desactivado para no interferir con Postman Runner
-
-📌 Archivo: `src/main/resources/application-dev.properties`
+### 🧑‍💻 `dev` — Desarrollo local
 
 ```properties
+# MySQL local + rate limit desactivado para no interferir con Postman Runner
 app.ratelimit.enabled=false
 ```
 
-### 🚀 Profile `prod` (opcional)
-
-Pensado para producción real, con límites más estrictos.
-
-📌 Archivo: `src/main/resources/application-prod.properties`
+### 🚀 `prod` — Producción
 
 ```properties
 app.ratelimit.enabled=true
@@ -374,97 +381,129 @@ app.ratelimit.writeMax=200
 app.ratelimit.readMax=800
 app.ratelimit.windowSeconds=600
 ```
+
 ---
-## 🔒 Seguridad
 
-La API implementa medidas de seguridad orientadas a entornos reales:
+## 🗄️ Migraciones de base de datos
 
-- Autenticación basada en **JWT**
-- Filtro de seguridad personalizado
-- Control de acceso por roles
-- Validaciones de autorización por autor del recurso
-- Manejo centralizado de excepciones
-- Protección contra accesos no autenticados
+El proyecto usa **Flyway** para el versionado del esquema. Las migraciones se ejecutan automáticamente al iniciar la aplicación.
+
+```
+src/main/resources/db/migration/
+├── V1__estructura-usuarios-emprendimiento.sql
+├── V1_1__seed-perfiles.sql
+├── V1_2__create-user-admin.sql
+├── V1_3__seed-localidades-santa-fe.sql   ← localidades georreferenciadas de Santa Fe
+├── V2__foro-estructura.sql
+├── V2_1__seed-foro-basico.sql
+├── V3__catalogo-estructura.sql
+└── V3_1__seed_categorias_y_subcategorias.sql
+```
+
+> 📍 Las localidades de la provincia de Santa Fe están pre-cargadas con datos georreferenciados (GeoRef Argentina), listas para usar sin configuración adicional.
 
 ---
 
 ## 🧪 Estrategia de Testing
 
-El proyecto implementa una estrategia de testing por capas:
+El proyecto cuenta con **155 tests** que cubren todas las capas.
 
 ### 🔹 Tests de Service
-- Validan reglas de negocio
+- Reglas de negocio
 - Permisos por autor / admin
-- Restricciones temporales
-- Estados del tópico (ABIERTO / CERRADO)
+- Restricciones de estado (tópico abierto/cerrado)
 
 ### 🔹 Tests de Controller
-- Prueban contratos HTTP
-- Validan códigos de estado (200 / 201 / 401 / 403 / 404)
-- Uso de MockMvc
+- Contratos HTTP
+- Códigos de respuesta (`200 / 201 / 401 / 403 / 404 / 409`)
+- MockMvc
 
-### 🔹 Tests de Integración (End-to-End)
-- Login real (`/auth/login`)
-- Generación de JWT
-- Uso del token en endpoints protegidos
-- Persistencia real en base H2
-- Seguridad activa (Spring Security completo)
+### 🔹 Tests de Integración *(End-to-End)*
+- Login real → JWT → endpoint protegido
+- Persistencia en H2 con Spring Security activo
+- `AuthenticationIntegrationTest`
+- `RespuestaHijaIntegrationTest`
+- `MinioStorageServiceIntegrationTest`
 
-Casos cubiertos:
-- AuthenticationIntegrationTest
-- Flujo completo de creación de tópico con JWT
-- RespuestaHijaIntegrationTest (caso específico)
+### Ejecutar los tests
 
+```bash
+# Todos los tests
+mvn test
+
+# Con reporte
+mvn test surefire-report:report
+```
 
 ### 📬 Colección de Postman
 
-El proyecto incluye una colección de Postman con flujos completos
-de prueba (registro, login, tópicos, respuestas, cursos y categorías).
+Incluye flujos completos para todos los módulos (registro, login, emprendimiento, productos, imágenes, tópicos, respuestas, categorías):
 
-📁 Ubicación:
-```text
-/postman/ForoHub.postman_collection.json
 ```
+postman/
+├── collections/     → Colección principal
+├── environments/    → Variables de entorno
+└── fixtures/        → Imágenes de prueba para upload
+```
+
+---
+
+## ⚠️ Manejo de errores
+
+Todos los endpoints devuelven errores en el formato `ApiError` estándar:
+
+```json
+{
+  "status": 409,
+  "error": "Conflict",
+  "message": "El usuario ya tiene un emprendimiento creado.",
+  "path": "/me/emprendimiento"
+}
+```
+
+| Código | Descripción |
+|--------|-------------|
+| `400` | Datos inválidos o request mal formado |
+| `401` | No autenticado (token ausente o expirado) |
+| `403` | Sin permisos (rol insuficiente o no es autor) |
+| `404` | Recurso no encontrado |
+| `409` | Conflicto (recurso duplicado o estado inválido) |
+| `429` | Rate limit excedido |
+| `500` | Error interno del servidor |
+
 ---
 
 ## 🧠 Decisiones de diseño
 
-- Las respuestas hijas se limitan a un solo nivel para evitar estructuras recursivas complejas.
-- La autorización se valida en la capa Service para no depender solo del controller.
-- Los tests de integración cubren flujos críticos (auth + endpoint protegido), no todos los endpoints.
-- Se priorizó claridad y seguridad por sobre optimizaciones prematuras.
+- **1 usuario = 1 emprendimiento** para simplificar el modelo y el flujo de alta.
+- **Endpoints de catálogo son públicos** para maximizar la visibilización sin requerir registro.
+- **Storage pluggeable** (MinIO/local) mediante interfaz `StorageService` + `@ConditionalOnProperty`.
+- **Respuestas hijas limitadas a 1 nivel** para evitar estructuras recursivas complejas.
+- **Autorización validada en la capa Service**, no solo en el Controller.
+- **Formato de error unificado** (`ApiError`) en todos los endpoints para consistencia de la API.
+- **CodeQL en CI** para análisis de seguridad automático en cada push.
 
 ---
 
-## 🎯 Alcance del proyecto
+## 🎯 Alcance
 
-- Proyecto enfocado en backend
-- No incluye frontend
-- No incluye sistema de notificaciones
-- No incluye moderación automática
-
----
-
-## 📌 Notas finales
-
-- El proyecto está diseñado como **API REST**, sin interfaz gráfica
-- Swagger se utiliza como documentación visual
-- **Postman es la herramienta principal de prueba**
-- El código sigue una arquitectura clara por capas:
-    - Controller
-    - Service
-    - Repository
-    - DTOs
-    - Seguridad
+- ✅ API REST completa (backend)
+- ❌ Sin frontend incluido
+- ❌ Sin notificaciones en tiempo real
+- ❌ Sin moderación automática de contenido
 
 ---
 
 ## 👨‍💻 Autor
 
-Proyecto desarrollado por **Sacha**  
-Como parte de un proceso de aprendizaje y consolidación de conocimientos en
-**Spring Boot, APIs REST y seguridad con JWT**.
+Proyecto desarrollado por **Leandro Melchiori**
+
+Como parte de un proceso de aprendizaje y consolidación en **Spring Boot, APIs REST, seguridad con JWT, almacenamiento de archivos con MinIO y arquitectura de sistemas**.
 
 ---
 
-⭐ Si este proyecto te resultó útil, ¡no dudes en dejar una estrella!
+<div align="center">
+
+⭐ Si este proyecto te resultó útil, ¡dejá una estrella!
+
+</div>
