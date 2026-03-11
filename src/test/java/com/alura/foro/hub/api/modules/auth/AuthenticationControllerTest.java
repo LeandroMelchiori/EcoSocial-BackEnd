@@ -1,4 +1,4 @@
-package com.alura.foro.hub.api.modules.security;
+package com.alura.foro.hub.api.modules.auth;
 
 import com.alura.foro.hub.api.modules.catalogo.repository.ProductoRepository;
 import com.alura.foro.hub.api.user.domain.Usuario;

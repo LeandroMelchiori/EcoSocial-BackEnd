@@ -31,6 +31,9 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
         """)
     Optional<Usuario> findByDniConPerfiles(@Param("dni") String dni);
 
+    @Query("select u from Usuario u join fetch u.perfiles where u.id = :id")
+    Optional<Usuario> findByIdConPerfiles(@Param("id") Long id);
+
     @Query("""
         select count(u)
         from Usuario u

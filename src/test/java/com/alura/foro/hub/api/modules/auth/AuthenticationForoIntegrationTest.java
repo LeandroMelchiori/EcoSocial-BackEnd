@@ -1,4 +1,4 @@
-package com.alura.foro.hub.api.modules.foro.integration;
+package com.alura.foro.hub.api.modules.auth;
 
 import com.alura.foro.hub.api.modules.foro.domain.model.Categoria;
 import com.alura.foro.hub.api.modules.foro.domain.model.Curso;
@@ -25,7 +25,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
 @Transactional
-class AuthenticationIntegrationTest {
+class AuthenticationForoIntegrationTest {
 
     @Autowired MockMvc mockMvc;
     @Autowired UsuarioRepository usuarioRepository;

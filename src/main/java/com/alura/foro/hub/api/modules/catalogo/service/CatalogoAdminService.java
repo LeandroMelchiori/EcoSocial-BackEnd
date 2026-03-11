@@ -5,12 +5,10 @@ import com.alura.foro.hub.api.modules.catalogo.domain.Subcategoria;
 import com.alura.foro.hub.api.modules.catalogo.dto.categorias.*;
 import com.alura.foro.hub.api.modules.catalogo.dto.subcategorias.*;
 import com.alura.foro.hub.api.modules.catalogo.repository.*;
+import com.alura.foro.hub.api.security.exception.ConflictException;
 import jakarta.persistence.EntityNotFoundException;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.server.ResponseStatusException;
-
 import java.util.List;
 
 @Service
@@ -35,7 +33,7 @@ public class CatalogoAdminService {
         String nombre = dto.nombre().trim();
 
         if (categoriaRepo.existsByNombreIgnoreCase(nombre)) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "Ya existe una categoría con ese nombre");
+            throw new ConflictException("Ya existe una categoría con ese nombre");
         }
 
         CategoriaCatalogo c = new CategoriaCatalogo();
@@ -56,7 +54,7 @@ public class CatalogoAdminService {
         // evitar colisión por nombre (si cambia)
         categoriaRepo.findByNombreIgnoreCase(nombre).ifPresent(otra -> {
             if (!otra.getId().equals(id)) {
-                throw new ResponseStatusException(HttpStatus.CONFLICT, "Ya existe una categoría con ese nombre");
+                throw new ConflictException("Ya existe una categoría con ese nombre");
             }
         });
 
@@ -84,10 +82,10 @@ public class CatalogoAdminService {
     public void eliminarCategoria(Long id) {
         // si hay productos o subcategorias, no permitimos (evita FK error)
         if (productoRepo.existsByCategoria_Id(id)) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "No se puede eliminar: hay productos asociados");
+            throw new ConflictException("No se puede eliminar: hay productos asociados");
         }
         if (subcategoriaRepo.existsByCategoria_Id(id)) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "No se puede eliminar: hay subcategorías asociadas");
+            throw new ConflictException("No se puede eliminar: hay subcategorías asociadas");
         }
 
         CategoriaCatalogo c = categoriaRepo.findById(id)
@@ -107,7 +105,7 @@ public class CatalogoAdminService {
                 .orElseThrow(() -> new EntityNotFoundException("Categoría no encontrada"));
 
         if (subcategoriaRepo.existsByCategoria_IdAndNombreIgnoreCase(categoriaId, nombre)) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "Ya existe esa subcategoría en la categoría indicada");
+            throw new ConflictException("Ya existe esa subcategoría en la categoría indicada");
         }
 
         Subcategoria s = new Subcategoria();
@@ -133,8 +131,7 @@ public class CatalogoAdminService {
         // si cambia categoria o nombre, validar unicidad
         subcategoriaRepo.findByCategoria_IdAndNombreIgnoreCase(categoriaId, nombre).ifPresent(otra -> {
             if (!otra.getId().equals(id)) {
-                throw new ResponseStatusException(HttpStatus.CONFLICT,
-                        "Ya existe esa subcategoría en la categoría indicada");
+                throw new ConflictException("Ya existe esa subcategoría en la categoría indicada");
             }
         });
 
@@ -162,7 +159,7 @@ public class CatalogoAdminService {
     @Transactional
     public void eliminarSubcategoria(Long id) {
         if (productoRepo.existsBySubcategoria_Id(id)) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "No se puede eliminar: hay productos asociados");
+            throw new ConflictException("No se puede eliminar: hay productos asociados");
         }
 
         Subcategoria s = subcategoriaRepo.findById(id)

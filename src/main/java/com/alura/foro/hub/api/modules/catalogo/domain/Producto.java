@@ -44,9 +44,15 @@ public class Producto {
     private Boolean activo = true;
 
     @Column(name = "fecha_creacion", nullable = false)
-    private LocalDateTime fechaCreacion = LocalDateTime.now();
+    private LocalDateTime fechaCreacion;
 
     @OneToMany(mappedBy = "producto", cascade = CascadeType.ALL, orphanRemoval = true)
     @OrderBy("orden ASC")
     private List<ProductoImagen> imagenes = new ArrayList<>();
+
+
+    @PrePersist
+    void prePersist() {
+        this.fechaCreacion = LocalDateTime.now();
+    }
 }

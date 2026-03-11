@@ -56,12 +56,10 @@ public class Usuario implements UserDetails {
 
     @PreUpdate
     void preUpdate() {
-        if (this.fechaActualizacion == null) {
-            this.fechaActualizacion = LocalDateTime.now(); // primera edición
-        }
+        this.fechaActualizacion = LocalDateTime.now(); // primera edición
     }
 
-    @ManyToMany(fetch = FetchType.EAGER)
+    @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
             name = "usuario_perfiles",
             joinColumns = @JoinColumn(name = "usuario_id"),

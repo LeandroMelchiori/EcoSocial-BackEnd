@@ -23,6 +23,6 @@ public abstract class BaseEntity {
     private LocalDateTime fechaCreacion = LocalDateTime.now();;
 
     @Column(name = "fecha_actualizacion")
-    private LocalDateTime fechaActualizacion = LocalDateTime.now();;
+    private LocalDateTime fechaActualizacion = LocalDateTime.now();
 }
 

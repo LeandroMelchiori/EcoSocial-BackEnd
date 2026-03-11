@@ -19,11 +19,12 @@ public class SecurityFilter extends OncePerRequestFilter {
 
     private final TokenService tokenService;
     private final UsuarioRepository usuarioRepository;
-    private final ObjectMapper objectMapper = new ObjectMapper();
+    private final ObjectMapper objectMapper;
 
-    public SecurityFilter(TokenService tokenService, UsuarioRepository usuarioRepository) {
+    public SecurityFilter(TokenService tokenService, UsuarioRepository usuarioRepository, ObjectMapper objectMapper) {
         this.tokenService = tokenService;
         this.usuarioRepository = usuarioRepository;
+        this.objectMapper = objectMapper;
     }
 
     @Override
@@ -52,7 +53,7 @@ public class SecurityFilter extends OncePerRequestFilter {
             var subject = tokenService.getSubject(token);
             Long userId = Long.valueOf(subject);
 
-            var user = usuarioRepository.findById(userId)
+            var user = usuarioRepository.findByIdConPerfiles(userId)
                     .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado"));
 
 
