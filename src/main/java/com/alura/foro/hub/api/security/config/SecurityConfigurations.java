@@ -71,8 +71,7 @@ public class SecurityConfigurations {
                         .referrerPolicy(ref -> ref.policy(org.springframework.security.web.header.writers.ReferrerPolicyHeaderWriter.ReferrerPolicy.NO_REFERRER))
                         // CSP
                         .contentSecurityPolicy(csp -> csp
-                                .policyDirectives("default-src 'none'"
-                                )
+                                .policyDirectives("default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:")
                         )
                         // Permissions-Policy
                         .addHeaderWriter(new StaticHeadersWriter(
