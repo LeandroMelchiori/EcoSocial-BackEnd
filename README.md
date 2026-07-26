@@ -2,292 +2,263 @@
 
 # 🌱 EcoSocial — Backend
 
-### Plataforma digital para emprendedores de la economía social
+### API para visibilizar emprendimientos y fortalecer comunidades de economía social
 
 [![Java](https://img.shields.io/badge/Java-17-ED8B00?style=for-the-badge&logo=openjdk&logoColor=white)](https://www.java.com)
-[![Spring Boot](https://img.shields.io/badge/Spring_Boot_3-6DB33F?style=for-the-badge&logo=springboot&logoColor=white)](https://spring.io/projects/spring-boot)
-[![MySQL](https://img.shields.io/badge/MySQL_8-4479A1?style=for-the-badge&logo=mysql&logoColor=white)](https://www.mysql.com)
-[![MinIO](https://img.shields.io/badge/MinIO-C72E49?style=for-the-badge&logo=minio&logoColor=white)](https://min.io)
-[![Docker](https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white)](https://www.docker.com)
-[![JWT](https://img.shields.io/badge/JWT-000000?style=for-the-badge&logo=jsonwebtokens&logoColor=white)](https://jwt.io)
-[![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)](LICENSE)
-
-[![Tests](https://img.shields.io/badge/Tests-155_passing-brightgreen?style=flat-square&logo=checkmarx)](/)
-[![Security](https://img.shields.io/badge/CodeQL-Passed-blue?style=flat-square&logo=github)](/)
-[![Swagger](https://img.shields.io/badge/Docs-Swagger_UI-85EA2D?style=flat-square&logo=swagger)](/)
+[![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.4-6DB33F?style=for-the-badge&logo=springboot&logoColor=white)](https://spring.io/projects/spring-boot)
+[![MySQL](https://img.shields.io/badge/MySQL-8-4479A1?style=for-the-badge&logo=mysql&logoColor=white)](https://www.mysql.com)
+[![MinIO](https://img.shields.io/badge/MinIO-Storage-C72E49?style=for-the-badge&logo=minio&logoColor=white)](https://min.io)
+[![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?style=for-the-badge&logo=docker&logoColor=white)](https://www.docker.com)
 
 </div>
 
----
+**EcoSocial** es el backend de una plataforma orientada a emprendedores de la economía social. Reúne dos experiencias dentro de una misma API:
 
-## 📖 ¿Qué es EcoSocial?
+- un **catálogo público** de emprendimientos y productos;
+- un **foro comunitario** para intercambiar consultas, experiencias y soluciones.
 
-**EcoSocial** es una API REST que potencia una plataforma integral para emprendedores de la economía social. No es un simple catálogo ni un marketplace: es un **espacio digital que combina visibilización y comunidad**.
+Los módulos comparten usuarios, autenticación, permisos, documentación, almacenamiento de archivos y monitoreo.
 
-El sistema resuelve dos necesidades reales:
-
-> 🏪 **Catálogo** — Los emprendedores publican sus productos y emprendimientos para que cualquier persona pueda descubrirlos, sin necesidad de registrarse.
-
-> 🧵 **Foro** — Los usuarios registrados intercambian ideas, consultas y experiencias, fortaleciendo la red emprendedora desde adentro.
-
-Ambas partes comparten la misma infraestructura de usuarios, autenticación y seguridad.
+> Este repositorio contiene únicamente el backend. La interfaz web se desarrolla y despliega como proyecto separado.
 
 ---
 
-## 🗂️ Módulos del sistema
+## 🎯 Objetivo
 
-```
+La plataforma busca resolver necesidades frecuentes de emprendimientos autogestivos:
+
+- contar con un espacio público para mostrar productos y datos de contacto;
+- organizar la información de cada emprendimiento;
+- administrar imágenes sin depender de enlaces externos;
+- facilitar la búsqueda por categorías y ubicación;
+- crear una comunidad donde las personas puedan ayudarse mediante tópicos y respuestas.
+
+No procesa ventas ni pagos: el catálogo está orientado a la **visibilización y contacto directo**.
+
+---
+
+## 🧩 Módulos
+
+```text
 EcoSocial
-├── 👤 Usuarios & Emprendimientos    → Registro, perfil, 1 usuario = 1 emprendimiento
-├── 🏪 Catálogo                      → Productos, categorías, subcategorías, imágenes
-└── 🧵 Foro                          → Tópicos, respuestas, respuestas hijas
+├── Usuarios y seguridad
+│   ├── registro y login
+│   ├── JWT y roles
+│   └── perfil del emprendimiento
+├── Catálogo
+│   ├── productos e imágenes
+│   ├── categorías y subcategorías
+│   └── filtros y búsquedas públicas
+└── Foro
+    ├── tópicos
+    ├── respuestas
+    ├── respuestas hijas
+    └── cursos y categorías
 ```
 
 ---
 
-## 🛠️ Stack tecnológico
+## ✨ Funcionalidades
+
+### Usuarios y autenticación
+
+- Registro de usuarios.
+- Login con token JWT.
+- Roles `USER` y `ADMIN`.
+- Operaciones administrativas para asignar o revocar el rol de administrador.
+- Rate limiting configurable según el entorno.
+- Contraseñas protegidas mediante Spring Security.
+
+### Perfil de emprendimiento
+
+- Relación de un emprendimiento por usuario.
+- Alta, consulta, edición y eliminación del perfil propio.
+- Nombre, descripción, teléfono, redes y ubicación.
+- Localidades de Santa Fe precargadas a partir de datos geográficos.
+- Carga, reemplazo y eliminación del logo.
+- Lectura pública de emprendimientos.
+
+### Productos
+
+- Creación y edición de productos del emprendimiento autenticado.
+- Precio, descripción, categoría y subcategoría.
+- Hasta cinco imágenes por producto.
+- Carga mediante `multipart/form-data`.
+- Agregado, reemplazo, eliminación y reordenamiento de imágenes.
+- Listado público paginado.
+- Filtros por categoría, subcategoría y texto libre.
+- Consulta pública del detalle de cada producto.
+- Control de propiedad para impedir que un usuario modifique productos ajenos.
+
+### Categorías y subcategorías
+
+- Listado público de categorías activas.
+- Consulta de subcategorías por categoría.
+- CRUD administrativo.
+- Activación y desactivación lógica.
+- Vista administrativa de registros activos e inactivos.
+
+### Foro
+
+- Creación, consulta, edición y eliminación de tópicos.
+- Filtros y paginación.
+- Respuestas a tópicos.
+- Respuestas hijas con un nivel de profundidad.
+- Marcado de una respuesta como solución.
+- Permisos según autoría, propietario del tópico y rol administrativo.
+- Administración de cursos y categorías del foro.
+
+---
+
+## 🔐 Permisos
+
+| Recurso | Público | USER | ADMIN |
+|---|---:|---:|---:|
+| Ver emprendimientos y productos | ✅ | ✅ | ✅ |
+| Crear o editar emprendimiento propio | ❌ | ✅ | ✅ |
+| Crear o editar productos propios | ❌ | ✅ | ✅ |
+| Gestionar imágenes propias | ❌ | ✅ | ✅ |
+| Administrar categorías del catálogo | ❌ | ❌ | ✅ |
+| Crear tópicos y respuestas | ❌ | ✅ | ✅ |
+| Editar contenido propio del foro | ❌ | ✅ | ✅ |
+| Moderar contenido del foro | ❌ | Según autoría | ✅ |
+| Administrar cursos y categorías del foro | ❌ | ❌ | ✅ |
+| Gestionar roles de usuario | ❌ | ❌ | ✅ |
+
+Los permisos sensibles se validan en la capa de servicio y no dependen únicamente de la interfaz cliente.
+
+---
+
+## 🏗️ Arquitectura
+
+El proyecto utiliza una arquitectura modular por capas:
+
+```text
+controller
+    ↓
+service ──► reglas de negocio y autorización
+    ↓
+repository
+    ↓
+domain / database
+
+DTOs y mappers separan el contrato HTTP de las entidades persistidas.
+```
+
+### Organización principal
+
+```text
+src/main/java/com/alura/foro/hub/api/
+├── modules/
+│   ├── catalogo/
+│   └── foro/
+├── user/
+├── security/
+└── helpers/
+```
+
+Cada módulo agrupa sus controladores, servicios, repositorios, entidades, DTOs y mappers.
+
+---
+
+## 🛠️ Stack
 
 | Área | Tecnología |
-|------|-----------|
-| 🔧 Lenguaje | Java 17 |
-| 🍃 Framework | Spring Boot 3 (Web, Security, Data JPA, Validation) |
-| 🗄️ Base de datos | MySQL 8 |
-| 🧪 Testing DB | H2 en memoria |
-| 🔐 Autenticación | JWT (JSON Web Tokens) |
-| 🗃️ Migraciones | Flyway |
-| 🖼️ Storage de archivos | MinIO (producción) / Local filesystem (dev) |
-| 📦 Contenedores | Docker + Docker Compose |
-| 📊 Monitoreo | Spring Actuator + Micrometer + Prometheus |
-| 📄 Documentación | Swagger / OpenAPI (springdoc) |
-| 🔒 Análisis de seguridad | CodeQL (GitHub Actions) |
-| 🏗️ Build | Maven |
+|---|---|
+| Lenguaje | Java 17 |
+| Framework | Spring Boot 3.4.1 |
+| Web | Spring MVC |
+| Persistencia | Spring Data JPA / Hibernate |
+| Base de datos | MySQL 8 |
+| Migraciones | Flyway |
+| Seguridad | Spring Security + JWT Auth0 |
+| Validación | Jakarta Bean Validation |
+| Archivos | MinIO o filesystem local |
+| Documentación | springdoc OpenAPI / Swagger UI |
+| Observabilidad | Actuator, Micrometer y Prometheus |
+| Tests | JUnit 5, Mockito, MockMvc, H2 y Testcontainers |
+| Cobertura | JaCoCo |
+| Seguridad de código | CodeQL |
+| Infraestructura | Docker y Docker Compose |
+| Build | Maven |
+
+El README evita publicar un número fijo de tests porque la suite continúa evolucionando. El estado real se valida ejecutando Maven y consultando los workflows de GitHub Actions.
 
 ---
 
-## 🚀 Funcionalidades
+## 🖼️ Almacenamiento de imágenes
 
-### 👤 Usuarios y autenticación
+El backend abstrae el almacenamiento para utilizar diferentes implementaciones:
 
-- ✅ Registro de nuevos usuarios
-- ✅ Login con generación de **token JWT**
-- ✅ Control de acceso por roles (`USER` / `ADMIN`)
-- ✅ Conversión y revocación de rol administrador
-- ✅ Rate limiting configurable por perfil de entorno
+- **MinIO:** opción recomendada para un entorno desplegado o para Docker Compose.
+- **Filesystem local:** opción simple para desarrollo.
 
----
-
-### 🏪 Catálogo de emprendimientos y productos
-
-#### 🏢 Mi emprendimiento *(1 usuario = 1 emprendimiento)*
-
-- ✅ Crear el emprendimiento propio (`POST /me/emprendimiento`)
-- ✅ Ver el emprendimiento propio (`GET /me/emprendimiento`)
-- ✅ Actualizar datos del emprendimiento
-- ✅ Subir / reemplazar logo (`PUT /me/emprendimiento/logo`)
-- ✅ Eliminar logo
-- ✅ Eliminar emprendimiento
-- ✅ Localidad georreferenciada (datos de Santa Fe pre-cargados desde GeoRef)
-
-#### 📦 Productos *(con imágenes múltiples)*
-
-- ✅ Listar productos con paginación y filtros por categoría, subcategoría o texto libre (**público**)
-- ✅ Ver detalle de un producto (**público**)
-- ✅ Crear producto con imágenes (`multipart/form-data`)
-- ✅ Actualizar producto + imágenes
-- ✅ Eliminar producto
-- ✅ Agregar imágenes adicionales a un producto existente
-- ✅ Reemplazar una imagen individual
-- ✅ Eliminar una imagen individual
-- ✅ Reordenar imágenes
-
-#### 🗂️ Categorías y subcategorías
-
-- ✅ Listar categorías activas (**público**)
-- ✅ Listar subcategorías activas por categoría (**público**)
-- ✅ CRUD completo de categorías y subcategorías (**solo ADMIN**)
-- ✅ Activar / desactivar categorías y subcategorías (**solo ADMIN**)
-- ✅ Vista admin con categorías/subcategorías activas e inactivas
+Las imágenes pasan por validaciones de formato, cantidad y tamaño. La aplicación mantiene las operaciones de producto y almacenamiento coordinadas para evitar referencias inconsistentes.
 
 ---
 
-### 🧵 Foro de emprendedores
+## 🚀 Ejecución con Docker
 
-#### 📌 Tópicos
+### Requisitos
 
-- ✅ Crear tópico (usuario autenticado)
-- ✅ Listar tópicos paginados
-- ✅ Ver detalle de un tópico con sus respuestas
-- ✅ Editar tópico (solo autor o administrador)
-- ✅ Eliminar tópico (solo autor o administrador)
-
-#### 💬 Respuestas
-
-- ✅ Crear respuesta en un tópico
-- ✅ Listar respuestas de un tópico
-- ✅ Editar respuesta (solo autor)
-- ✅ Eliminar respuesta (autor, autor del tópico o administrador)
-- ✅ Marcar respuesta como ✔️ solución (solo autor del tópico)
-
-#### 💬 Respuestas hijas *(1 solo nivel)*
-
-- ✅ Responder a una respuesta
-- ✅ Editar y eliminar respuesta hija con permisos propios
-- ✅ Test de integración específico
-
-#### 📚 Cursos y categorías del foro
-
-- ✅ Listar categorías y cursos
-- ✅ CRUD completo de cursos y categorías (**solo ADMIN**)
-
----
-
-## 🧩 Arquitectura
-
-El proyecto sigue una **arquitectura modular por capas**:
-
-```
-src/main/java/
-└── com.alura.foro.hub.api
-    ├── modules/
-    │   ├── catalogo/       → Productos, categorías, subcategorías, imágenes
-    │   └── foro/           → Tópicos, respuestas, cursos
-    ├── user/               → Usuarios, emprendimientos, localidades
-    ├── security/           → JWT, filtros, excepciones, rate limit
-    └── helpers/            → Métricas y utilidades
-```
-
-Cada módulo sigue la estructura:
-`controller` → `service` → `repository` → `domain` + `dto` + `mapper`
-
----
-
-## 🔑 Roles y permisos
-
-### 👥 Roles disponibles
-
-| Rol | Descripción |
-|-----|-------------|
-| `USER` | Usuario autenticado estándar |
-| `ADMIN` | Usuario con privilegios administrativos |
-
-### 🛂 Tabla de permisos
-
-#### Catálogo
-
-| Recurso | Operación | 🌐 Público | 👤 USER | 🔑 ADMIN |
-|---------|-----------|-----------|---------|---------|
-| Emprendimiento | Ver / Listar | ✅ | ✅ | ✅ |
-| Emprendimiento | Crear / Editar / Eliminar | ❌ | ✅ (propio) | ✅ |
-| Emprendimiento | Subir / Eliminar logo | ❌ | ✅ (propio) | ✅ |
-| Productos | Ver / Listar | ✅ | ✅ | ✅ |
-| Productos | Crear / Editar / Eliminar | ❌ | ✅ (propio) | ✅ |
-| Productos | Gestión de imágenes | ❌ | ✅ (propio) | ✅ |
-| Categorías | Listar activas | ✅ | ✅ | ✅ |
-| Categorías | CRUD + activar/desactivar | ❌ | ❌ | ✅ |
-| Subcategorías | Listar activas | ✅ | ✅ | ✅ |
-| Subcategorías | CRUD + activar/desactivar | ❌ | ❌ | ✅ |
-
-#### Foro
-
-| Recurso | Operación | 👤 USER | 🔑 ADMIN |
-|---------|-----------|---------|---------|
-| Tópicos | Crear | ✅ | ✅ |
-| Tópicos | Editar / Eliminar | ✅ (autor) | ✅ |
-| Respuestas | Crear / Editar | ✅ | ✅ |
-| Respuestas | Eliminar | ✅ (autor/topico) | ✅ |
-| Respuestas | Marcar como solución | ✅ (autor del tópico) | ✅ |
-| Cursos y categorías | Listar | ✅ | ✅ |
-| Cursos y categorías | CRUD | ❌ | ✅ |
-
-#### Usuarios
-
-| Operación | 👤 USER | 🔑 ADMIN |
-|-----------|---------|---------|
-| Registro | ✅ | ✅ |
-| Convertir en ADMIN | ❌ | ✅ |
-| Quitar ADMIN | ❌ | ✅ |
-
----
-
-## ⚙️ Requisitos previos
-
-- **Java 17**
-- **MySQL 8** (o Docker)
-- **Maven**
-- **Docker + Docker Compose** *(recomendado para levantar todo con un comando)*
-- IDE compatible con Spring Boot (IntelliJ IDEA recomendado)
-- **Postman** *(para pruebas manuales)*
-
----
-
-## ▶️ Ejecución
-
-### 🐳 Opción A — Docker Compose *(recomendado)*
-
-Levanta automáticamente **MySQL + MinIO + la API**:
+- Docker.
+- Docker Compose.
 
 ```bash
 git clone https://github.com/LeandroMelchiori/EcoSocial-BackEnd.git
 cd EcoSocial-BackEnd
-
-# Crear .env con tus variables (ver sección de configuración)
-docker-compose up --build
 ```
 
-Servicios disponibles:
-- 🌐 API → `http://localhost:8080`
-- 🗄️ MySQL → `localhost:3307`
-- 🖼️ MinIO → `http://localhost:9001` (consola web)
+Crear un archivo `.env` con las variables requeridas y ejecutar:
+
+```bash
+docker compose up --build
+```
+
+Servicios principales:
+
+| Servicio | Dirección local |
+|---|---|
+| API | `http://localhost:8080` |
+| MySQL | `localhost:3307` |
+| MinIO API | `http://localhost:9000` |
+| MinIO Console | `http://localhost:9001` |
 
 ---
 
-### ☕ Opción B — Maven local
+## ☕ Ejecución con Maven
+
+Requiere Java 17 y una instancia de MySQL.
 
 ```bash
-# 1. Clonar
-git clone https://github.com/LeandroMelchiori/EcoSocial-BackEnd.git
-cd EcoSocial-BackEnd
-
-# 2. Configurar application.properties (ver sección de configuración)
-
-# 3. Ejecutar
 mvn spring-boot:run
 ```
 
-La API quedará disponible en: `http://localhost:8080/api/v1/`
-
----
-
-## 🔐 Configuración
-
-### Variables de entorno / application.properties
+Ejemplo de configuración:
 
 ```properties
-# Base de datos
-spring.datasource.url=jdbc:mysql://localhost/ecosocial
-spring.datasource.username=TU_USUARIO
-spring.datasource.password=TU_PASSWORD
+spring.datasource.url=jdbc:mysql://localhost:3306/ecosocial
+spring.datasource.username=usuario
+spring.datasource.password=contraseña
 
-# JWT
-api.security.secret=CLAVE_SECRETA_JWT
+api.security.secret=una-clave-segura
 
-# Storage de imágenes: "minio" | "local"
-catalogo.storage=minio
+catalogo.storage=local
+# o catalogo.storage=minio
 
-# Si storage = minio
 minio.endpoint=http://localhost:9000
 minio.access-key=minioadmin
-minio.secret-key=minioadmin123
+minio.secret-key=una-clave-segura
 minio.bucket=ecosocial
 ```
 
-> ⚠️ **Importante:** No subas `api.security.secret` ni credenciales de MinIO a repositorios públicos. Usá variables de entorno o un archivo `.env` excluido del `.gitignore`.
+> Las credenciales y secretos deben suministrarse mediante variables de entorno o archivos excluidos de Git. No deben escribirse directamente en archivos versionados.
 
 ---
 
-## 🔐 Autenticación JWT
+## 🔑 Flujo de autenticación
 
-### 1️⃣ Registrar usuario
+### Registro
 
 ```http
 POST /auth/registro
@@ -296,11 +267,11 @@ Content-Type: application/json
 {
   "username": "maria",
   "email": "maria@ejemplo.com",
-  "password": "miPassword123"
+  "password": "unaClaveSegura"
 }
 ```
 
-### 2️⃣ Obtener token
+### Login
 
 ```http
 POST /auth/login
@@ -308,202 +279,84 @@ Content-Type: application/json
 
 {
   "username": "maria",
-  "password": "miPassword123"
+  "password": "unaClaveSegura"
 }
 ```
 
-Respuesta:
-```json
-{
-  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
-}
-```
+Las rutas protegidas reciben el token mediante:
 
-### 3️⃣ Usar el token
-
-En cada request protegido, incluir en el header:
-
-```
-Authorization: Bearer <TOKEN>
-```
-
-> 📌 El prefijo `Bearer` es obligatorio. No agregar comillas al token.
-
----
-
-## 📄 Documentación Swagger
-
-La documentación interactiva de todos los endpoints está disponible en:
-
-```
-http://localhost:8080/swagger-ui/index.html
+```http
+Authorization: Bearer <token>
 ```
 
 ---
 
-## 📊 Monitoreo
+## 📄 Documentación y monitoreo
 
-El proyecto integra **Spring Boot Actuator + Micrometer + Prometheus** con métricas de:
+Con la aplicación en ejecución:
 
-- ⚡ Performance HTTP (tiempos de respuesta)
-- 🧠 Uso de JVM (heap, GC)
-- 🔗 Pool de conexiones HikariCP
-- 💓 Estado general de la aplicación
+- Swagger UI: `http://localhost:8080/swagger-ui.html`
+- OpenAPI JSON: `http://localhost:8080/v3/api-docs`
+- Health: `http://localhost:8080/actuator/health`
+- Métricas Prometheus: según la exposición configurada para Actuator.
 
-Las métricas están listas para ser consumidas por **Prometheus** y visualizadas en **Grafana**.
-
----
-
-## ⚙️ Perfiles de ejecución
-
-### 🧪 `test` — Tests automáticos
-
-```properties
-spring.datasource.url=jdbc:h2:mem:ecosocial_test;MODE=MySQL;DB_CLOSE_DELAY=-1
-spring.jpa.hibernate.ddl-auto=create-drop
-spring.flyway.enabled=false
-app.ratelimit.enabled=false
-```
-
-### 🧑‍💻 `dev` — Desarrollo local
-
-```properties
-# MySQL local + rate limit desactivado para no interferir con Postman Runner
-app.ratelimit.enabled=false
-```
-
-### 🚀 `prod` — Producción
-
-```properties
-app.ratelimit.enabled=true
-app.ratelimit.loginMax=50
-app.ratelimit.writeMax=200
-app.ratelimit.readMax=800
-app.ratelimit.windowSeconds=600
-```
+La colección Postman incluida permite probar flujos de autenticación, catálogo, foro, permisos e imágenes.
 
 ---
 
-## 🗄️ Migraciones de base de datos
-
-El proyecto usa **Flyway** para el versionado del esquema. Las migraciones se ejecutan automáticamente al iniciar la aplicación.
-
-```
-src/main/resources/db/migration/
-├── V1__estructura-usuarios-emprendimiento.sql
-├── V1_1__seed-perfiles.sql
-├── V1_2__create-user-admin.sql
-├── V1_3__seed-localidades-santa-fe.sql   ← localidades georreferenciadas de Santa Fe
-├── V2__foro-estructura.sql
-├── V2_1__seed-foro-basico.sql
-├── V3__catalogo-estructura.sql
-└── V3_1__seed_categorias_y_subcategorias.sql
-```
-
-> 📍 Las localidades de la provincia de Santa Fe están pre-cargadas con datos georreferenciados (GeoRef Argentina), listas para usar sin configuración adicional.
-
----
-
-## 🧪 Estrategia de Testing
-
-El proyecto cuenta con **155 tests** que cubren todas las capas.
-
-### 🔹 Tests de Service
-- Reglas de negocio
-- Permisos por autor / admin
-- Restricciones de estado (tópico abierto/cerrado)
-
-### 🔹 Tests de Controller
-- Contratos HTTP
-- Códigos de respuesta (`200 / 201 / 401 / 403 / 404 / 409`)
-- MockMvc
-
-### 🔹 Tests de Integración *(End-to-End)*
-- Login real → JWT → endpoint protegido
-- Persistencia en H2 con Spring Security activo
-- `AuthenticationIntegrationTest`
-- `RespuestaHijaIntegrationTest`
-- `MinioStorageServiceIntegrationTest`
-
-### Ejecutar los tests
+## ✅ Pruebas
 
 ```bash
-# Todos los tests
 mvn test
-
-# Con reporte
-mvn test surefire-report:report
 ```
 
-### 📬 Colección de Postman
+Para generar además el reporte de cobertura:
 
-Incluye flujos completos para todos los módulos (registro, login, emprendimiento, productos, imágenes, tópicos, respuestas, categorías):
-
-```
-postman/
-├── collections/     → Colección principal
-├── environments/    → Variables de entorno
-└── fixtures/        → Imágenes de prueba para upload
+```bash
+mvn verify
 ```
 
----
+La suite incluye:
 
-## ⚠️ Manejo de errores
+- tests unitarios de servicios;
+- tests de controladores con MockMvc;
+- pruebas de seguridad y permisos;
+- pruebas de reglas de negocio;
+- pruebas de integración del almacenamiento;
+- escenarios con H2 y Testcontainers.
 
-Todos los endpoints devuelven errores en el formato `ApiError` estándar:
-
-```json
-{
-  "status": 409,
-  "error": "Conflict",
-  "message": "El usuario ya tiene un emprendimiento creado.",
-  "path": "/me/emprendimiento"
-}
-```
-
-| Código | Descripción |
-|--------|-------------|
-| `400` | Datos inválidos o request mal formado |
-| `401` | No autenticado (token ausente o expirado) |
-| `403` | Sin permisos (rol insuficiente o no es autor) |
-| `404` | Recurso no encontrado |
-| `409` | Conflicto (recurso duplicado o estado inválido) |
-| `429` | Rate limit excedido |
-| `500` | Error interno del servidor |
+GitHub Actions ejecuta validaciones automatizadas y análisis CodeQL sobre el repositorio.
 
 ---
 
-## 🧠 Decisiones de diseño
+## 📂 Recursos del repositorio
 
-- **1 usuario = 1 emprendimiento** para simplificar el modelo y el flujo de alta.
-- **Endpoints de catálogo son públicos** para maximizar la visibilización sin requerir registro.
-- **Storage pluggeable** (MinIO/local) mediante interfaz `StorageService` + `@ConditionalOnProperty`.
-- **Respuestas hijas limitadas a 1 nivel** para evitar estructuras recursivas complejas.
-- **Autorización validada en la capa Service**, no solo en el Controller.
-- **Formato de error unificado** (`ApiError`) en todos los endpoints para consistencia de la API.
-- **CodeQL en CI** para análisis de seguridad automático en cada push.
+- `docker-compose.yml`: API, MySQL y MinIO.
+- `postman/`: colección y archivos utilizados en pruebas manuales.
+- `src/main/resources/db/migration/`: migraciones Flyway.
+- `.github/workflows/`: CI y análisis de seguridad.
+- `pom.xml`: dependencias, JaCoCo y configuración de build.
 
 ---
 
-## 🎯 Alcance
+## 🛣️ Próximas mejoras
 
-- ✅ API REST completa (backend)
-- ❌ Sin frontend incluido
-- ❌ Sin notificaciones en tiempo real
-- ❌ Sin moderación automática de contenido
-
----
-
-## 👨‍💻 Autor
-
-Proyecto desarrollado por **Leandro Melchiori**
-
-Como parte de un proceso de aprendizaje y consolidación en **Spring Boot, APIs REST, seguridad con JWT, almacenamiento de archivos con MinIO y arquitectura de sistemas**.
+- Completar la integración con el frontend público y el panel del emprendimiento.
+- Publicar una demo estable con datos ficticios.
+- Incorporar auditoría de operaciones administrativas.
+- Mejorar búsqueda y ordenamiento del catálogo.
+- Agregar moderación y notificaciones al foro.
+- Preparar almacenamiento externo administrado para producción.
 
 ---
 
-<div align="center">
+## Autor
 
-⭐ Si este proyecto te resultó útil, ¡dejá una estrella!
+Desarrollado por **Leandro Melchiori**.
 
-</div>
+- [GitHub](https://github.com/LeandroMelchiori)
+- [LinkedIn](https://www.linkedin.com/in/leandromelchiori-developer/)
+
+## Licencia
+
+Distribuido bajo licencia MIT. Consultá [`LICENSE`](LICENSE) para más información.
